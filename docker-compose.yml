@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://fla_chess:fla_chess@postgres:5432/fla_chess
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18.7-alpine3.24
+    environment:
+      POSTGRES_DB: fla_chess
+      POSTGRES_USER: fla_chess
+      POSTGRES_PASSWORD: fla_chess
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fla_chess -d fla_chess"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:

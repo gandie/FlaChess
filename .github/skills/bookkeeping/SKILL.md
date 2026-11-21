@@ -130,6 +130,8 @@ agent_evaluation:
 ## Validation Contract
 - Mandatory completion gate:
   - .\\venv\\Scripts\\python.exe -m unittest discover .\\tests\\
+- Execute documented validation commands verbatim; do not add PowerShell call
+  operators or other command transformations.
 - Run markdown boundary validation when docs are touched:
   - .\\venv\\Scripts\\python.exe -m unittest discover -s tests -p "test_markdown_boundaries.py"
 - Run done-task evaluation boundary validation when done-task files are touched:

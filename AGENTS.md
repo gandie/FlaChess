@@ -110,3 +110,11 @@ At the first boundary conflict or policy-interpretation branch, invoke forcing-l
 ## 10) Console discipline
 
 Do *NOT* create massive inline-scripts to run on console. 99% of these inline scripts are actually tools! Some of them are tests and need implementation THERE, while other such commands need a script implementation in `tools` folder or similar. The reasoning is simple conservation of knowledge: Knowledge must not be lost on console due to longish inline scripts, but *conserved* by writing tests and tool scripts instead!
+
+Execute repository-documented commands verbatim. Do not insert or substitute
+command wrappers, call operators, shell prefixes, or other transformations
+unless the repository documentation or the operator explicitly requests a
+variant.
+
+When a documented command fails, report the exact command and failure before
+choosing a different command.

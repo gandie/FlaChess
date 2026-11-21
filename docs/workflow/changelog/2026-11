@@ -26,3 +26,15 @@
   checks and a live Uvicorn HTTP smoke test; markdown and done-task evaluation
   boundary validation passed (1 test each). Residual risk: database and Docker
   setup are intentionally out of scope.
+
+- **T4 – Adding Docker and PostgreSQL Setup:** Added a Python application
+  Dockerfile, Docker Compose stack with PostgreSQL 18.7, a persistent database
+  volume mounted at PostgreSQL 18's `/var/lib/postgresql` data root, a
+  readiness health check, Docker build-context exclusions, and README startup
+  instructions. Files changed: `Dockerfile`, `docker-compose.yml`,
+  `.dockerignore`, `README.md`, this changelog, and
+  `docs/workflow/done/T4_docker_postgresql.md`. Validation: Docker Compose
+  configuration syntax check passed, all 7 full-suite unittest tests passed,
+  and markdown and done-task evaluation boundary tests passed (1 test each).
+  Residual risk: application database integration and migrations are still
+  intentionally out of scope.
