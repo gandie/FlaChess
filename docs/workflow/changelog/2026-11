@@ -1,0 +1,10 @@
+## 2026-11-21
+
+- **T1 – Recording Initial Project Design:** Added `docs/DESIGN.md` with the
+  initial tournament system goals, the FastAPI/static frontend/PostgreSQL/
+  Docker Compose direction, infrastructure-first sequencing, and open
+  questions. Files changed: `docs/DESIGN.md`,
+  `docs/workflow/done/T1_initial-design.md`, and this changelog. Validation:
+  reviewed the document against the request; automated tests were not run per
+  operator instruction for this fresh project. Residual risk: tournament rules
+  and deployment details remain undecided.

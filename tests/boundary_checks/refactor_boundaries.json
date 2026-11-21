@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "defaults": {
+    "max_file_lines": 220,
+    "max_function_lines": 35
+  },
+  "include": [
+    "lllars_core/*.py",
+    "lllars_core/*/*.py",
+    "tests/*.py"
+  ],
+  "exclude": [],
+  "waivers": {
+    "files": {},
+    "functions": {}
+  }
+}
