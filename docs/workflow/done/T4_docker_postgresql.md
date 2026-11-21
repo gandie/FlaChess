@@ -15,17 +15,17 @@ agent_evaluation:
       5: excellent
 
   outcome:
-    correctness:
-    scope_discipline:
-    validation_trust:
+    correctness: 4
+    scope_discipline: 4
+    validation_trust: 3
 
   collaboration:
-    ambiguity_handling:
-    operator_load:
-    trust_delta:
+    ambiguity_handling: 3
+    operator_load: 3
+    trust_delta: 3
 
   notes: >
-    HUMAN NOTES
+    The usual old image topic, plus nudging and rule sharpening
 ---
 # T4 Docker and PostgreSQL Setup
 
