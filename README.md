@@ -49,20 +49,38 @@ password if it contains characters reserved in a URL.
 When running the app on the host, use `127.0.0.1` in `DATABASE_URL`; the
 `postgres` hostname in `.env.example` is for the app container.
 
+## Database development
+
+Run SQL against the PostgreSQL service from the repository root with the
+PowerShell helper. The service must already be running with `docker compose up`.
+For example:
+
+```powershell
+.\tools\psql.ps1 -Query "SELECT id, name FROM player;"
+```
+
+The helper uses the local `.env.example` values (`fla_chess` for both
+`POSTGRES_USER` and `POSTGRES_DB`); update its `-U`/`-d` values if those
+development settings change. It stops on SQL errors and passes the query as a
+single argument to `psql`'s `-c` option.
+
 ## Database migrations
 
 The project has an async Alembic environment configured to use
-`DATABASE_URL` and the app's declarative metadata. No models or migration
-revisions exist yet. Generate migrations after adding models, for example:
+`DATABASE_URL` and the app's declarative metadata. The `player` model is the
+first entity, with an existing migration. From a running Compose stack, apply
+migrations with:
 
 ```powershell
-.\venv\Scripts\alembic.exe revision --autogenerate -m "add player model"
+docker compose exec app alembic upgrade head
+```
+
+Generate future migrations after adding models, for example:
+
+```powershell
+docker compose exec app alembic revision --autogenerate -m "add tournament model"
 ```
 
 For Alembic commands run on the host, `DATABASE_URL` must use `127.0.0.1`;
 the `postgres` hostname from the Compose `.env` is only resolvable inside the
-Compose network. From a running Compose stack, use the app container instead:
-
-```powershell
-docker compose exec app alembic revision --autogenerate -m "add player model"
-```
+Compose network.

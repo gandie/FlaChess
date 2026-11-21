@@ -77,3 +77,20 @@
   done-task evaluation boundary tests passed (1 test each). Residual risk:
   no separate Pylance diagnostics run was available; the warning's recommended
   annotation was applied directly.
+
+- **T8 – Adding the Player Model and Database Tools:** Added the `player`
+  model and migration with a generated `BIGINT` primary key and required
+  `VARCHAR(255)` name, schema documentation, a PowerShell `psql` wrapper using
+  the `.env.example` user/database values and preserving multi-word queries,
+  and the database entity ID rule in `AGENTS.md`. Files changed: `AGENTS.md`,
+  `README.md`, `app/models.py`, `docs/DATA.md`, `migrations/env.py`,
+  `migrations/versions/8d1c4f6a2b90_add_player_table.py`,
+  `tests/test_database.py`, `tools/psql.ps1`, this changelog, and
+  `docs/workflow/done/T8_player_model_and_database_tools.md`. Validation: all
+  12 full-suite tests passed; markdown and done-task evaluation boundary tests
+  passed (1 test each); Alembic offline SQL generation and Compose
+  configuration passed; a live query against Compose PostgreSQL returned zero
+  rows without error, and a quoted SQL query remained one intact `psql -c`
+  argument in the wrapper check. `AGENTS.md` now also requires methodical,
+  exact-path bug reproduction and verification without speculative layers or
+  extra task records.

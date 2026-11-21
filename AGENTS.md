@@ -118,3 +118,17 @@ variant.
 
 When a documented command fails, report the exact command and failure before
 choosing a different command.
+
+## 11) Database Entity Identity
+
+Every database entity must have a generated `BIGINT` ID primary key. Do not use
+entity names or other natural/business fields as primary keys.
+
+## 12) Bug-Fix Discipline
+
+When a bug is reported:
+1. Don't panic. Slow is fast: pause, stay methodical, and don't guess.
+2. Reproduce the exact reported command and input; record expected and observed behavior before editing.
+3. Inspect the existing execution path and configuration source. Prefer existing values and mechanisms over new discovery or parsing layers.
+4. Identify the root cause and make the smallest fix within the original task. Do not add abstractions, unrelated changes, or a new task record without operator approval.
+5. Verify the exact path end-to-end. Mocks supplement but do not replace verification against the target. If the target is unavailable, state that verification is incomplete and do not claim the bug is fixed.
