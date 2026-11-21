@@ -16,3 +16,13 @@
   Validation: markdown boundary tests passed (1 test), and the full unittest
   suite passed (2 tests). Residual risk: fine-grained tie-break formulas and
   deployment-specific backup/recovery policies remain intentionally unspecified.
+
+- **T3 – Creating the FastAPI Local Foundation:** Added a locally installable
+  FastAPI app with modular routes, static hello-world frontend, and venv startup
+  instructions. Files changed: `pyproject.toml`, `app/`, `README.md`,
+  `tests/test_app.py`, this changelog, and
+  `docs/workflow/done/T3_fastapi_local_foundation.md`. Validation: editable
+  install succeeded, all 7 unittest tests passed, including TestClient route
+  checks and a live Uvicorn HTTP smoke test; markdown and done-task evaluation
+  boundary validation passed (1 test each). Residual risk: database and Docker
+  setup are intentionally out of scope.
