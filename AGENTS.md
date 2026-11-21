@@ -106,3 +106,7 @@ When requirements are underspecified, do not invent policy semantics.
 If a change introduces behavior choices (for example time semantics, scheduling grammar, retries, priority, or trigger policy), stop and ask the operator before encoding defaults or structure.
 
 At the first boundary conflict or policy-interpretation branch, invoke forcing-line and resolve the branch before implementation continues.
+
+## 10) Console discipline
+
+Do *NOT* create massive inline-scripts to run on console. 99% of these inline scripts are actually tools! Some of them are tests and need implementation THERE, while other such commands need a script implementation in `tools` folder or similar. The reasoning is simple conservation of knowledge: Knowledge must not be lost on console due to longish inline scripts, but *conserved* by writing tests and tool scripts instead!
