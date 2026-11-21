@@ -20,17 +20,41 @@ implementing the API, frontend, or tournament behavior. This allows the
 application and database stack to be brought up and checked independently of
 those later features.
 
-## Open Questions
+## Tournament Specification
 
-These decisions have not been specified and should be settled before the
-corresponding behavior is implemented:
+- Support knockout, round-robin, and group/round/table formats using Swiss
+  pairing rules.
+- Tournament phases may be combined. A later phase may select participants from
+  an earlier phase, such as players advancing from a group qualification round
+  into a knockout stage.
+- A blitz time control is tournament metadata only. It does not affect match
+  scheduling or scoring mechanics.
 
-- Which tournament format or formats should be supported?
-- What blitz time control(s) should a tournament use?
-- How should match outcomes be recorded and scored, including draws,
-  forfeits, and any tie-break rules?
-- How are players added, identified, and assigned to a tournament?
-- Should the system support multiple tournaments and retain their results?
-- Who will operate the system, and is authentication or access control needed?
-- Where will the stack be deployed, and are backup or recovery requirements
-  needed?
+## Match and Scoring Specification
+
+- Store each player's match score in SQL. A score is `0`, `0.5`, or `1`.
+- The two players' scores must total `1`. A draw is therefore represented as
+  `0.5` for both players.
+- Additional match information may be stored in a comment field, for example
+  to record that a result was changed to a forfeit.
+- Optional fine-grained rating fields may be retained for tie-break calculations.
+  The initial implementation does not define a specific tie-break formula.
+
+## Player and Tournament Data
+
+- Players are initially managed by the single operator and identified by the
+  name supplied during registration.
+- The system supports multiple tournaments and retains tournament results in
+  PostgreSQL.
+- Player assignment to tournament phases and tables is handled by the operator
+  or the applicable tournament format.
+
+## Operation and Access
+
+- The initial deployment assumes one operator using a physically protected system.
+- Authentication and access control are not required for the initial system.
+- The stack is intended to be manageable through Docker Compose, for example
+  by using `docker compose up --build`.
+- Deployment location and managed backup/recovery policies are intentionally
+  unspecified. PostgreSQL's Docker volume is the local persistence boundary,
+  and operators may back it up as appropriate.

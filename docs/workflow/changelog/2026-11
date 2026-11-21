@@ -8,3 +8,11 @@
   reviewed the document against the request; automated tests were not run per
   operator instruction for this fresh project. Residual risk: tournament rules
   and deployment details remain undecided.
+
+- **T2 – Finishing the Design Specification:** Rewrote `docs/DESIGN.md` to
+  convert all answered questions into a finished specification and removed
+  the open-question sections. Files changed: `docs/DESIGN.md`,
+  `docs/workflow/done/T2_finish-design-specification.md`, and this changelog.
+  Validation: markdown boundary tests passed (1 test), and the full unittest
+  suite passed (2 tests). Residual risk: fine-grained tie-break formulas and
+  deployment-specific backup/recovery policies remain intentionally unspecified.
