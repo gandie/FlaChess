@@ -1,15 +1,63 @@
+from __future__ import annotations
+
+import os
 import socket
 import subprocess
 import sys
 import time
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 from urllib.error import URLError
 from urllib.request import urlopen
 
 from fastapi.testclient import TestClient
+from sqlalchemy.exc import SQLAlchemyError
 
+from app.config import load_environment
 from app.main import app
+
+
+class UnavailableConnection:
+    async def __aenter__(self) -> None:
+        raise SQLAlchemyError("database unavailable")
+
+    async def __aexit__(self, *args: object) -> None:
+        return None
+
+
+class UnavailableEngine:
+    def connect(self) -> UnavailableConnection:
+        return UnavailableConnection()
+
+    async def dispose(self) -> None:
+        return None
+
+
+class AvailableConnection:
+    statement: object | None = None
+
+    async def __aenter__(self) -> AvailableConnection:
+        return self
+
+    async def __aexit__(self, *args: object) -> None:
+        return None
+
+    async def execute(self, statement: object) -> None:
+        self.statement = statement
+
+
+class AvailableEngine:
+    def __init__(self) -> None:
+        self.connection = AvailableConnection()
+        self.disposed = False
+
+    def connect(self) -> AvailableConnection:
+        return self.connection
+
+    async def dispose(self) -> None:
+        self.disposed = True
 
 
 class AppTests(unittest.TestCase):
@@ -35,6 +83,67 @@ class AppTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"status": "ok"})
 
+    def test_missing_database_url_warns_and_app_starts(self) -> None:
+        with patch.dict(os.environ, {"DATABASE_URL": ""}):
+            with self.assertLogs("app.main", level="WARNING") as logs:
+                with TestClient(app) as client:
+                    response = client.get("/api/health")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("DATABASE_URL is not set", logs.output[0])
+
+    def test_unavailable_database_warns_and_app_starts(self) -> None:
+        with (
+            patch.dict(
+                os.environ,
+                {"DATABASE_URL": "postgresql+asyncpg://user:password@localhost/db"},
+            ),
+            patch("app.main.create_async_engine", return_value=UnavailableEngine()),
+            patch("app.main.async_sessionmaker", return_value=object()),
+            self.assertLogs("app.main", level="WARNING") as logs,
+        ):
+            with TestClient(app) as client:
+                response = client.get("/api/health")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("startup will continue", logs.output[0])
+
+    def test_startup_checks_database_and_disposes_engine(self) -> None:
+        engine = AvailableEngine()
+        with (
+            patch.dict(
+                os.environ,
+                {"DATABASE_URL": "postgresql+asyncpg://user:password@localhost/db"},
+            ),
+            patch("app.main.create_async_engine", return_value=engine),
+            patch("app.main.async_sessionmaker", return_value=object()),
+            self.assertNoLogs("app.main", level="WARNING"),
+        ):
+            with TestClient(app) as client:
+                response = client.get("/api/health")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(str(engine.connection.statement), "SELECT 1")
+        self.assertTrue(engine.disposed)
+
+    def test_dotenv_loads_without_overriding_process_environment(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            env_file = Path(temp_dir) / ".env"
+            env_file.write_text(
+                "DATABASE_URL=from-dotenv\nDOTENV_TEST_VALUE=loaded\n",
+                encoding="utf-8",
+            )
+            with patch.dict(
+                os.environ,
+                {"DATABASE_URL": "from-process", "DOTENV_TEST_VALUE": ""},
+            ):
+                os.environ.pop("DOTENV_TEST_VALUE")
+                with patch("app.config._ENV_FILE", env_file):
+                    load_environment()
+
+                self.assertEqual(os.environ["DATABASE_URL"], "from-process")
+                self.assertEqual(os.environ["DOTENV_TEST_VALUE"], "loaded")
+
 
 class UvicornSmokeTests(unittest.TestCase):
     @classmethod
@@ -56,6 +165,7 @@ class UvicornSmokeTests(unittest.TestCase):
                 str(port),
             ],
             cwd=Path(__file__).resolve().parents[1],
+            env={**os.environ, "DATABASE_URL": ""},
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

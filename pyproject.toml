@@ -5,7 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fla-chess"
 version = "0.1.0"
-dependencies = ["fastapi[standard]>=0.115"]
+dependencies = [
+    "alembic>=1.13",
+    "asyncpg>=0.29",
+    "fastapi[standard]>=0.115",
+    "python-dotenv>=1.0",
+    "sqlalchemy[asyncio]>=2.0",
+]
 
 [tool.setuptools.packages.find]
 include = ["app*"]

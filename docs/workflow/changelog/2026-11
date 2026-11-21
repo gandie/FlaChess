@@ -38,3 +38,42 @@
   and markdown and done-task evaluation boundary tests passed (1 test each).
   Residual risk: application database integration and migrations are still
   intentionally out of scope.
+
+- **T5 – Connecting FastAPI to PostgreSQL:** Added async SQLAlchemy/asyncpg
+  engine and session foundations, a startup `SELECT 1` check that warns and
+  continues when PostgreSQL is absent or unavailable, and async Alembic
+  scaffolding linked to empty application metadata. Added environment-driven
+  Compose settings and a local `.env.example`, ignored `.env`, included
+  migrations in the app image, and documented local and Compose usage. Files
+  changed: `pyproject.toml`, `.gitignore`, `.env.example`, `app/main.py`,
+  `app/database.py`, `alembic.ini`, `migrations/`, `Dockerfile`,
+  `docker-compose.yml`, `README.md`, `tests/test_app.py`, this changelog, and
+  `docs/workflow/done/T5_fastapi_postgresql_connection.md`. Validation: all
+  10 full-suite unittest tests passed; markdown and done-task evaluation
+  boundary tests passed (1 test each); Docker Compose configuration validation,
+  Alembic offline SQL generation, and Alembic history checks passed. Residual
+  risk: connectivity was tested with a mocked startup engine, not a live
+  PostgreSQL server; no models, tables, or migration revisions were created.
+
+- **T6 – Loading Environment Files for Python Entry Points:** Added
+  `python-dotenv` as a direct dependency and a shared project-root `.env`
+  loader used by FastAPI startup and Alembic. Existing shell/container
+  environment variables take precedence. Updated local setup documentation
+  and added a test that verifies dotenv loading and precedence. Files changed:
+  `pyproject.toml`, `app/config.py`, `app/main.py`, `migrations/env.py`,
+  `README.md`, `tests/test_app.py`, this changelog, and
+  `docs/workflow/done/T6_dotenv_for_python_entrypoints.md`. Validation: all
+  11 full-suite unittest tests passed, the markdown boundary test passed,
+  the focused app tests passed (8 tests), and Alembic offline SQL generation
+  and history checks passed. Residual risk: `.env` loading was exercised
+  against a temporary file; no live PostgreSQL connection was attempted.
+
+- **T7 – Correcting the Lifespan Generator Annotation:** Replaced the
+  deprecated `AsyncIterator[None]` annotation on FastAPI's async-context
+  manager lifespan with `AsyncGenerator[None, None]`, as recommended by
+  Pylance. Runtime behavior is unchanged. Files changed: `app/main.py`, this
+  changelog, and `docs/workflow/done/T7_correct_lifespan_annotation.md`.
+  Validation: all 11 full-suite unittest tests passed, and markdown and
+  done-task evaluation boundary tests passed (1 test each). Residual risk:
+  no separate Pylance diagnostics run was available; the warning's recommended
+  annotation was applied directly.
