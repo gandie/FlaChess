@@ -220,3 +220,39 @@
   changelog, and [T16](../done/T16_plan_next_data_slices.md). Validation:
   all 25 unittest tests and the Markdown boundary test passed. Residual risk:
   implementation details must still be validated when each slice is started.
+
+- **T17 – Implementing Structure and Membership:** Added Tournament Phase,
+  Tournament Section, and Section Participant persistence, migration,
+  constraints, schemas, FastCRUD routes, custom cross-tournament membership
+  validation, SQLAdmin selectors and validation, and focused model/schema/API/
+  admin tests. Files changed: `app/models.py`, `app/schemas.py`, `app/api.py`,
+  `app/admin.py`, `app/main.py`, `app/tournament_structure.py`, the structure
+  migration, `tests/test_tournament_structure.py`,
+  `tests/test_tournament_structure_routes.py`, `docs/DATA.md`, this changelog,
+  and [T17](../done/T17_implement_structure_membership_slice.md). Validation:
+  11 focused structure tests and all 36 full-suite unittest tests passed;
+  offline Alembic SQL generated all new tables and constraints; Markdown and
+  done-task evaluation boundary validation passed. Residual risk: live
+  PostgreSQL and browser-based SQLAdmin interaction were not exercised.
+
+- **T17 bug fix – Rendering Tournament Section Admin Form:** Fixed the
+  Tournament Phase admin label so SQLAdmin can scaffold the Tournament Section
+  create form without lazily loading the phase's tournament from an async
+  session. Added a regression test that exercises the actual form-scaffolding
+  conversion with an unloaded phase relationship. Files changed:
+  `app/models.py`, `tests/test_tournament_admin_forms.py`, this changelog, and
+  [T17](../done/T17_implement_structure_membership_slice.md). Validation: the
+  focused admin-form regression passed, the refactor boundary test passed, and
+  all 37 full-suite tests passed. Residual risk: a live browser/SQLAdmin smoke
+  test was not rerun in this environment.
+
+- **T17 bug fix – Labeling Tournament Participants in Admin:** Added a readable
+  `<player> @ <tournament>` Tournament Participant string representation.
+  Both many-to-one relationships use joined loading so SQLAdmin can format
+  participant dropdown options without async lazy-load failures after query
+  execution. Files changed: `app/models.py`,
+  `tests/test_tournament_admin_forms.py`, this changelog, and
+  [T17](../done/T17_implement_structure_membership_slice.md). Validation: the
+  focused label regression passed, the refactor boundary test passed, and all
+  38 full-suite tests passed. Residual risk: a live browser/SQLAdmin smoke test
+  was not rerun in this environment.

@@ -382,14 +382,14 @@ The Tournament lifecycle follows this pattern.
 
 ### Second implementation slice: structure and membership
 
-- [ ] Add the Tournament Phase model and Alembic migration.
-- [ ] Add the Tournament Section model and Alembic migration.
-- [ ] Add the Section Participant model and Alembic migration.
-- [ ] Add phase, section, and membership Pydantic schemas.
-- [ ] Add FastCRUD routes and SQLAdmin relationship selectors.
-- [ ] Enforce uniqueness, positive values, and the fixed phase-format enum.
-- [ ] Reject membership whose participant belongs to another tournament.
-- [ ] Add model, constraint, schema, and route tests.
+- [x] Add the Tournament Phase model and Alembic migration.
+- [x] Add the Tournament Section model and Alembic migration.
+- [x] Add the Section Participant model and Alembic migration.
+- [x] Add phase, section, and membership Pydantic schemas.
+- [x] Add FastCRUD routes and SQLAdmin relationship selectors.
+- [x] Enforce uniqueness, positive values, and the fixed phase-format enum.
+- [x] Reject membership whose participant belongs to another tournament.
+- [x] Add model, constraint, schema, and route tests.
 
 This slice establishes the implemented hierarchy:
 
