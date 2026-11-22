@@ -380,16 +380,47 @@ The Tournament lifecycle follows this pattern.
 
 ## TODO
 
-### First implementation slice
+### Second implementation slice: structure and membership
 
-- [x] Add the Tournament model and Alembic migration.
-- [x] Add Tournament Pydantic create/update schemas.
-- [x] Add Tournament FastCRUD routes and SQLAdmin view.
-- [x] Add tests for Tournament constraints and lifecycle route behavior.
+- [ ] Add the Tournament Phase model and Alembic migration.
+- [ ] Add the Tournament Section model and Alembic migration.
+- [ ] Add the Section Participant model and Alembic migration.
+- [ ] Add phase, section, and membership Pydantic schemas.
+- [ ] Add FastCRUD routes and SQLAdmin relationship selectors.
+- [ ] Enforce uniqueness, positive values, and the fixed phase-format enum.
+- [ ] Reject membership whose participant belongs to another tournament.
+- [ ] Add model, constraint, schema, and route tests.
 
-This slice also includes the minimal Tournament Participant table needed to
-enforce the activation rule. Phase, section, round, and game entities remain
-follow-on tasks.
+This slice establishes the implemented hierarchy:
+
+`tournament → tournament_phase → tournament_section → section_participant`
+
+It enables formats, sections, assignments, ratings, advancement history,
+planned rounds, and tie-break locking without pairing or ranking.
+
+### Following implementation slices
+
+#### Third slice: rounds, pairings, and participation outcomes
+
+- [ ] Implement `tournament_round`.
+- [ ] Implement `round_participant`.
+- [ ] Implement `game`.
+- [ ] Enforce score, participant, round-number, and participation constraints.
+- [ ] Enforce that game participants belong to the round's section in
+  application logic.
+
+#### Fourth slice: tie-break configuration
+
+- [ ] Implement `section_tiebreak`.
+- [ ] Add ordered, unique configuration constraints and SQLAdmin controls.
+- [ ] Add lifecycle behavior for freezing tie-break configuration when a
+  section starts.
+
+#### Fifth slice: standings snapshots
+
+- [ ] Implement `section_standing` and `section_standing_value`.
+- [ ] Define snapshot identity, recomputation, and ranking services.
+- [ ] Add focused tie-break calculation tests.
 
 - [x] Decide the minimum fields for the first `tournament` implementation.
 - [x] Initial Tournament fields include name, description, lifecycle, time_control, starts_at, and ends_at.

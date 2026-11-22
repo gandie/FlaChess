@@ -212,3 +212,11 @@
   recorded in the T15 completion artifact. Residual risk: options still require
   persisted related rows and live PostgreSQL/admin interaction was not
   exercised.
+
+- **T16 – Planning the Next Data Slices:** Replaced the completed first-slice
+  checklist in `docs/DATA.md` with the dependency-ordered roadmap: structure
+  and membership; rounds, pairings, and participation outcomes; tie-break
+  configuration; and standings snapshots. Files changed: `docs/DATA.md`, this
+  changelog, and [T16](../done/T16_plan_next_data_slices.md). Validation:
+  all 25 unittest tests and the Markdown boundary test passed. Residual risk:
+  implementation details must still be validated when each slice is started.
