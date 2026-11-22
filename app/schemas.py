@@ -1,8 +1,14 @@
 from datetime import datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, Field, model_validator
 
-from app.models import TournamentLifecycle, TournamentPhaseFormat
+from app.models import (
+    GameResultType,
+    ParticipationType,
+    TournamentLifecycle,
+    TournamentPhaseFormat,
+)
 
 
 class PlayerCreate(BaseModel):
@@ -116,5 +122,137 @@ class SectionParticipantResponse(BaseModel):
     rating_source: str | None
     source_section_id: int | None
     source_rank: int | None
+
+    model_config = {"from_attributes": True}
+
+
+class TournamentRoundCreate(BaseModel):
+    section_id: int = Field(gt=0)
+    number: int = Field(gt=0)
+
+
+class TournamentRoundUpdate(BaseModel):
+    section_id: int | None = Field(default=None, gt=0)
+    number: int | None = Field(default=None, gt=0)
+
+
+class ScoreMixin(BaseModel):
+    @staticmethod
+    def validate_score(value: Decimal | None) -> None:
+        allowed_scores = {Decimal("0"), Decimal("0.5"), Decimal("1")}
+        if value is not None and value not in allowed_scores:
+            raise ValueError("score must be 0, 0.5, or 1")
+
+
+class RoundParticipantCreate(ScoreMixin):
+    round_id: int = Field(gt=0)
+    participant_id: int = Field(gt=0)
+    participation_type: ParticipationType
+    score_awarded: Decimal | None = None
+    comment: str | None = None
+
+    @model_validator(mode="after")
+    def validate_awarded_score(self) -> "RoundParticipantCreate":
+        self.validate_score(self.score_awarded)
+        if (
+            self.participation_type == ParticipationType.PAIRED
+            and self.score_awarded is not None
+        ):
+            raise ValueError("paired participation cannot have score_awarded")
+        return self
+
+
+class RoundParticipantUpdate(ScoreMixin):
+    round_id: int | None = Field(default=None, gt=0)
+    participant_id: int | None = Field(default=None, gt=0)
+    participation_type: ParticipationType | None = None
+    score_awarded: Decimal | None = None
+    comment: str | None = None
+
+    @model_validator(mode="after")
+    def validate_awarded_score(self) -> "RoundParticipantUpdate":
+        self.validate_score(self.score_awarded)
+        if self.model_fields_set & {"round_id", "participant_id", "participation_type"}:
+            for field in ("round_id", "participant_id", "participation_type"):
+                if field in self.model_fields_set and getattr(self, field) is None:
+                    raise ValueError(f"{field} cannot be null")
+        return self
+
+
+class GameCreate(ScoreMixin):
+    round_id: int = Field(gt=0)
+    white_participant_id: int = Field(gt=0)
+    black_participant_id: int = Field(gt=0)
+    white_score: Decimal | None = None
+    black_score: Decimal | None = None
+    result_type: GameResultType = GameResultType.NORMAL
+    recorded_at: datetime | None = None
+    comment: str | None = None
+
+    @model_validator(mode="after")
+    def validate_game(self) -> "GameCreate":
+        if self.white_participant_id == self.black_participant_id:
+            raise ValueError("game participants must be different")
+        self.validate_scores(self.white_score, self.black_score)
+        return self
+
+    @classmethod
+    def validate_scores(
+        cls,
+        white_score: Decimal | None,
+        black_score: Decimal | None,
+    ) -> None:
+        if (white_score is None) != (black_score is None):
+            raise ValueError("white_score and black_score must be set together")
+        cls.validate_score(white_score)
+        cls.validate_score(black_score)
+        if white_score is not None and white_score + black_score != 1:
+            raise ValueError("game scores must sum to 1")
+
+
+class GameUpdate(ScoreMixin):
+    round_id: int | None = Field(default=None, gt=0)
+    white_participant_id: int | None = Field(default=None, gt=0)
+    black_participant_id: int | None = Field(default=None, gt=0)
+    white_score: Decimal | None = None
+    black_score: Decimal | None = None
+    result_type: GameResultType | None = None
+    recorded_at: datetime | None = None
+    comment: str | None = None
+
+    @model_validator(mode="after")
+    def require_non_null_required_fields(self) -> "GameUpdate":
+        for field in (
+            "round_id",
+            "white_participant_id",
+            "black_participant_id",
+            "result_type",
+        ):
+            if field in self.model_fields_set and getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null")
+        return self
+
+
+class RoundParticipantResponse(BaseModel):
+    id: int
+    round_id: int
+    participant_id: int
+    participation_type: ParticipationType
+    score_awarded: Decimal | None
+    comment: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class GameResponse(BaseModel):
+    id: int
+    round_id: int
+    white_participant_id: int
+    black_participant_id: int
+    white_score: Decimal | None
+    black_score: Decimal | None
+    result_type: GameResultType
+    recorded_at: datetime | None
+    comment: str | None
 
     model_config = {"from_attributes": True}

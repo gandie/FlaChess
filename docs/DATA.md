@@ -402,11 +402,11 @@ planned rounds, and tie-break locking without pairing or ranking.
 
 #### Third slice: rounds, pairings, and participation outcomes
 
-- [ ] Implement `tournament_round`.
-- [ ] Implement `round_participant`.
-- [ ] Implement `game`.
-- [ ] Enforce score, participant, round-number, and participation constraints.
-- [ ] Enforce that game participants belong to the round's section in
+- [x] Implement `tournament_round`.
+- [x] Implement `round_participant`.
+- [x] Implement `game`.
+- [x] Enforce score, participant, round-number, and participation constraints.
+- [x] Enforce that game participants belong to the round's section in
   application logic.
 
 #### Fourth slice: tie-break configuration
@@ -444,4 +444,5 @@ planned rounds, and tie-break locking without pairing or ranking.
 - [x] Tournament sections have planned round counts.
 - [x] Later-section membership preserves source section and source rank.
 - [x] The 16-player two-phase Swiss example has a documented representation.
-- [ ] Implement `round_participant`, `section_tiebreak`, `section_standing`, and `section_standing_value` as later tournament entity tasks.
+- [ ] Implement `section_tiebreak`, `section_standing`, and
+  `section_standing_value` as later tournament entity tasks.

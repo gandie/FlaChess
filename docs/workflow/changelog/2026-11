@@ -256,3 +256,29 @@
   focused label regression passed, the refactor boundary test passed, and all
   38 full-suite tests passed. Residual risk: a live browser/SQLAdmin smoke test
   was not rerun in this environment.
+
+- **T18 – Implementing Rounds, Pairings, and Participation Outcomes:** Added
+  Tournament Round, Round Participant, and Game persistence, migration,
+  score and identity constraints, participation and result enums, Pydantic
+  schemas, FastCRUD routes, custom same-section validation, SQLAdmin selectors,
+  and focused model/schema/API/admin tests. Files changed: `app/models.py`,
+  `app/schemas.py`, `app/api.py`, `app/admin.py`, `app/main.py`,
+  `app/tournament_rounds.py`, the round/game migration,
+  `tests/test_tournament_rounds.py`,
+  `tests/test_tournament_round_routes.py`, `docs/DATA.md`, this changelog, and
+  [T18](../done/T18_implement_round_pairing_slice.md). Validation: 12 focused
+  round tests, all 50 full-suite unittest tests, and the refactor boundary test
+  passed; offline Alembic SQL generated the complete BIGSERIAL, foreign-key,
+  enum, score, and participant schema. Residual risk: live PostgreSQL CRUD and
+  browser-based SQLAdmin interaction were not exercised.
+
+- **T18 bug fix – Labeling Section and Round Participants in Admin:** Added
+  readable `player @ section @ tournament` Section Participant labels and
+  `player @ section @ round @ tournament` Round Participant labels. The
+  required relationships use joined loading so SQLAdmin can format options
+  after ORM session detachment. Files changed: `app/models.py`,
+  `tests/test_tournament_admin_forms.py`, this changelog, and
+  [T18](../done/T18_implement_round_pairing_slice.md). Validation: the focused
+  admin-form and detached-label suite passed all 4 tests; the full suite passed
+  all 52 tests; and markdown, done-task evaluation, and refactor boundary tests
+  passed. Residual risk: a live browser-based SQLAdmin smoke test was not run.

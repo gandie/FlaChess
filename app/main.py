@@ -11,11 +11,14 @@ from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async
 from sqladmin import Admin
 
 from app.admin import (
+    GameAdmin,
     PlayerAdmin,
+    RoundParticipantAdmin,
     SectionParticipantAdmin,
     TournamentAdmin,
     TournamentParticipantAdmin,
     TournamentPhaseAdmin,
+    TournamentRoundAdmin,
     TournamentSectionAdmin,
 )
 from app.api import router as api_router
@@ -48,6 +51,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             admin.add_view(TournamentPhaseAdmin)
             admin.add_view(TournamentSectionAdmin)
             admin.add_view(SectionParticipantAdmin)
+            admin.add_view(TournamentRoundAdmin)
+            admin.add_view(RoundParticipantAdmin)
+            admin.add_view(GameAdmin)
             app.mount("/admin", admin.app, name="admin")
             app.state.admin_mounted = True
         try:

@@ -10,10 +10,15 @@ from app.admin import TournamentSectionAdmin
 from app.database import Base
 from app.models import (
     Player,
+    RoundParticipant,
+    ParticipationType,
+    SectionParticipant,
     Tournament,
     TournamentParticipant,
     TournamentPhase,
     TournamentPhaseFormat,
+    TournamentRound,
+    TournamentSection,
 )
 
 
@@ -106,6 +111,76 @@ class TournamentParticipantLabelTests(unittest.TestCase):
         self.assertEqual(
             str(participant),
             "Nora @ Club Championship",
+        )
+
+
+def build_round_participant_fixture() -> RoundParticipant:
+    tournament = Tournament(id=2, name="Club Championship")
+    tournament_participant = TournamentParticipant(
+        id=3,
+        player=Player(id=1, name="Nora"),
+        tournament=tournament,
+    )
+    phase = TournamentPhase(
+        id=4,
+        tournament=tournament,
+        sequence=1,
+        format=TournamentPhaseFormat.SWISS,
+    )
+    section = TournamentSection(
+        id=5,
+        phase=phase,
+        name="Open",
+        sequence=1,
+    )
+    section_participant = SectionParticipant(
+        id=6,
+        participant=tournament_participant,
+        section=section,
+    )
+    tournament_round = TournamentRound(
+        id=7,
+        section=section,
+        number=1,
+    )
+    return RoundParticipant(
+        id=8,
+        round=tournament_round,
+        participant=section_participant,
+        participation_type=ParticipationType.PAIRED,
+    )
+
+
+class RoundParticipantLabelTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.engine = create_engine("sqlite://")
+        Base.metadata.create_all(self.engine)
+        with Session(self.engine) as session:
+            session.add(build_round_participant_fixture())
+            session.commit()
+
+    def test_section_participant_label_survives_detachment(self) -> None:
+        with Session(self.engine) as session:
+            participant = session.scalar(
+                select(SectionParticipant).where(SectionParticipant.id == 6),
+            )
+            self.assertIsNotNone(participant)
+
+        self.assertEqual(
+            str(participant),
+            "Nora @ Open @ Club Championship",
+        )
+
+    def test_round_participant_label_survives_detachment(self) -> None:
+        with Session(self.engine) as session:
+            participant = session.scalar(
+                select(RoundParticipant).where(RoundParticipant.id == 8),
+            )
+            self.assertIsNotNone(participant)
+
+        self.assertEqual(
+            str(participant),
+            "Nora @ Open @ Round 1 @ Club Championship",
         )
 
 
