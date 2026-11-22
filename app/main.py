@@ -8,7 +8,9 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+from sqladmin import Admin
 
+from app.admin import PlayerAdmin
 from app.api import router as api_router
 from app.config import load_environment
 from app.web import STATIC_DIR, router as web_router
@@ -31,6 +33,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             engine,
             expire_on_commit=False,
         )
+        if not getattr(app.state, "admin_mounted", False):
+            admin = Admin(app, engine=engine)
+            admin.add_view(PlayerAdmin)
+            app.mount("/admin", admin.app, name="admin")
+            app.state.admin_mounted = True
         try:
             async with engine.connect() as connection:
                 await connection.execute(text("SELECT 1"))

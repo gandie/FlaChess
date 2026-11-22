@@ -28,6 +28,12 @@ for the interactive API documentation. The app checks PostgreSQL during
 startup; if `DATABASE_URL` is unset or the database cannot be reached, it logs
 a warning and continues to serve routes that do not use the database.
 
+With `DATABASE_URL` configured, Player CRUD is available under
+`/api/players`. The SQLAdmin interface is mounted at
+[http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and provides list,
+detail, create, edit, search, and delete forms for Player records. SQLAdmin is
+currently not protected by application authentication or authorization.
+
 ## Run with Docker
 
 Copy the example environment file, then start the FastAPI application and

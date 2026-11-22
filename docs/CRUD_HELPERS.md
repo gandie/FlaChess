@@ -1,5 +1,8 @@
 # FastAPI CRUD and Form Helpers
 
+Status: FastCRUD and SQLAdmin are adopted for the Player entity. FastCRUD owns
+the `/api/players` routes; SQLAdmin owns the internal `/admin` interface.
+
 This document evaluates helpers for the Fla Chess stack: FastAPI, async SQLAlchemy
 2 mapped classes, asyncpg/PostgreSQL, Alembic, Pydantic, and a plain static HTML
 frontend served by FastAPI.

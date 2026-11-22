@@ -4,6 +4,7 @@ from sqlalchemy import BigInteger, String
 
 from app.database import Base
 from app.models import Player
+from app.schemas import PlayerCreate, PlayerUpdate
 
 
 class PlayerModelTests(unittest.TestCase):
@@ -18,3 +19,14 @@ class PlayerModelTests(unittest.TestCase):
         self.assertEqual(table.c.name.type.length, 255)
         self.assertFalse(table.c.name.nullable)
         self.assertFalse(table.c.name.primary_key)
+
+    def test_player_schemas_enforce_name_bounds(self) -> None:
+        player = PlayerCreate(name="Magnus")
+        update = PlayerUpdate(name="Nora")
+
+        self.assertEqual(player.name, "Magnus")
+        self.assertEqual(update.name, "Nora")
+        with self.assertRaises(ValueError):
+            PlayerCreate(name="")
+        with self.assertRaises(ValueError):
+            PlayerCreate(name="x" * 256)

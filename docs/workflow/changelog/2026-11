@@ -106,3 +106,82 @@
   test passed (1 test). Residual risk: no helper was installed or prototype-tested,
   package suitability for exact Player schema and existing session wiring remains
   to be confirmed in a future implementation task.
+
+- **T10 – Adding Player FastCRUD and SQLAdmin:** Added FastCRUD 0.23 and
+  SQLAdmin 0.32 dependencies, Pydantic create/update schemas with a 1–255
+  character name constraint, generated `/api/players` CRUD routes, and a
+  SQLAdmin `/admin` Player model view backed by the existing async SQLAlchemy
+  engine/session. Added focused OpenAPI and SQLAdmin mount tests and documented
+  local admin/API usage plus the intentionally unauthenticated admin status.
+  Files changed: `pyproject.toml`, `app/api.py`, `app/schemas.py`,
+  `app/admin.py`, `app/main.py`, `tests/test_app.py`,
+  `tests/test_database.py`, `tests/test_player_crud.py`, `README.md`,
+  `docs/CRUD_HELPERS.md`, this changelog, and
+  `docs/workflow/done/T10_player_fastcrud_sqladmin.md`. Validation: all 15
+  unittest tests passed, Markdown and done-task boundary tests passed
+  (1 test each), Alembic offline SQL generated the existing `BIGSERIAL`
+  `player` table, and Docker Compose configuration passed. Residual risk:
+  live PostgreSQL CRUD and SQLAdmin interaction were not exercised in this
+  session; use the documented Docker commands and browser/API smoke tests
+  before production use.
+
+- **T12 – Completing the Tournament Data Structure Design:** Expanded
+  `docs/DATA.md` through a guided design interview covering Tournament fields,
+  lifecycle states and transitions, activation validation, phase formats,
+  sections, participant membership, games, scores, pairing, and implementation
+  sequencing. The first implementation slice is Tournament alone; player
+  registration, phases, sections, rounds, and games remain follow-on entities.
+  Fixed application enum values use `VARCHAR` plus Python enums and database
+  constraints for portability. Files changed: `docs/DATA.md`,
+  `docs/workflow/done/T12_tournament_data_structure_design.md`, and this
+  changelog. Validation: all 15 unittest tests passed and the Markdown boundary
+  test passed (1 test). Residual risk: follow-on entity schemas and ranking
+  formulas remain intentionally deferred.
+
+- **T11 – Expanding the Data Model Design:** Expanded `docs/DATA.md` into the
+  primary data structure design document by separating the implemented `player`
+  table from planned Tournament, tournament participant, phase, round, and game
+  entities. Added shared BIGINT/foreign-key/convention guidance, relationship
+  notes, planned score invariants, and unresolved design TODOs. Files changed:
+  `docs/DATA.md`, `docs/workflow/done/T11_expand_data_model_design.md`, and this
+  changelog. Validation: all 15 full-suite unittest tests passed and the Markdown
+  boundary test passed (1 test). Residual risk: planned table fields and format
+  representations remain intentionally provisional until domain decisions are
+  made.
+
+- **T12 tie-break closeout – Completing Game and Ranking Design:** Closed the
+  Game SQL-constraint TODO and added source-backed chess tie-break design in
+  `docs/TIE_BREAKS.md`. The recommendation uses section-level ordered tie-break
+  configuration, participant rating snapshots, Swiss defaults of Buchholz Cut-1,
+  Buchholz Total, Number of Wins, and Direct Encounter, and round-robin defaults
+  of Direct Encounter, Sonneborn-Berger, Koya, and Number of Wins. Files changed:
+  `docs/DATA.md`, `docs/TIE_BREAKS.md`, `docs/workflow/done/T12_tournament_data_structure_design.md`,
+  and this changelog. Validation: all 15 unittest tests passed and the Markdown
+  boundary test passed (1 test). Residual risk: tie-break formulas and pairing
+  rules remain implementation work.
+
+- **T13 – Completing the Tie-Break Data Model:** Expanded `docs/DATA.md` with
+  the complete planned entities and fields needed to calculate chess tie-breaks.
+  Added `round_participant` for paired, bye, absent, and unplayed records;
+  `section_tiebreak` for frozen ordered rules; `section_standing` for
+  recomputable rankings; and `section_standing_value` for normalized historical
+  tie-break values. Extended section participation with rating source data,
+  section tie-break locking, and game result provenance. Updated
+  `docs/TIE_BREAKS.md` with required raw-data and configuration integrity.
+  Files changed: `docs/DATA.md`, `docs/TIE_BREAKS.md`,
+  `docs/workflow/done/T13_complete_tiebreak_data_model.md`, and this changelog.
+  Validation: all 15 unittest tests passed; Markdown boundary validation passed
+  (1 test); `docs/DATA.md` has 415 lines and `docs/TIE_BREAKS.md` has 75 lines.
+  Residual risk: SQL entities, migrations, ranking algorithms, and pairing
+  logic remain implementation work.
+
+- **T14 – Validating the Complete Tournament Model:** Removed prizes, medals,
+  and award/place configuration from `docs/DATA.md`; rankings remain purely
+  competitive data. Completed the concrete consistency walkthrough for the
+  16-player, 3+2 qualification-plus-two-section Swiss tournament, retaining
+  planned round counts and source section/rank advancement fields. Files changed:
+  `docs/DATA.md`, `docs/workflow/done/T14_validate_complete_tournament_model.md`,
+  and this changelog. Validation: all 15 unittest tests passed, Markdown
+  boundary validation passed (1 test), and `docs/DATA.md` is within the 450-line
+  limit at 447 lines. Residual risk: implementation of phases, sections,
+  pairing, ranking, and tournament advancement remains deferred.
