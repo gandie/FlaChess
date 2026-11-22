@@ -94,3 +94,15 @@
   argument in the wrapper check. `AGENTS.md` now also requires methodical,
   exact-path bug reproduction and verification without speculative layers or
   extra task records.
+
+- **T9 – Researching FastAPI CRUD Helpers:** Researched current FastAPI CRUD,
+  administration UI, form-generation, and code-scaffolding options against the
+  project's async SQLAlchemy 2/asyncpg/PostgreSQL/static-HTML stack. Added
+  `docs/CRUD_HELPERS.md` with sourced package information, fit analysis, and
+  a recommendation to use FastCRUD for API routes and SQLAdmin for an internal
+  administration UI. Files changed: `docs/CRUD_HELPERS.md`,
+  `docs/workflow/done/T9_research_fastapi_crud_helpers.md`, and this changelog.
+  Validation: all 12 full-suite unittest tests passed and the markdown boundary
+  test passed (1 test). Residual risk: no helper was installed or prototype-tested,
+  package suitability for exact Player schema and existing session wiring remains
+  to be confirmed in a future implementation task.
