@@ -185,3 +185,30 @@
   boundary validation passed (1 test), and `docs/DATA.md` is within the 450-line
   limit at 447 lines. Residual risk: implementation of phases, sections,
   pairing, ranking, and tournament advancement remains deferred.
+
+## 2026-11-22
+
+- **T15 – Implementing the Tournament Slice:** Added Tournament and minimal
+  Tournament Participant persistence, constraints, Pydantic schemas, FastCRUD
+  APIs, SQLAdmin views, strict `draft → active → finished` lifecycle actions,
+  and the two-player activation guard. Files changed: `app/models.py`,
+  `app/lifecycle.py`, `app/schemas.py`, `app/api.py`, `app/admin.py`,
+  `app/main.py`, the Tournament migration, `tests/test_tournament.py`,
+  `README.md`, `docs/DATA.md`, this changelog, and
+  [T15](../done/T15_implement_tournament_slice.md). Validation: all 24
+  unittest tests passed; Markdown and done-task evaluation boundary tests
+  passed; offline Alembic SQL generation produced BIGSERIAL IDs, foreign keys,
+  uniqueness, date ordering, and lifecycle checks. Residual risk: live
+  PostgreSQL CRUD and SQLAdmin interaction were not exercised.
+
+- **T15 bug fix – Enabling Admin Registration Foreign Keys:** Replaced raw
+  Tournament Participant foreign-key form columns with SQLAdmin's supported
+  relationship selectors and added readable Player/Tournament labels. Added a
+  form-scaffolding regression test proving the create/edit form contains
+  `tournament` and `player` selects rather than SQLAdmin-suppressed
+  `tournament_id`/`player_id` inputs. Files changed: `app/admin.py`,
+  `app/models.py`, `tests/test_player_crud.py`, this changelog, and
+  [T15](../done/T15_implement_tournament_slice.md). Validation: final results
+  recorded in the T15 completion artifact. Residual risk: options still require
+  persisted related rows and live PostgreSQL/admin interaction was not
+  exercised.

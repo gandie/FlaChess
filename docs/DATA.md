@@ -17,6 +17,37 @@ Stores player names.
 
 Player names are not constrained to be unique.
 
+### `tournament`
+
+Stores tournament metadata and lifecycle state.
+
+| Column | Type | Constraints |
+| --- | --- | --- |
+| `id` | `BIGINT` | Generated primary key |
+| `name` | `VARCHAR(255)` | Required; 1–255 characters |
+| `description` | `TEXT` | Optional free text |
+| `lifecycle` | `VARCHAR(20)` | `draft`, `active`, or `finished` |
+| `time_control` | `VARCHAR(255)` | Optional |
+| `starts_at` | `TIMESTAMPTZ` | Optional planned start |
+| `ends_at` | `TIMESTAMPTZ` | Optional; after `starts_at` when both exist |
+
+New tournaments default to `draft`. Lifecycle updates are route-controlled:
+activation requires at least two registered players, then the only allowed path
+is `draft → active → finished`.
+
+### `tournament_participant`
+
+Represents a player's explicit tournament registration.
+
+| Column | Type | Constraints |
+| --- | --- | --- |
+| `id` | `BIGINT` | Generated primary key |
+| `tournament_id` | `BIGINT` | Foreign key to `tournament.id`; not null |
+| `player_id` | `BIGINT` | Foreign key to `player.id`; not null |
+
+The unique `(tournament_id, player_id)` pair prevents duplicate registration.
+Deleting a row unregisters the player. Registrations have no lifecycle state.
+
 ## Shared Modeling Conventions
 
 The following conventions apply to existing and future SQLAlchemy entities:
@@ -37,67 +68,6 @@ The following conventions apply to existing and future SQLAlchemy entities:
   migration schema has been designed.
 
 ## Planned Tables
-
-### `tournament`
-
-Stores a tournament and its overall metadata.
-
-The design must support knockout, round-robin, and group/round/table formats
-that use Swiss pairing rules. A tournament may contain multiple phases, and
-later phases may select participants from earlier phases.
-
-Likely fields:
-
-| Column | Type | Constraints / Notes |
-| --- | --- | --- |
-| `id` | `BIGINT` | Generated primary key |
-| `name` | `VARCHAR(255)` | Required; 1–255 characters |
-| `description` | `TEXT` | Optional free text describing the tournament |
-| `lifecycle` | `VARCHAR` | One of `draft`, `active`, `finished` |
-| `time_control` | `VARCHAR(255)` | Optional; blitz metadata; does not affect scoring or scheduling mechanics |
-| `starts_at` | `TIMESTAMPTZ` | Optional planned tournament start |
-| `ends_at` | `TIMESTAMPTZ` | Optional planned tournament end |
-
-The Tournament itself does not store a format. Format belongs to
-`tournament_phase.format`; this keeps tournament and phase concepts separate.
-
-New Tournaments default to `draft`. Pydantic create schemas and SQLAlchemy
-models should require no lifecycle input for the initial state.
-
-When both tournament dates are provided, `ends_at` must be after `starts_at`.
-This invariant should be enforced in Pydantic/API validation and duplicated as
-a PostgreSQL check constraint where practical.
-
-Tournament names must contain at least one character and may contain at most
-255 characters. Time-control text is optional and is limited to 255 characters.
-Tournament names are not unique; repeated or identically named events are allowed.
-
-The first implementation should be intentionally narrow. Tournament format
-policy, status transitions, and tie-break formulas are not ready for final data
-model fields.
-
-### `tournament_participant`
-
-Represents a player's explicit registration in a tournament.
-
-This join entity is preferred over treating participant assignment as an
-unstructured player/tournament relationship. It can also carry
-registration-specific data later.
-
-Likely fields:
-
-| Column | Type | Constraints / Notes |
-| --- | --- | --- |
-| `id` | `BIGINT` | Generated primary key |
-| `tournament_id` | `BIGINT` | Foreign key to `tournament.id`; not null |
-| `player_id` | `BIGINT` | Foreign key to `player.id`; not null |
-
-A unique constraint on `(tournament_id, player_id)` is the likely invariant,
-but should be added once tournament registration behavior is confirmed.
-
-Tournament participation uses simple roster rows. There is no registration
-state machine: a row means the player is registered, and deleting the row means
-the player has unregistered.
 
 ### `section_participant`
 
@@ -406,21 +376,20 @@ than defining one-off callback names or transition behavior per entity.
 Future lifecycle models should document their allowed transitions explicitly
 before implementation.
 
-The Tournament lifecycle is planned for this pattern; the state machine itself
-is not implemented in the current Player-only application.
+The Tournament lifecycle follows this pattern.
 
 ## TODO
 
 ### First implementation slice
 
-- [ ] Add the Tournament model and Alembic migration.
-- [ ] Add Tournament Pydantic create/update schemas.
-- [ ] Add Tournament FastCRUD routes and SQLAdmin view.
-- [ ] Add tests for Tournament constraints and lifecycle route behavior.
+- [x] Add the Tournament model and Alembic migration.
+- [x] Add Tournament Pydantic create/update schemas.
+- [x] Add Tournament FastCRUD routes and SQLAdmin view.
+- [x] Add tests for Tournament constraints and lifecycle route behavior.
 
-The first implementation slice intentionally stops at Tournament. Participant,
-phase, section, round, and game entities are separate follow-on implementation
-tasks.
+This slice also includes the minimal Tournament Participant table needed to
+enforce the activation rule. Phase, section, round, and game entities remain
+follow-on tasks.
 
 - [x] Decide the minimum fields for the first `tournament` implementation.
 - [x] Initial Tournament fields include name, description, lifecycle, time_control, starts_at, and ends_at.

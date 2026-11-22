@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqladmin import Admin
 
-from app.admin import PlayerAdmin
+from app.admin import PlayerAdmin, TournamentAdmin, TournamentParticipantAdmin
 from app.api import router as api_router
 from app.config import load_environment
 from app.web import STATIC_DIR, router as web_router
@@ -36,6 +36,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         if not getattr(app.state, "admin_mounted", False):
             admin = Admin(app, engine=engine)
             admin.add_view(PlayerAdmin)
+            admin.add_view(TournamentAdmin)
+            admin.add_view(TournamentParticipantAdmin)
             app.mount("/admin", admin.app, name="admin")
             app.state.admin_mounted = True
         try:

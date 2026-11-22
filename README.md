@@ -28,11 +28,18 @@ for the interactive API documentation. The app checks PostgreSQL during
 startup; if `DATABASE_URL` is unset or the database cannot be reached, it logs
 a warning and continues to serve routes that do not use the database.
 
-With `DATABASE_URL` configured, Player CRUD is available under
-`/api/players`. The SQLAdmin interface is mounted at
+With `DATABASE_URL` configured, CRUD is available under `/api/players`,
+`/api/tournaments`, and `/api/tournament-participants`. Tournaments start in
+`draft`; use `POST /api/tournaments/{id}/activate` after registering at least
+two participants, then `POST /api/tournaments/{id}/finish`. Other lifecycle
+transitions return a `409` response.
+
+The SQLAdmin interface is mounted at
 [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and provides list,
-detail, create, edit, search, and delete forms for Player records. SQLAdmin is
-currently not protected by application authentication or authorization.
+detail, create, edit, search, and delete forms for Player, Tournament, and
+Tournament Participant records. SQLAdmin lifecycle edits are excluded so
+transitions remain route-controlled. SQLAdmin is currently not protected by
+application authentication or authorization.
 
 ## Run with Docker
 
@@ -72,10 +79,10 @@ single argument to `psql`'s `-c` option.
 
 ## Database migrations
 
-The project has an async Alembic environment configured to use
-`DATABASE_URL` and the app's declarative metadata. The `player` model is the
-first entity, with an existing migration. From a running Compose stack, apply
-migrations with:
+The project has an async Alembic environment configured to use `DATABASE_URL`
+and the app's declarative metadata. Migrations create `player`, `tournament`,
+and `tournament_participant`. From a running Compose stack, apply migrations
+with:
 
 ```powershell
 docker compose exec app alembic upgrade head
