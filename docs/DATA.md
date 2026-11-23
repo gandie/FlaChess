@@ -1,8 +1,15 @@
 # Data Model
 
-DATA.md is the main data structure design document for Fla Chess. It distinguishes
-what is implemented today from entities that are planned. Planned entities are
-design notes, not database or migration commitments.
+DATA.md is the main data structure design document for Fla Chess. The tables
+below are implemented with SQLAlchemy models and Alembic migrations.
+
+## Implementation Status: Complete
+
+All 12 entities documented here have an SQLAlchemy model, an Alembic-created
+SQL table, and a registered SQLAdmin view. This completes the data-structure
+implementation milestone. Pairing automation, tournament advancement, and
+additional tie-break formulas are application behavior, not missing data
+entities.
 
 ## Implemented Tables
 
@@ -67,7 +74,7 @@ The following conventions apply to existing and future SQLAlchemy entities:
 - Planned relationships use SQLAlchemy mapped relationships only after the
   migration schema has been designed.
 
-## Planned Tables
+## Implemented Tournament Tables
 
 ### `section_participant`
 
@@ -105,7 +112,7 @@ A phase allows tournaments to combine formats. For example, players may advance
 from a group qualification phase into a knockout phase. A phase may contain
 multiple rounds or tables, depending on the selected format.
 
-Likely fields:
+Fields:
 
 | Column | Type | Constraints / Notes |
 | --- | --- | --- |
@@ -122,7 +129,7 @@ phase ordering.
 Represents a table or section within a tournament phase. A section may contain
 a subset of participants and its own rounds.
 
-Likely fields:
+Fields:
 
 | Column | Type | Constraints / Notes |
 | --- | --- | --- |
@@ -147,7 +154,7 @@ additional configuration or rules data.
 
 Represents one numbered round in a tournament phase.
 
-Likely fields:
+Fields:
 
 | Column | Type | Constraints / Notes |
 | --- | --- | --- |
@@ -162,7 +169,7 @@ within a section.
 
 Represents a match within a tournament round.
 
-Likely fields:
+Fields:
 
 | Column | Type | Constraints / Notes |
 | --- | --- | --- |
@@ -298,9 +305,10 @@ each round or only at tournament completion.
 | `game_points` | `NUMERIC(6,1)` | Optional format-specific secondary total |
 | `computed_at` | `TIMESTAMPTZ` | Required calculation timestamp |
 
-A standing can be for the whole section by leaving `through_round_id` null.
-The application must define the exact snapshot key and avoid duplicate
-snapshots for the same section, participant, and completed round.
+A null `through_round_id` identifies the whole-section snapshot. The unique
+snapshot key is `(section_id, participant_id, coalesce(through_round_id, 0))`.
+Recomputation atomically replaces every standing and value for one key while
+preserving other snapshots; equal ranking vectors share a competition rank.
 
 ### `section_standing_value`
 
@@ -314,10 +322,11 @@ Stores one normalized tie-break value for a section standing.
 | `sequence` | `INTEGER` | Copied rule position for stable historical output |
 | `value` | `NUMERIC(12,4)` | Calculated tie-break value |
 
-This normalized value list avoids storing a JSON blob and preserves the exact
-configured rule order used for ranking. Recomputing standings replaces or
-supersedes their snapshot values.
+This normalized list preserves the exact configured order used for ranking.
 
+The calculator uses completed game scores and non-paired awarded round scores.
+It supports direct encounter, wins, progressive score, Buchholz Cut/Median
+variants, and Sonneborn-Berger variants; unsupported codes fail explicitly.
 ## Example Tournament Consistency Check
 
 The model supports the following concrete tournament:
@@ -380,71 +389,13 @@ before implementation.
 
 The Tournament lifecycle follows this pattern.
 
-## TODO
+## Completed Data-Structure Roadmap
 
-### Second implementation slice: structure and membership
-
-- [x] Add the Tournament Phase model and Alembic migration.
-- [x] Add the Tournament Section model and Alembic migration.
-- [x] Add the Section Participant model and Alembic migration.
-- [x] Add phase, section, and membership Pydantic schemas.
-- [x] Add FastCRUD routes and SQLAdmin relationship selectors.
-- [x] Enforce uniqueness, positive values, and the fixed phase-format enum.
-- [x] Reject membership whose participant belongs to another tournament.
-- [x] Add model, constraint, schema, and route tests.
-
-This slice establishes the implemented hierarchy:
+The implemented hierarchy is:
 
 `tournament → tournament_phase → tournament_section → section_participant`
 
-It enables formats, sections, assignments, ratings, advancement history,
-planned rounds, and tie-break locking without pairing or ranking.
-
-### Following implementation slices
-
-#### Third slice: rounds, pairings, and participation outcomes
-
-- [x] Implement `tournament_round`.
-- [x] Implement `round_participant`.
-- [x] Implement `game`.
-- [x] Enforce score, participant, round-number, and participation constraints.
-- [x] Enforce that game participants belong to the round's section in
-  application logic.
-
-#### Fourth slice: tie-break configuration
-
-- [x] Implement `section_tiebreak`.
-- [x] Add ordered, unique configuration constraints and SQLAdmin controls.
-- [x] Add explicit section lifecycle behavior that freezes configuration.
-
-#### Fifth slice: standings snapshots
-
-- [ ] Implement `section_standing` and `section_standing_value`.
-- [ ] Define snapshot identity, recomputation, and ranking services.
-- [ ] Add focused tie-break calculation tests.
-
-- [x] Decide the minimum fields for the first `tournament` implementation.
-- [x] Initial Tournament fields include name, description, lifecycle, time_control, starts_at, and ends_at.
-- [x] Tournament dates are optional; ends_at must follow starts_at when both exist.
-- [x] Tournament format belongs to phases; a Tournament may instead store free-text `description`.
-- [x] Phase format uses fixed enums: `knockout`, `round_robin`, `swiss`.
-- [x] Choose the initial Tournament lifecycle states: `draft`, `active`, `finished`.
-- [x] Tournament lifecycle transitions are strict: `draft -> active -> finished`.
-- [x] Draft activation requires at least two registered players in the draft lifecycle `on_leave` hook.
-- [x] Tournament participation is a simple registered-row model; deleting its row unregisters the player.
-- [x] Tournament activation requires at least two registered players.
-- [x] Tournament participants have no registration lifecycle states.
-- [x] Tournament participants are joined to sections through `section_participant`.
-- [x] Phase/section membership and round ownership are structured as tournament -> phase -> section -> round -> game.
-- [x] Game participants reference `section_participant.id`.
-- [x] Pairings are stored as `game` rows inside a round; separate pairing-plan entities are not planned initially.
-- [x] Unfinished games use nullable scores; forfeits and changed results use comment text.
-- [x] Game integrity requires distinct participants who belong to the round's section.
-- [x] Add SQL constraints for allowed game scores and distinct participant identity.
-- [x] Tie-break requirements were researched; the complete raw and configuration entities are documented.
-- [x] Tournament sections have planned round counts.
-- [x] Later-section membership preserves source section and source rank.
-- [x] The 16-player two-phase Swiss example has a documented representation.
-- [x] Implement the reusable lifecycle mechanics, section lifecycle, and
-  `section_tiebreak` configuration.
-- [ ] Implement `section_standing` and `section_standing_value` next.
+The implementation slices for tournament records, structure and membership,
+rounds and participation outcomes, tie-break configuration, and standings
+snapshots are complete. The remaining roadmap concerns application behavior,
+including pairing automation, advancement, and additional ranking rules.

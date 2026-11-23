@@ -298,3 +298,32 @@
   key, sequence uniqueness, and expression-based configuration uniqueness.
   Residual risk: live PostgreSQL and browser-based SQLAdmin interaction were
   not exercised.
+
+## 2026-11-23
+
+- **T20 – Implementing Standings Snapshots:** Added Section Standing and
+  Section Standing Value persistence, null-safe per-round/whole-section
+  snapshot identity, atomic recomputation, competition ranking, completed-game
+  and awarded-point totals, core deterministic tie-break calculations, explicit
+  unsupported-rule errors, read/recompute APIs, and read-only SQLAdmin views.
+  Files changed: `app/models.py`, `app/schemas.py`, `app/tournament_standings.py`,
+  `app/api.py`, `app/admin.py`, `app/main.py`, the standings migration,
+  `tests/test_section_standings.py`, `docs/DATA.md`, `docs/TIE_BREAKS.md`, this
+  changelog, and [T20](../done/T20_implement_standings_snapshot_slice.md).
+  Validation: 7 focused standings tests and all 70 full-suite tests passed;
+  offline Alembic SQL generated the complete standings schema and Markdown plus
+  done-task evaluation boundaries passed. Residual risk: policy-dependent
+  rating, performance, Koya, Fore Buchholz, and virtual-opponent rules remain
+  intentionally unsupported, and live PostgreSQL/admin interaction was not
+  exercised.
+
+- **T21 – Marking Data Structure Implementation Complete:** Audited all 12
+  documented entities and confirmed each has a SQLAlchemy model, an
+  Alembic-created table, and a registered SQLAdmin view. Replaced completed
+  slice TODO checklists with an explicit completed-roadmap status while keeping
+  pairing automation, advancement, and additional ranking formulas separate as
+  behavior work. Files changed: `docs/DATA.md`, this changelog, and
+  [T21](../done/T21_mark_data_structure_implementation_complete.md).
+  Validation: the 12/12 entity-model-table-admin audit matched, and all 70
+  unittest tests passed. Residual risk: live PostgreSQL and browser-based
+  SQLAdmin interaction were not part of this documentary audit.

@@ -129,6 +129,33 @@ class SectionTiebreakResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class SectionStandingValueResponse(BaseModel):
+    id: int
+    standing_id: int
+    tiebreak_id: int
+    sequence: int
+    value: Decimal
+
+    model_config = {"from_attributes": True}
+
+
+class SectionStandingResponse(BaseModel):
+    id: int
+    section_id: int
+    participant_id: int
+    through_round_id: int | None
+    rank: int | None
+    points: Decimal
+    wins: int
+    draws: int
+    losses: int
+    game_points: Decimal | None
+    computed_at: datetime
+    values: list[SectionStandingValueResponse]
+
+    model_config = {"from_attributes": True}
+
+
 class SectionParticipantCreate(BaseModel):
     participant_id: int = Field(gt=0)
     section_id: int = Field(gt=0)

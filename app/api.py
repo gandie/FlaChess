@@ -17,6 +17,7 @@ from app.models import (
     RoundParticipant,
     SectionLifecycle,
     SectionParticipant,
+    SectionStanding,
     SectionTiebreak,
     Tournament,
     TournamentLifecycle,
@@ -37,6 +38,7 @@ from app.schemas import (
     SectionParticipantCreate,
     SectionParticipantResponse,
     SectionParticipantUpdate,
+    SectionStandingResponse,
     SectionTiebreakCreate,
     SectionTiebreakResponse,
     SectionTiebreakUpdate,
@@ -59,6 +61,11 @@ from app.tournament_rounds import (
     round_section_id,
 )
 from app.tournament_structure import membership_tournament_ids
+from app.tournament_standings import (
+    StandingComputationError,
+    StandingInputNotFoundError,
+    recompute_section_standings,
+)
 
 router = APIRouter()
 
@@ -165,6 +172,80 @@ game_router = crud_router(
     deleted_methods=["create", "update"],
 )
 router.include_router(game_router)
+
+
+@router.get(
+    "/tournament-sections/{section_id}/standings",
+    response_model=list[SectionStandingResponse],
+)
+async def get_section_standings(
+    section_id: int,
+    through_round_id: int | None = None,
+    session: AsyncSession = Depends(get_session),
+) -> list[SectionStanding]:
+    section = await session.get(TournamentSection, section_id)
+    if section is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tournament section not found",
+        )
+    if through_round_id is not None:
+        through_round = await session.get(TournamentRound, through_round_id)
+        if through_round is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tournament round not found",
+            )
+        if through_round.section_id != section_id:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Through-round does not belong to the section",
+            )
+
+    statement = select(SectionStanding).where(
+        SectionStanding.section_id == section_id,
+    )
+    if through_round_id is None:
+        statement = statement.where(SectionStanding.through_round_id.is_(None))
+    else:
+        statement = statement.where(
+            SectionStanding.through_round_id == through_round_id,
+        )
+    standings = await session.scalars(
+        statement.order_by(SectionStanding.rank, SectionStanding.id),
+    )
+    return list(standings.all())
+
+
+@router.post(
+    "/tournament-sections/{section_id}/standings/recompute",
+    response_model=list[SectionStandingResponse],
+)
+async def recompute_standings(
+    section_id: int,
+    through_round_id: int | None = None,
+    session: AsyncSession = Depends(get_session),
+) -> list[SectionStanding]:
+    try:
+        standings = await recompute_section_standings(
+            section_id,
+            session,
+            through_round_id,
+        )
+        await session.commit()
+    except StandingInputNotFoundError as error:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
+    except (StandingComputationError, IntegrityError) as error:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error) or "Standings violate a database constraint",
+        ) from error
+    return standings
 
 
 async def validate_section_is_draft(

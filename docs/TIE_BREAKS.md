@@ -1,7 +1,8 @@
 # Chess Tie-Break Design
 
 This document expands the tie-break recommendation summarized in
-[DATA.md](./DATA.md). It is design guidance, not a ranking implementation.
+[DATA.md](./DATA.md). It is design guidance plus a record of the currently
+implemented ranking subset.
 
 ## Recommended Data Model
 
@@ -68,6 +69,22 @@ unplayed-round handling for byes and forfeits.
 
 These are recommendations, not final rules. The operator must configure and
 announce the exact list before the first round.
+
+## Initial Implementation
+
+The standings service calculates:
+
+- direct encounter;
+- number of wins;
+- progressive score;
+- Buchholz, Buchholz Cut-1/Cut-2, and Buchholz Median-1/Median-2;
+- Sonneborn-Berger and Sonneborn-Berger Cut-1.
+
+Awarded non-paired round scores contribute to total points. Virtual-opponent
+policies, Koya thresholds, Fore Buchholz, rating-derived values, and
+performance-rating formulas are not inferred. A configured unsupported code
+therefore fails recomputation explicitly until its tournament rule is
+specified.
 
 ## Sources
 

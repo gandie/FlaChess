@@ -14,6 +14,8 @@ from app.admin import (
     GameAdmin,
     PlayerAdmin,
     RoundParticipantAdmin,
+    SectionStandingAdmin,
+    SectionStandingValueAdmin,
     SectionTiebreakAdmin,
     SectionParticipantAdmin,
     TournamentAdmin,
@@ -56,6 +58,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             admin.add_view(TournamentRoundAdmin)
             admin.add_view(RoundParticipantAdmin)
             admin.add_view(GameAdmin)
+            admin.add_view(SectionStandingAdmin)
+            admin.add_view(SectionStandingValueAdmin)
             app.mount("/admin", admin.app, name="admin")
             app.state.admin_mounted = True
         try:
