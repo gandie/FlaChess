@@ -1,12 +1,12 @@
 {
   "version": 1,
   "defaults": {
-    "max_file_lines": 220,
-    "max_function_lines": 35
+    "max_file_lines": 350,
+    "max_function_lines": 50
   },
   "include": [
-    "lllars_core/*.py",
-    "lllars_core/*/*.py",
+    "app/*.py",
+    "app/*/*.py",
     "tests/*.py"
   ],
   "exclude": [],

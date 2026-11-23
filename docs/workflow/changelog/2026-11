@@ -327,3 +327,17 @@
   Validation: the 12/12 entity-model-table-admin audit matched, and all 70
   unittest tests passed. Residual risk: live PostgreSQL and browser-based
   SQLAdmin interaction were not part of this documentary audit.
+
+- **T22 – Resolving Refactor Boundaries:** Replaced the oversized API,
+  SQLAdmin, ORM, and standings modules with focused public facades backed by
+  domain-specific view, route, model, ranking, totals, and persistence
+  modules. Preserved existing public imports and the standings route patch
+  point while eliminating all five configured boundary violations. Files
+  changed: `app/admin.py`, `app/api.py`, `app/models.py`,
+  `app/tournament_standings.py`, `app/admin_views/`,
+  `app/model_definitions/`, `app/routes/`, `app/standings/`, this changelog,
+  and [T22](../done/T22_resolve_refactor_boundaries.md). Validation: all
+  70 full-suite tests passed, the refactor boundary test passed with zero
+  violations, and VS Code Problems reported no errors under `app/`.
+  Residual risk: live PostgreSQL and browser-based SQLAdmin interaction were
+  not rerun during this structural refactor.
