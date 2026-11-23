@@ -282,3 +282,19 @@
   admin-form and detached-label suite passed all 4 tests; the full suite passed
   all 52 tests; and markdown, done-task evaluation, and refactor boundary tests
   passed. Residual risk: a live browser-based SQLAdmin smoke test was not run.
+
+- **T19 – Implementing Tie-Break Configuration:** Added a reusable lifecycle
+  engine, explicit `draft → active → finished` section transitions, and a lock
+  timestamp set on section activation. Added Section Tie-Break persistence,
+  schemas, API and SQLAdmin controls, positive ordered uniqueness, null-safe
+  configuration uniqueness, and protection against configuration changes after
+  activation. Files changed: `app/lifecycle.py`, `app/models.py`,
+  `app/schemas.py`, `app/api.py`, `app/admin.py`, `app/main.py`, the section
+  lifecycle/tie-break migration, `tests/test_section_tiebreaks.py`,
+  `tests/test_section_tiebreak_routes.py`, `docs/DATA.md`, this changelog, and
+  [T19](../done/T19_implement_tiebreak_configuration_slice.md). Validation:
+  11 focused tie-break tests and all 63 full-suite tests passed; offline
+  Alembic SQL generated the lifecycle constraint, BIGSERIAL identity, foreign
+  key, sequence uniqueness, and expression-based configuration uniqueness.
+  Residual risk: live PostgreSQL and browser-based SQLAdmin interaction were
+  not exercised.

@@ -5,13 +5,19 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
-from app.lifecycle import TournamentTransitionError, transition_tournament
+from app.lifecycle import (
+    LifecycleTransitionError,
+    transition_section,
+    transition_tournament,
+)
 from app.models import (
     Game,
     ParticipationType,
     Player,
     RoundParticipant,
+    SectionLifecycle,
     SectionParticipant,
+    SectionTiebreak,
     Tournament,
     TournamentLifecycle,
     TournamentParticipant,
@@ -31,6 +37,10 @@ from app.schemas import (
     SectionParticipantCreate,
     SectionParticipantResponse,
     SectionParticipantUpdate,
+    SectionTiebreakCreate,
+    SectionTiebreakResponse,
+    SectionTiebreakUpdate,
+    SectionTransitionResponse,
     TournamentCreate,
     TournamentParticipantCreate,
     TournamentParticipantUpdate,
@@ -102,6 +112,17 @@ tournament_section_router = crud_router(
 )
 router.include_router(tournament_section_router)
 
+section_tiebreak_router = crud_router(
+    session=get_session,
+    model=SectionTiebreak,
+    create_schema=SectionTiebreakCreate,
+    update_schema=SectionTiebreakUpdate,
+    path="/section-tiebreaks",
+    tags=["Section Tie-Breaks"],
+    deleted_methods=["create", "update", "delete"],
+)
+router.include_router(section_tiebreak_router)
+
 section_participant_router = crud_router(
     session=get_session,
     model=SectionParticipant,
@@ -144,6 +165,102 @@ game_router = crud_router(
     deleted_methods=["create", "update"],
 )
 router.include_router(game_router)
+
+
+async def validate_section_is_draft(
+    section_id: int,
+    session: AsyncSession,
+) -> None:
+    lifecycle = await session.scalar(
+        select(TournamentSection.lifecycle).where(
+            TournamentSection.id == section_id,
+        ),
+    )
+    if lifecycle is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tournament section not found",
+        )
+    if lifecycle is not SectionLifecycle.DRAFT:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Section tie-break configuration is locked",
+        )
+
+
+async def commit_tiebreak(
+    tiebreak: SectionTiebreak,
+    session: AsyncSession,
+) -> SectionTiebreak:
+    try:
+        await session.commit()
+    except IntegrityError as error:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Section tie-break configuration violates a constraint",
+        ) from error
+    return tiebreak
+
+
+@router.post(
+    "/section-tiebreaks",
+    response_model=SectionTiebreakResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_section_tiebreak(
+    payload: SectionTiebreakCreate,
+    session: AsyncSession = Depends(get_session),
+) -> SectionTiebreak:
+    await validate_section_is_draft(payload.section_id, session)
+    tiebreak = SectionTiebreak(**payload.model_dump())
+    session.add(tiebreak)
+    return await commit_tiebreak(tiebreak, session)
+
+
+@router.patch(
+    "/section-tiebreaks/{id}",
+    response_model=SectionTiebreakResponse,
+)
+async def update_section_tiebreak(
+    id: int,
+    payload: SectionTiebreakUpdate,
+    session: AsyncSession = Depends(get_session),
+) -> SectionTiebreak:
+    tiebreak = await session.get(SectionTiebreak, id)
+    if tiebreak is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section tie-break not found",
+        )
+
+    await validate_section_is_draft(tiebreak.section_id, session)
+    values = payload.model_dump(exclude_unset=True)
+    target_section_id = values.get("section_id", tiebreak.section_id)
+    if target_section_id != tiebreak.section_id:
+        await validate_section_is_draft(target_section_id, session)
+    for field, value in values.items():
+        setattr(tiebreak, field, value)
+    return await commit_tiebreak(tiebreak, session)
+
+
+@router.delete(
+    "/section-tiebreaks/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_section_tiebreak(
+    id: int,
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    tiebreak = await session.get(SectionTiebreak, id)
+    if tiebreak is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section tie-break not found",
+        )
+    await validate_section_is_draft(tiebreak.section_id, session)
+    await session.delete(tiebreak)
+    await session.commit()
 
 
 async def validate_section_membership(
@@ -442,7 +559,7 @@ async def apply_tournament_transition(
 
     try:
         await transition_tournament(tournament, target, session)
-    except TournamentTransitionError as error:
+    except LifecycleTransitionError as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(error),
@@ -478,6 +595,62 @@ async def finish_tournament(
     return await apply_tournament_transition(
         id,
         TournamentLifecycle.FINISHED,
+        session,
+    )
+
+
+async def apply_section_transition(
+    id: int,
+    target: SectionLifecycle,
+    session: AsyncSession,
+) -> TournamentSection:
+    section = await session.scalar(
+        select(TournamentSection).where(TournamentSection.id == id),
+    )
+    if section is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tournament section not found",
+        )
+
+    try:
+        await transition_section(section, target, session)
+    except LifecycleTransitionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+
+    await session.commit()
+    return section
+
+
+@router.post(
+    "/tournament-sections/{id}/activate",
+    response_model=SectionTransitionResponse,
+)
+async def activate_section(
+    id: int,
+    session: AsyncSession = Depends(get_session),
+) -> TournamentSection:
+    return await apply_section_transition(
+        id,
+        SectionLifecycle.ACTIVE,
+        session,
+    )
+
+
+@router.post(
+    "/tournament-sections/{id}/finish",
+    response_model=SectionTransitionResponse,
+)
+async def finish_section(
+    id: int,
+    session: AsyncSession = Depends(get_session),
+) -> TournamentSection:
+    return await apply_section_transition(
+        id,
+        SectionLifecycle.FINISHED,
         session,
     )
 

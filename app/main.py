@@ -14,6 +14,7 @@ from app.admin import (
     GameAdmin,
     PlayerAdmin,
     RoundParticipantAdmin,
+    SectionTiebreakAdmin,
     SectionParticipantAdmin,
     TournamentAdmin,
     TournamentParticipantAdmin,
@@ -50,6 +51,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             admin.add_view(TournamentParticipantAdmin)
             admin.add_view(TournamentPhaseAdmin)
             admin.add_view(TournamentSectionAdmin)
+            admin.add_view(SectionTiebreakAdmin)
             admin.add_view(SectionParticipantAdmin)
             admin.add_view(TournamentRoundAdmin)
             admin.add_view(RoundParticipantAdmin)

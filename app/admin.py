@@ -1,13 +1,16 @@
 from typing import Any
 
 from sqladmin import ModelView
+from sqlalchemy import select
 from starlette.requests import Request
 
 from app.models import (
     Game,
     Player,
     RoundParticipant,
+    SectionLifecycle,
     SectionParticipant,
+    SectionTiebreak,
     Tournament,
     TournamentParticipant,
     TournamentPhase,
@@ -20,6 +23,22 @@ from app.tournament_rounds import (
     round_section_id,
 )
 from app.tournament_structure import membership_tournament_ids
+
+
+async def ensure_section_is_draft(
+    session_maker: Any,
+    section_id: int,
+) -> None:
+    async with session_maker() as session:
+        lifecycle = await session.scalar(
+            select(TournamentSection.lifecycle).where(
+                TournamentSection.id == section_id,
+            ),
+        )
+    if lifecycle is None:
+        raise ValueError("Section no longer exists")
+    if lifecycle is not SectionLifecycle.DRAFT:
+        raise ValueError("Section tie-break configuration is locked")
 
 
 class PlayerAdmin(ModelView, model=Player):
@@ -107,6 +126,7 @@ class TournamentSectionAdmin(ModelView, model=TournamentSection):
         TournamentSection.phase,
         TournamentSection.name,
         TournamentSection.sequence,
+        TournamentSection.lifecycle,
         TournamentSection.planned_round_count,
         TournamentSection.tie_break_locked_at,
     ]
@@ -122,8 +142,68 @@ class TournamentSectionAdmin(ModelView, model=TournamentSection):
         TournamentSection.name,
         TournamentSection.sequence,
         TournamentSection.planned_round_count,
-        TournamentSection.tie_break_locked_at,
     ]
+
+
+class SectionTiebreakAdmin(ModelView, model=SectionTiebreak):
+    name = "Section Tie-Break"
+    name_plural = "Section Tie-Breaks"
+    icon = "fa-solid fa-arrow-down-1-9"
+    column_list = [
+        SectionTiebreak.id,
+        SectionTiebreak.section,
+        SectionTiebreak.sequence,
+        SectionTiebreak.code,
+        SectionTiebreak.parameter,
+        SectionTiebreak.is_active,
+    ]
+    column_sortable_list = [
+        SectionTiebreak.id,
+        SectionTiebreak.section_id,
+        SectionTiebreak.sequence,
+        SectionTiebreak.code,
+    ]
+    form_columns = [
+        SectionTiebreak.section,
+        SectionTiebreak.code,
+        SectionTiebreak.sequence,
+        SectionTiebreak.parameter,
+        SectionTiebreak.is_active,
+    ]
+
+    async def on_model_change(
+        self,
+        data: dict,
+        model: Any,
+        is_created: bool,
+        request: Request,
+    ) -> None:
+        current_section_id = getattr(model, "section_id", None)
+        if current_section_id is not None:
+            await ensure_section_is_draft(
+                self.session_maker,
+                int(current_section_id),
+            )
+
+        section_value = data.get("section", current_section_id)
+        if section_value is None:
+            raise ValueError("Section is required")
+        target_section_id = int(section_value)
+        if target_section_id != current_section_id:
+            await ensure_section_is_draft(
+                self.session_maker,
+                target_section_id,
+            )
+
+    async def on_model_delete(
+        self,
+        model: Any,
+        request: Request,
+    ) -> None:
+        section_id = getattr(model, "section_id", None)
+        if section_id is None:
+            raise ValueError("Section is required")
+        await ensure_section_is_draft(self.session_maker, int(section_id))
 
 
 class SectionParticipantAdmin(ModelView, model=SectionParticipant):

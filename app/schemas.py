@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, model_validator
 from app.models import (
     GameResultType,
     ParticipationType,
+    SectionLifecycle,
     TournamentLifecycle,
     TournamentPhaseFormat,
 )
@@ -76,7 +77,6 @@ class TournamentSectionCreate(BaseModel):
     phase_id: int = Field(gt=0)
     name: str = Field(min_length=1, max_length=255)
     sequence: int = Field(gt=0)
-    tie_break_locked_at: datetime | None = None
     planned_round_count: int | None = Field(default=None, gt=0)
 
 
@@ -84,8 +84,49 @@ class TournamentSectionUpdate(BaseModel):
     phase_id: int | None = Field(default=None, gt=0)
     name: str | None = Field(default=None, min_length=1, max_length=255)
     sequence: int | None = Field(default=None, gt=0)
-    tie_break_locked_at: datetime | None = None
     planned_round_count: int | None = Field(default=None, gt=0)
+
+
+class SectionTransitionResponse(BaseModel):
+    id: int
+    lifecycle: SectionLifecycle
+    tie_break_locked_at: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
+class SectionTiebreakCreate(BaseModel):
+    section_id: int = Field(gt=0)
+    code: str = Field(min_length=1, max_length=64)
+    sequence: int = Field(gt=0)
+    parameter: str | None = Field(default=None, max_length=255)
+    is_active: bool = True
+
+
+class SectionTiebreakUpdate(BaseModel):
+    section_id: int | None = Field(default=None, gt=0)
+    code: str | None = Field(default=None, min_length=1, max_length=64)
+    sequence: int | None = Field(default=None, gt=0)
+    parameter: str | None = Field(default=None, max_length=255)
+    is_active: bool | None = None
+
+    @model_validator(mode="after")
+    def require_non_null_required_fields(self) -> "SectionTiebreakUpdate":
+        for field in ("section_id", "code", "sequence", "is_active"):
+            if field in self.model_fields_set and getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null")
+        return self
+
+
+class SectionTiebreakResponse(BaseModel):
+    id: int
+    section_id: int
+    code: str
+    sequence: int
+    parameter: str | None
+    is_active: bool
+
+    model_config = {"from_attributes": True}
 
 
 class SectionParticipantCreate(BaseModel):

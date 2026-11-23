@@ -130,12 +130,14 @@ Likely fields:
 | `phase_id` | `BIGINT` | Foreign key to `tournament_phase.id`; not null |
 | `name` | `VARCHAR(255)` | Required section name |
 | `sequence` | `INTEGER` | Ordered position inside the phase |
+| `lifecycle` | `VARCHAR(20)` | `draft`, `active`, or `finished` |
 | `tie_break_locked_at` | `TIMESTAMPTZ` | Optional freeze time for configured tie-break rules |
 | `planned_round_count` | `INTEGER` | Optional planned number of rounds in this section |
-A unique constraint on `(phase_id, sequence)` should prevent duplicate section
-ordering. Separate section membership is handled by participant assignments.
-`planned_round_count` may be compared with the count of `tournament_round`
-records when a section is activated or completed.
+A unique constraint on `(phase_id, sequence)` prevents duplicate section
+ordering. `planned_round_count` can be checked when a section is completed.
+Transitions are explicit and strict: `draft → active → finished`. Activation
+locks tie-break configuration in `tie_break_locked_at`; no round starts a
+section automatically.
 
 Phase formats are fixed application enums for now. PostgreSQL lookup-table
 entities may replace or supplement these values later if a format needs
@@ -238,8 +240,8 @@ Examples:
 
 ### `section_tiebreak`
 
-Stores the ordered tie-break list for a section. The operator may configure it
-before the first round and should be able to freeze it when the section starts.
+Stores the ordered tie-break list for a section. The operator configures it
+while the section is `draft`; activation freezes the list before play.
 
 | Column | Type | Constraints / Notes |
 | --- | --- | --- |
@@ -250,10 +252,10 @@ before the first round and should be able to freeze it when the section starts.
 | `parameter` | `VARCHAR(255)` | Optional JSON-free parameter string |
 | `is_active` | `BOOLEAN` | Whether this rule is currently in the section list |
 
-Unique constraints should cover `(section_id, sequence)` and
-`(section_id, code, parameter)`. Parameters are intentionally opaque strings;
-known numeric parameters may use an additional `parameter_value` decimal field
-when ranking implementation is started.
+The database enforces unique `(section_id, sequence)` ordering and unique
+`(section_id, code, parameter)` configuration, including repeated null
+parameters. Parameters remain opaque strings until ranking implementation
+requires structured values.
 
 Known initial `code` values include:
 
@@ -411,10 +413,9 @@ planned rounds, and tie-break locking without pairing or ranking.
 
 #### Fourth slice: tie-break configuration
 
-- [ ] Implement `section_tiebreak`.
-- [ ] Add ordered, unique configuration constraints and SQLAdmin controls.
-- [ ] Add lifecycle behavior for freezing tie-break configuration when a
-  section starts.
+- [x] Implement `section_tiebreak`.
+- [x] Add ordered, unique configuration constraints and SQLAdmin controls.
+- [x] Add explicit section lifecycle behavior that freezes configuration.
 
 #### Fifth slice: standings snapshots
 
@@ -444,5 +445,6 @@ planned rounds, and tie-break locking without pairing or ranking.
 - [x] Tournament sections have planned round counts.
 - [x] Later-section membership preserves source section and source rank.
 - [x] The 16-player two-phase Swiss example has a documented representation.
-- [ ] Implement `section_tiebreak`, `section_standing`, and
-  `section_standing_value` as later tournament entity tasks.
+- [x] Implement the reusable lifecycle mechanics, section lifecycle, and
+  `section_tiebreak` configuration.
+- [ ] Implement `section_standing` and `section_standing_value` next.

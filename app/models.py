@@ -4,15 +4,18 @@ from enum import Enum
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     DateTime,
     Enum as SqlEnum,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -179,6 +182,12 @@ class TournamentPhase(Base):
         )
 
 
+class SectionLifecycle(str, Enum):
+    DRAFT = "draft"
+    ACTIVE = "active"
+    FINISHED = "finished"
+
+
 class TournamentSection(Base):
     __tablename__ = "tournament_section"
     __table_args__ = (
@@ -208,6 +217,18 @@ class TournamentSection(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    lifecycle: Mapped[SectionLifecycle] = mapped_column(
+        SqlEnum(
+            SectionLifecycle,
+            native_enum=False,
+            length=20,
+            values_callable=lambda values: [value.value for value in values],
+            create_constraint=True,
+        ),
+        nullable=False,
+        default=SectionLifecycle.DRAFT,
+        server_default=SectionLifecycle.DRAFT.value,
+    )
     tie_break_locked_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -226,6 +247,10 @@ class TournamentSection(Base):
         back_populates="section",
         cascade="all, delete-orphan",
     )
+    tiebreaks: Mapped[list["SectionTiebreak"]] = relationship(
+        back_populates="section",
+        cascade="all, delete-orphan",
+    )
     advanced_participants: Mapped[list["SectionParticipant"]] = relationship(
         back_populates="source_section",
         foreign_keys="SectionParticipant.source_section_id",
@@ -233,6 +258,55 @@ class TournamentSection(Base):
 
     def __str__(self) -> str:
         return self.name
+
+
+class SectionTiebreak(Base):
+    __tablename__ = "section_tiebreak"
+    __table_args__ = (
+        UniqueConstraint(
+            "section_id",
+            "sequence",
+            name="uq_section_tiebreak_sequence",
+        ),
+        CheckConstraint(
+            "sequence > 0",
+            name="ck_section_tiebreak_sequence_positive",
+        ),
+        Index(
+            "uq_section_tiebreak_configuration",
+            "section_id",
+            "code",
+            text("coalesce(parameter, '')"),
+            unique=True,
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+    )
+    section_id: Mapped[int] = mapped_column(
+        ForeignKey("tournament_section.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    code: Mapped[str] = mapped_column(String(64), nullable=False)
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    parameter: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default="true",
+    )
+    section: Mapped[TournamentSection] = relationship(
+        back_populates="tiebreaks",
+        lazy="joined",
+    )
+
+    def __str__(self) -> str:
+        parameter = f" ({self.parameter})" if self.parameter is not None else ""
+        return f"{self.sequence}. {self.code}{parameter} @ {self.section.name}"
 
 
 class SectionParticipant(Base):
