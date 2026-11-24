@@ -537,3 +537,15 @@
   tests passed, and the full unittest suite passed (98 tests). Residual risk:
   live PostgreSQL migration execution and browser interaction were not
   exercised by an automated integration test.
+
+- **T36 - Adding the Pure Common Pairing Layer:** Added immutable pairing
+  contracts, format-specific round counts, deterministic seed/standings/float
+  ordering, complete-plan and Swiss-bye validation, and the shared color
+  allocator implementing the approved Swiss first-round, streak, balance, and
+  seed/ID fallback policy. Files changed: `app/pairing/`,
+  `tests/test_pairing_common.py`, `tests/test_pairing_validation.py`,
+  `docs/AUTOMATION.md`, this changelog, and
+  [T36](../done/T36_add_common_pairing_layer.md). Validation: 24 focused
+  pairing tests, 1 refactor-boundary test, 1 markdown-boundary test, and all
+  122 full-suite unittest tests passed. Residual risk: none for the common
+  layer; format-specific scheduling engines remain intentionally out of scope.

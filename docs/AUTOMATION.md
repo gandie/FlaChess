@@ -243,11 +243,12 @@ existing operator workspace.
     structure/operator controls. Draft activation rejects missing, duplicate, or
     invalid seeds for pairable fields. Withdrawal and re-entry are dedicated
     actions and leave historical games and scores unchanged.
-3. **Add the pure common pairing layer:** Define side-effect-free input/output
-    types, format-specific round-count functions, complete-plan validators,
-    deterministic tie ordering, and the shared color allocator. Keep SQLAlchemy
-    and FastAPI out of this layer. Cover the approved first-round, streak,
-    balance, and fallback rules exhaustively.
+3. **Done — Add the pure common pairing layer:**
+    [T36](workflow/done/T36_add_common_pairing_layer.md) added side-effect-free
+    input/output types, format-specific round-count functions, complete-plan
+    validators, deterministic tie ordering, and the shared color allocator.
+    SQLAlchemy and FastAPI remain outside this layer, and focused tests cover
+    the approved first-round, streak, balance, and fallback rules.
 4. **Implement single round-robin:** Build and independently verify circle
     scheduling for even and odd eligible fields, structural byes, one complete
     unordered pairing set, and calculated round counts. Return an in-memory plan
