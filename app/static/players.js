@@ -190,6 +190,7 @@ function registrationRoster(players, participants, onRegister, onUnregister, sig
       text: participant ? "\u2212 Remove" : "+ Add",
       attributes: {
         type: "button",
+        "data-player-id": player.id,
         "aria-label": participant
           ? `Remove ${player.name} from the tournament`
           : `Add ${player.name} to the tournament`,
@@ -200,7 +201,7 @@ function registrationRoster(players, participants, onRegister, onUnregister, sig
       () =>
         void pendingAction(button, () =>
           participant
-            ? onUnregister(participant.registration_id, player.name)
+            ? onUnregister(participant.registration_id, player.name, player.id)
             : onRegister(player.id),
         ),
       { signal },
@@ -292,7 +293,7 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
         { signal },
       );
       await loadRegistration();
-      await onChange?.();
+      await onChange?.({ focusPlayerId: playerId });
     } catch (error) {
       if (!signal.aborted && error?.name !== "AbortError") {
         result.replaceChildren(status(errorSummary(error), "error"));
@@ -300,7 +301,7 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
     }
   }
 
-  async function unregisterPlayer(registrationId, playerName) {
+  async function unregisterPlayer(registrationId, playerName, playerId) {
     if (!confirmAction(`Unregister ${playerName} from ${tournament.name}?`)) {
       return;
     }
@@ -310,7 +311,7 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
         { signal },
       );
       await loadRegistration();
-      await onChange?.();
+      await onChange?.({ focusPlayerId: playerId });
     } catch (error) {
       if (!signal.aborted && error?.name !== "AbortError") {
         result.replaceChildren(status(errorSummary(error), "error"));

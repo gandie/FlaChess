@@ -31,15 +31,21 @@ and finished rosters are read-only. They
 also configure ordered phases and sections, planned rounds, named section
 membership with optional ratings, and ordered tie-break rules. Section
 membership uses the same player-list action pattern and defaults each new
-assignment to the next seed position. Draft readiness
+assignment to the next seed position. Generated seed suggestions advance on
+refresh, while an explicitly edited suggestion remains in place. Draft readiness
 mirrors the backend activation blocker and separately reports missing setup
 items; supported standings codes are identified and configured unsupported
-codes remain visibly flagged. Tie-break-locked and non-draft sections are
-read-only in the overview except that draft section membership can still be
-managed during an active tournament for manual advancement. Membership records
+codes remain visibly flagged. Draft section rosters and player assignment
+lists are collapsed by default behind a disclosure showing the assigned-player
+count. Tie-break-locked and non-draft sections are read-only in the overview
+except that draft section membership can still be managed during an active
+tournament for manual advancement. Membership records
 may carry a prior section and source rank. Operators can activate an eligible
 draft tournament from the overview, activate a section, and open its dedicated
-operation view. The active round is placed before standings, with direct
+operation view. Tournament setup refreshes retain scroll position, open
+disclosures, unrelated form values, and keyboard focus so repeated roster and
+structure actions do not restart the page at the top. The active round is
+placed before standings, with direct
 incomplete-result shortcuts, sticky round navigation, compact collapsed
 pairing/participation creation controls, and save-to-next-result focus.
 Active sections support round creation, manual game pairings, valid score entry,

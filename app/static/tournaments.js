@@ -63,6 +63,87 @@ function setupDisclosure(title, content) {
   return details;
 }
 
+function disclosureKey(summary, occurrences) {
+  const label = summary.trim().replace(/\s+\(\d+ assigned\)$/, "");
+  const occurrence = occurrences.get(label) ?? 0;
+  occurrences.set(label, occurrence + 1);
+  return `${label}:${occurrence}`;
+}
+
+function captureWorkspaceState(root, { focusPlayerId = null } = {}) {
+  const activeForm = document.activeElement?.closest("form") ?? null;
+  const disclosureOccurrences = new Map();
+  const openDisclosures = Array.from(root.querySelectorAll("details")).flatMap(
+    (details) => {
+      const summary = details.querySelector(":scope > summary");
+      const key = summary
+        ? disclosureKey(summary.textContent ?? "", disclosureOccurrences)
+        : null;
+      return details.open && key ? [key] : [];
+    },
+  );
+  const controls = Array.from(
+    root.querySelectorAll("input[id], select[id], textarea[id]"),
+  )
+    .filter(
+      (control) =>
+        !activeForm?.contains(control) &&
+        !(
+          control.dataset.generatedSeed === "true" &&
+          control.dataset.userEdited !== "true"
+        ),
+    )
+    .map((control) => ({
+      id: control.id,
+      value: control.value,
+      checked: "checked" in control ? control.checked : null,
+    }));
+  return {
+    controls,
+    focusControlId: document.activeElement?.id || null,
+    focusPlayerId,
+    openDisclosures,
+    scrollX: window.scrollX,
+    scrollY: window.scrollY,
+  };
+}
+
+function restoreWorkspaceState(root, saved) {
+  const openDisclosures = new Set(saved.openDisclosures);
+  const disclosureOccurrences = new Map();
+  for (const details of root.querySelectorAll("details")) {
+    const summary = details.querySelector(":scope > summary");
+    if (summary) {
+      details.open = openDisclosures.has(
+        disclosureKey(summary.textContent ?? "", disclosureOccurrences),
+      );
+    }
+  }
+  for (const savedControl of saved.controls) {
+    const control = document.getElementById(savedControl.id);
+    if (!control || !root.contains(control)) {
+      continue;
+    }
+    control.value = savedControl.value;
+    if (savedControl.checked !== null && "checked" in control) {
+      control.checked = savedControl.checked;
+    }
+  }
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      window.scrollTo(saved.scrollX, saved.scrollY);
+      const focusTarget = saved.focusPlayerId
+        ? Array.from(root.querySelectorAll("[data-player-id]")).find(
+            (control) => control.dataset.playerId === String(saved.focusPlayerId),
+          )
+        : saved.focusControlId
+          ? document.getElementById(saved.focusControlId)
+          : null;
+      focusTarget?.focus({ preventScroll: true });
+    });
+  });
+}
+
 function tournamentCloseoutAction(tournament, signal, refresh) {
   if (tournament.lifecycle !== "active") {
     return null;
@@ -339,7 +420,7 @@ export function tournamentOverviewView({ tournamentId }) {
       const closeout = tournamentCloseoutAction(
         tournament,
         signal,
-        () => loadTournament(signal),
+        () => loadTournament(signal, { preserveView: true }),
       );
       if (closeout) {
         card.append(closeout);
@@ -347,12 +428,16 @@ export function tournamentOverviewView({ tournamentId }) {
       const sidebar = element("aside", { className: "workspace-sidebar" });
       sidebar.append(
         card,
-        tournamentRegistrationCard(tournament, signal, () => loadTournament(signal)),
+        tournamentRegistrationCard(tournament, signal, (options) =>
+          loadTournament(signal, { preserveView: true, ...options }),
+        ),
       );
       const layout = element("div", { className: "tournament-workspace" });
       layout.append(
         sidebar,
-        tournamentStructureCards(workspace, signal, () => loadTournament(signal)),
+        tournamentStructureCards(workspace, signal, () =>
+          loadTournament(signal, { preserveView: true }),
+        ),
       );
       result.append(layout);
       return;
@@ -383,7 +468,7 @@ export function tournamentOverviewView({ tournamentId }) {
             await api.patch(`/api/tournaments/${tournamentId}`, values(), {
               signal,
             });
-            await loadTournament(signal);
+            await loadTournament(signal, { preserveView: true });
           } catch (error) {
             if (signal.aborted || error?.name === "AbortError") {
               return;
@@ -417,7 +502,7 @@ export function tournamentOverviewView({ tournamentId }) {
             await api.post(`/api/tournaments/${tournamentId}/activate`, {}, {
               signal,
             });
-            await loadTournament(signal);
+            await loadTournament(signal, { preserveView: true });
           } catch (error) {
             if (signal.aborted || error?.name === "AbortError") {
               return;
@@ -444,24 +529,36 @@ export function tournamentOverviewView({ tournamentId }) {
     const sidebar = element("aside", { className: "workspace-sidebar" });
     sidebar.append(
       card,
-      tournamentRegistrationCard(tournament, signal, () => loadTournament(signal)),
+      tournamentRegistrationCard(tournament, signal, (options) =>
+        loadTournament(signal, { preserveView: true, ...options }),
+      ),
     );
     const layout = element("div", { className: "tournament-workspace" });
     layout.append(
       sidebar,
-      tournamentStructureCards(workspace, signal, () => loadTournament(signal)),
+      tournamentStructureCards(workspace, signal, () =>
+        loadTournament(signal, { preserveView: true }),
+      ),
     );
     result.append(layout);
   }
 
-  async function loadTournament(signal) {
-    result.replaceChildren(status("Loading tournament\u2026"));
+  async function loadTournament(signal, options = {}) {
+    const saved = options.preserveView
+      ? captureWorkspaceState(result, options)
+      : null;
+    if (!saved) {
+      result.replaceChildren(status("Loading tournament\u2026"));
+    }
     try {
       const [tournament, workspace] = await Promise.all([
         api.get(`/api/tournaments/${tournamentId}`, { signal }),
         api.get(`/api/tournaments/${tournamentId}/workspace`, { signal }),
       ]);
       renderTournament(tournament, workspace, signal);
+      if (saved) {
+        restoreWorkspaceState(result, saved);
+      }
     } catch (error) {
       if (signal.aborted || error?.name === "AbortError") {
         return;

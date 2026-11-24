@@ -492,6 +492,10 @@ function membershipAssignmentRow(context, section, participant, suggestedSeed) {
     required: true,
   });
   seed.control.min = "1";
+  seed.control.dataset.generatedSeed = "true";
+  seed.control.addEventListener("input", () => {
+    seed.control.dataset.userEdited = "true";
+  });
   const advanced = element("details", { className: "inline-disclosure" });
   advanced.append(element("summary", { text: "Advancement details" }));
   const assignmentKey = `registration_${participant.registration_id}`;
@@ -782,8 +786,14 @@ function sectionCard(context, section) {
   if (context.editable && section.lifecycle === "draft") {
     card.append(setupDisclosure("Edit section details", sectionEditor(context, section)));
   }
+  const membership = membershipPanel(sectionContext, section);
   card.append(
-    membershipPanel(sectionContext, section),
+    context.workspace.lifecycle === "draft"
+      ? setupDisclosure(
+          `Section roster and assignments (${section.participants.length} assigned)`,
+          membership,
+        )
+      : membership,
     setupDisclosure("Tie-break rules", tieBreakPanel(sectionContext, section)),
   );
   return card;
