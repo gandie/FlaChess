@@ -255,10 +255,12 @@ existing operator workspace.
     unordered-pair verification, scoreless structural byes, calculated round
     limits, and the shared color allocator. It returns an in-memory plan and
     performs no database access.
-5. **Implement Swiss:** Build FIDE/Dutch-style score-group matching from seeds
-    or latest standings, repeat avoidance, controlled down-floats, bounded
-    backtracking, one-bye selection, impossible-plan failure, and the shared
-    color allocator. Return an in-memory plan only.
+5. **Done — Implement Swiss:**
+    [T38](workflow/done/T38_implement_swiss_pairing.md) adds FIDE/Dutch-style
+    score-group matching from seeds or latest standings, minimum-repeat bounded
+    backtracking with controlled down-floats, one-bye selection, explicit
+    impossible-plan failure, and the shared color allocator. It returns an
+    in-memory plan only.
 6. **Implement knockout:** Map operator seeds into the padded bracket, create
     structural first-round byes, advance only completed decisive winners in
     bracket order, and reject drawn or unresolved predecessor matches. Return an

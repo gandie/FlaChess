@@ -18,6 +18,7 @@ from app.pairing.round_robin import (
     RoundRobinPairingError,
     plan_round_robin_round,
 )
+from app.pairing.swiss import SwissPairingError, plan_swiss_round
 from app.pairing.types import (
     Color,
     ColorAllocationContext,
@@ -48,6 +49,7 @@ __all__ = [
     "PlannedOutcomeType",
     "RoundCountError",
     "RoundRobinPairingError",
+    "SwissPairingError",
     "allocate_colors",
     "calculate_knockout_round_count",
     "calculate_round_robin_round_count",
@@ -57,6 +59,7 @@ __all__ = [
     "order_by_standings",
     "order_for_downward_float",
     "plan_round_robin_round",
+    "plan_swiss_round",
     "seed_order_key",
     "standings_order_key",
     "validate_complete_plan",

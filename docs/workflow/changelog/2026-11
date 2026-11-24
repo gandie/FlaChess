@@ -560,3 +560,15 @@
   pairing tests and all 130 full-suite unittest tests passed. Residual risk:
   none for the pure scheduling slice; transactional generation and operator
   routes remain intentionally out of scope.
+
+- **T38 - Implementing Swiss Pairing:** Added a pure Swiss planner using seed
+  order in round one, standings and score groups later, bounded backtracking
+  that minimizes repeat pairings, controlled highest-seed down-floats, one-point
+  one-time bye selection, and the shared color allocator. Impossible or
+  search-exhausted plans fail without producing a plan. Files changed:
+  `app/pairing/`, `tests/test_pairing_swiss.py`, `docs/AUTOMATION.md`, this
+  changelog, and [T38](../done/T38_implement_swiss_pairing.md). Validation: 11
+  focused Swiss tests, refactor and Markdown boundary tests, and all 141
+  full-suite unittest tests passed. Residual risk: transactional generation,
+  preview/confirm routes, and operator UI integration remain intentionally out
+  of scope.
