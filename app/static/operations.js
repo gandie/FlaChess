@@ -535,9 +535,12 @@ function roundPanel(context, round) {
 
 function roundNavigation(operation, tournamentId, activeRoundId) {
   const navigation = element("nav", {
-    className: "round-navigation",
+    className: "round-navigation live-round-rail",
     attributes: { "aria-label": "Round review navigation" },
   });
+  navigation.append(
+    element("span", { className: "round-rail-label", text: "Round desk" }),
+  );
   for (const round of operation.rounds) {
     const link = element("a", {
       className: "round-navigation-link",
@@ -844,7 +847,20 @@ export function sectionOperationView({
     title: "Section",
     description:
       "Preview generated pairings, manage manual rounds, and record results.",
+    actions: [
+      element("a", {
+        className: "button button-secondary button-small",
+        text: "Tournament overview",
+        attributes: { href: `#/tournaments/${tournamentId}` },
+      }),
+      element("a", {
+        className: "button button-secondary button-small",
+        text: "Player display",
+        attributes: { href: `#/display/tournaments/${tournamentId}` },
+      }),
+    ],
   });
+  root.classList.add("operation-page");
   const result = element("div", { className: "result-slot" });
   root.append(result);
 
@@ -926,10 +942,12 @@ export function sectionOperationView({
         status("Final section standings and round records are read-only.", "success"),
       );
     }
+    const automation = pairingAutomation(context);
     result.append(summary);
     if (activeRound) {
       result.append(
         roundNavigation(operation, tournamentId, activeRound.id),
+        ...(automation ? [automation] : []),
         roundPanel(context, activeRound),
         standingsReview({
           operation,
@@ -946,8 +964,7 @@ export function sectionOperationView({
     } else {
       result.append(emptyState("No rounds", "Create the first round for this section."));
     }
-    const automation = pairingAutomation(context);
-    if (automation) {
+    if (!activeRound && automation) {
       result.append(automation);
     }
     if (context.editable) {

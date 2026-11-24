@@ -33,6 +33,25 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertNotIn("api.delete", display)
         self.assertIn("/display/tournaments/:id", app_module)
 
+    def test_player_display_supports_round_history_and_finished_ceremony(self) -> None:
+        display = self.static_asset("display.js")
+        styles = self.static_asset("styles.css")
+
+        self.assertIn("display-round-selector", display)
+        self.assertIn("selectedSnapshotKey", display)
+        self.assertIn("operations.flatMap", display)
+        self.assertIn("victoryCeremony", display)
+        self.assertIn("Tournament complete", display)
+        self.assertIn("section-podium", display)
+        self.assertIn("selectedRound = latestRound(operation)", display)
+        self.assertIn(".display-tournament-finished", styles)
+        self.assertIn(".victory-ceremony", styles)
+        self.assertIn(".podium-place-1", styles)
+        self.assertIn("prefers-reduced-motion", styles)
+        self.assertNotIn("api.post", display)
+        self.assertNotIn("api.patch", display)
+        self.assertNotIn("api.delete", display)
+
     def test_operator_result_entry_has_shortcuts_before_standings(self) -> None:
         operations = self.static_asset("operations.js")
         active_round_block = operations.split("if (activeRound)", 1)[1]
@@ -94,6 +113,28 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertIn("@media (max-width: 42rem)", styles)
         self.assertIn("Open player display", tournaments)
         self.assertIn("Activate this tournament?", tournaments)
+
+    def test_tournament_desk_surfaces_live_work_and_round_actions(self) -> None:
+        app_module = self.static_asset("app.js")
+        operations = self.static_asset("operations.js")
+        styles = self.static_asset("styles.css")
+        index = self.static_asset("index.html")
+
+        self.assertIn("Tournament command desk", app_module)
+        self.assertIn("/api/tournament-summaries", app_module)
+        self.assertIn("Open tournament", app_module)
+        self.assertIn("live-round-rail", operations)
+        self.assertIn("Tournament overview", operations)
+        active_round_block = operations.split("if (activeRound)", 1)[1]
+        self.assertLess(
+            active_round_block.index("automation ? [automation]"),
+            active_round_block.index("roundPanel(context, activeRound)"),
+        )
+        self.assertIn("--clock: #ef6246", styles)
+        self.assertIn(".command-deck", styles)
+        self.assertIn(".live-round-rail", styles)
+        self.assertIn('class="brand-mark"', index)
+        self.assertIn("prefers-reduced-motion", styles)
 
     def test_tournament_setup_uses_direct_player_actions_and_compact_sections(self) -> None:
         players = self.static_asset("players.js")

@@ -22,28 +22,50 @@ const connectionStatus = document.querySelector("#app-connection-status");
 
 function overviewView() {
   const root = page({
-    eyebrow: "Operator workspace",
-    title: "Fla Chess",
+    eyebrow: "Tournament control",
+    title: "The room is live.",
     description:
-      "Manage local tournaments from draft creation through final standings.",
+      "Set the board, run the round, record the result. Every tournament control stays one move away.",
   });
+  root.classList.add("overview-page");
 
-  const cards = element("div", { className: "overview-grid" });
-  const foundation = element("article", { className: "card feature-card" });
-  foundation.append(
-    badge("Foundation ready", "success"),
-    element("h2", { text: "Workspace connected" }),
-    element("p", {
-      text: "Navigation, API requests, loading states, and backend errors share one application shell.",
+  const commandDeck = element("section", {
+    className: "command-deck",
+    attributes: { "aria-label": "Tournament command desk" },
+  });
+  const signal = element("div", { className: "command-signal" });
+  signal.append(
+    element("span", {
+      className: "command-signal-label",
+      text: "Operator status",
+    }),
+    element("strong", {
+      className: "command-signal-value",
+      text: "Checking the floor",
     }),
   );
+  const commandCopy = element("div", { className: "command-copy" });
+  commandCopy.append(
+    badge("Tournament desk", "clock"),
+    element("h2", { text: "Bring today’s tournament into focus." }),
+    element("p", {
+      className: "command-description",
+      text: "Open an active event, or start with the tournament catalog and build the next one.",
+    }),
+  );
+  const commandActions = element("div", { className: "command-actions" });
+  commandCopy.append(commandActions);
+  commandDeck.append(signal, commandCopy);
 
-  const next = element("article", { className: "card" });
-  next.append(
-    badge("Operator workflow", "accent"),
+  const launchGrid = element("div", { className: "launch-grid" });
+  const tournamentLaunch = element("article", {
+    className: "launch-card launch-card-primary",
+  });
+  tournamentLaunch.append(
+    element("span", { className: "launch-number", text: "01" }),
     element("h2", { text: "Tournament catalog" }),
     element("p", {
-      text: "Review tournaments, create a draft, and open its editable overview.",
+      text: "Create drafts, continue live events, and close finished tournaments.",
     }),
     element("a", {
       className: "button button-secondary",
@@ -52,9 +74,112 @@ function overviewView() {
     }),
   );
 
-  cards.append(foundation, next);
-  root.append(cards);
-  return { title: "Overview", element: root };
+  const playerLaunch = element("article", { className: "launch-card" });
+  playerLaunch.append(
+    element("span", { className: "launch-number", text: "02" }),
+    element("h2", { text: "Player registry" }),
+    element("p", {
+      text: "Keep names ready before registration opens and the room gets busy.",
+    }),
+    element("a", {
+      className: "text-link",
+      text: "Manage players →",
+      attributes: { href: "#/players" },
+    }),
+  );
+
+  const displayLaunch = element("article", { className: "launch-card" });
+  displayLaunch.append(
+    element("span", { className: "launch-number", text: "03" }),
+    element("h2", { text: "Public boards" }),
+    element("p", {
+      text: "Open any tournament display for pairings, live results, and standings.",
+    }),
+    element("a", {
+      className: "text-link",
+      text: "Choose a tournament →",
+      attributes: { href: "#/tournaments" },
+    }),
+  );
+
+  launchGrid.append(tournamentLaunch, playerLaunch, displayLaunch);
+  root.append(commandDeck, launchGrid);
+
+  async function loadCommandDeck(signal) {
+    try {
+      const tournaments = await api.get("/api/tournament-summaries", { signal });
+      const active = tournaments.filter(
+        (tournament) => tournament.lifecycle === "active",
+      );
+      const drafts = tournaments.filter(
+        (tournament) => tournament.lifecycle === "draft",
+      );
+      const current = active[0] ?? drafts[0] ?? tournaments[0];
+      const label = signal?.aborted ? "" : active.length ? `${active.length} live` : "Ready";
+      if (signal?.aborted) {
+        return;
+      }
+      signalStatus(label);
+      if (!current) {
+        commandCopy.querySelector("h2").textContent = "Your next event starts here.";
+        commandCopy.querySelector(".command-description").textContent =
+          "Create the first tournament, add players, and set the opening round.";
+      } else {
+        const state = current.lifecycle === "active" ? "Live now" : "On the desk";
+        commandCopy.querySelector("h2").textContent = `${current.name} · ${state}`;
+        commandCopy.querySelector(".command-description").textContent =
+          `${current.participant_count} players · ${current.phase_count} phase${
+            current.phase_count === 1 ? "" : "s"
+          } · ${current.section_count} section${
+            current.section_count === 1 ? "" : "s"
+          }`;
+      }
+      const open = element("a", {
+        className: "button",
+        text: current ? "Open tournament" : "Create tournament",
+        attributes: {
+          href: current ? `#/tournaments/${current.id}` : "#/tournaments",
+        },
+      });
+      commandActions.replaceChildren(open);
+      if (current) {
+        commandActions.append(
+          element("a", {
+            className: "button button-light",
+            text: "Open player display",
+            attributes: { href: `#/display/tournaments/${current.id}` },
+          }),
+        );
+      }
+    } catch (error) {
+      if (signal?.aborted || error?.name === "AbortError") {
+        return;
+      }
+      signalStatus("Offline");
+      commandCopy.querySelector(".command-description").textContent =
+        errorSummary(error);
+      commandActions.replaceChildren(
+        element("a", {
+          className: "button",
+          text: "Check system",
+          attributes: { href: "#/system" },
+        }),
+      );
+    }
+  }
+
+  function signalStatus(value) {
+    signal.querySelector(".command-signal-value").textContent = value;
+    commandDeck.dataset.state = value === "Offline" ? "offline" : "ready";
+  }
+
+  return {
+    title: "Overview",
+    element: root,
+    activate({ signal }) {
+      void loadCommandDeck(signal);
+    },
+  };
 }
 
 function systemView() {

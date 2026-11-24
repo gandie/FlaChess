@@ -238,6 +238,7 @@ export function tournamentCatalogView(navigate) {
     description:
       "Review the tournament catalog and create a draft tournament.",
   });
+  root.classList.add("catalog-page");
   const layout = element("div", { className: "catalog-layout" });
   const catalogCard = element("section", { className: "card" });
   catalogCard.append(element("h2", { text: "Tournament catalog" }));
@@ -375,6 +376,7 @@ export function tournamentOverviewView({ tournamentId }) {
     title: "Tournament",
     description: "Review lifecycle and tournament metadata.",
   });
+  root.classList.add("tournament-page");
   const result = element("div", { className: "result-slot" });
   root.append(result);
 

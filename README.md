@@ -22,7 +22,12 @@ $env:DATABASE_URL = "postgresql+asyncpg://fla_chess:fla_chess@127.0.0.1:5432/fla
 ```
 
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000) for the operator application
-shell. The framework-free SPA includes URL-backed Overview and System views;
+shell. The tournament-desk SPA opens on a live command view that points directly
+to the newest active or draft tournament, its player display, the catalog, and
+the player registry. The visual system uses compact score-sheet panels, a
+sticky live-round rail, and high-contrast action states to keep tournament
+operation fast without hiding less common controls. The framework-free SPA
+includes URL-backed Overview and System views;
 Tournament views list status and structure counts, create draft tournaments,
 and open compact overviews where draft metadata can be edited. The Player view
 creates and edits reusable player records. Draft tournament overviews register
@@ -68,9 +73,12 @@ Confirmed section and tournament finish actions retain final section standings
 and switch tournament history to a read-only presentation.
 Every tournament can also be opened through the player display link. The URL
 `/#/display/tournaments/{id}` presents the current phase, that phase's latest
-round pairings and results, participation notes, and latest available standings
-without mutation controls. It uses the existing read contracts and a manual
-refresh action, so players can keep the view open on a shared tournament screen.
+round pairings and results by default, with controls to revisit every earlier
+round's games, participation notes, and corresponding standings. Finished
+tournaments switch to a victory-ceremony presentation with a final state banner,
+section champions, and podiums backed by the preserved final snapshots. The view
+remains read-only, uses the existing read contracts, and includes a manual refresh
+action for a shared tournament screen.
 The System view runs a database-independent health check and demonstrates
 normalized API error handling.
 

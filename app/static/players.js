@@ -55,6 +55,7 @@ export function playerDirectoryView() {
     title: "Players",
     description: "Maintain reusable player records for tournament registration.",
   });
+  root.classList.add("catalog-page");
   const layout = element("div", { className: "catalog-layout" });
   const directoryCard = element("section", { className: "card" });
   directoryCard.append(element("h2", { text: "Player directory" }));
