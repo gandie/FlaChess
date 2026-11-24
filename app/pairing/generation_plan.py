@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from app.models import SectionLifecycle, SectionParticipant
 from app.pairing.generation_history import (
     round_participant_ids,
@@ -26,23 +28,43 @@ from app.pairing.types import (
 )
 
 
+@dataclass(frozen=True)
+class PreparedPairing:
+    plan: PairingPlan
+    participants: tuple[PairingParticipant, ...]
+    calculated_round_count: int
+
+
 def prepare_pairing_plan(
     state: GenerationState,
     expected_round_number: int | None,
 ) -> tuple[PairingPlan, tuple[PairingParticipant, ...]]:
-    validate_section_state(state)
-    target_round = validate_round_sequence(state, expected_round_number)
-    validate_history(state)
-    entrants = select_entrants(state, target_round)
-    pairing_field = pairing_participants(state, participants=entrants)
-    round_count = validate_round_count(state, pairing_field)
-    if target_round > round_count:
-        raise PairingGenerationConflict(
-            f"Round {target_round} exceeds the planned {round_count} rounds.",
-        )
-    plan = dispatch_plan(state, pairing_field, target_round)
-    validate_plan_eligibility(state, plan)
-    return plan, pairing_field
+    prepared = prepare_pairing(state, expected_round_number)
+    return prepared.plan, prepared.participants
+
+
+def prepare_pairing(
+    state: GenerationState,
+    expected_round_number: int | None,
+) -> PreparedPairing:
+    try:
+        validate_section_state(state)
+        target_round = validate_round_sequence(state, expected_round_number)
+        validate_history(state)
+        entrants = select_entrants(state, target_round)
+        pairing_field = pairing_participants(state, participants=entrants)
+        round_count = validate_round_count(state, pairing_field)
+        if target_round > round_count:
+            raise PairingGenerationConflict(
+                f"Round {target_round} exceeds the planned {round_count} rounds.",
+            )
+        plan = dispatch_plan(state, pairing_field, target_round)
+        validate_plan_eligibility(state, plan)
+        return PreparedPairing(plan, pairing_field, round_count)
+    except PairingGenerationError:
+        raise
+    except ValueError as error:
+        raise PairingGenerationError(str(error)) from error
 
 
 def validate_section_state(state: GenerationState) -> None:

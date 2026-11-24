@@ -13,6 +13,7 @@ from app.routes.crud import router as crud_router
 from app.routes.games import router as games_router
 from app.routes.lifecycle import router as lifecycle_router
 from app.routes.memberships import router as memberships_router
+from app.routes.pairing_generation import router as pairing_generation_router
 from app.routes.player_registration import router as player_registration_router
 from app.routes.section_operation import router as section_operation_router
 from app.routes.round_participants import router as round_participants_router
@@ -36,6 +37,7 @@ router.include_router(lifecycle_router)
 router.include_router(tournament_catalog_router)
 router.include_router(player_registration_router)
 router.include_router(section_operation_router)
+router.include_router(pairing_generation_router)
 router.include_router(tournament_workspace_router)
 
 

@@ -30,6 +30,10 @@ class PairingGenerationConflict(PairingGenerationError):
     pass
 
 
+class PairingGenerationNotFound(PairingGenerationError):
+    pass
+
+
 @dataclass(frozen=True)
 class GenerationState:
     section: TournamentSection
@@ -76,7 +80,7 @@ async def load_section(
     )
     section = await session.scalar(statement)
     if section is None:
-        raise PairingGenerationError(
+        raise PairingGenerationNotFound(
             f"Tournament section {section_id} was not found.",
         )
     supported = {item.value for item in TournamentPhaseFormat}

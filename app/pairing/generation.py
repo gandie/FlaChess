@@ -11,12 +11,17 @@ from app.models import (
     RoundParticipant,
     TournamentRound,
 )
-from app.pairing.generation_plan import prepare_pairing_plan
+from app.pairing.generation_plan import prepare_pairing
 from app.pairing.generation_state import (
     PairingGenerationConflict,
     load_generation_state,
 )
-from app.pairing.types import PairingPlan, PlannedOutcomeType
+from app.pairing.types import (
+    PairingFormat,
+    PairingPlan,
+    PairingParticipant,
+    PlannedOutcomeType,
+)
 
 
 @dataclass(frozen=True)
@@ -27,6 +32,43 @@ class GeneratedRound:
     plan: PairingPlan
 
 
+@dataclass(frozen=True)
+class PairingPreview:
+    section_id: int
+    pairing_format: PairingFormat
+    planned_round_count: int
+    calculated_round_count: int
+    plan: PairingPlan
+    seed_order: tuple[PairingParticipant, ...]
+
+
+async def preview_next_round(
+    section_id: int,
+    session: AsyncSession,
+    expected_round_number: int | None = None,
+) -> PairingPreview:
+    state = await load_generation_state(section_id, session)
+    prepared = prepare_pairing(state, expected_round_number)
+    planned = state.section.planned_round_count
+    assert planned is not None
+    return PairingPreview(
+        section_id=state.section.id,
+        pairing_format=state.pairing_format,
+        planned_round_count=planned,
+        calculated_round_count=prepared.calculated_round_count,
+        plan=prepared.plan,
+        seed_order=tuple(
+            sorted(
+                prepared.participants,
+                key=lambda participant: (
+                    participant.seed_position,
+                    participant.participant_id,
+                ),
+            ),
+        ),
+    )
+
+
 async def generate_next_round(
     section_id: int,
     session: AsyncSession,
@@ -34,8 +76,8 @@ async def generate_next_round(
 ) -> GeneratedRound:
     try:
         state = await load_generation_state(section_id, session)
-        plan, _ = prepare_pairing_plan(state, expected_round_number)
-        generated = await persist_plan(state.section.id, plan, session)
+        prepared = prepare_pairing(state, expected_round_number)
+        generated = await persist_plan(state.section.id, prepared.plan, session)
         await session.commit()
         return generated
     except IntegrityError as error:

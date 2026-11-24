@@ -273,13 +273,14 @@ existing operator workspace.
     round, games, and round-participant records in one commit. Domain and
     persistence failures roll back all changes, and round-robin membership is
     frozen after round one.
-8. **Add preview and confirm API contracts:** Add section-oriented preview and
-    confirm routes with explicit Pydantic read/command models. Preview calls the
-    same pure planning path without writes. Confirm independently reloads and
-    validates state before calling the transactional command; a stale preview is
-    never an authorization token. Responses must expose target round, format,
-    games, byes/non-paired outcomes, seed order, policy labels, warnings, and
-    actionable domain errors.
+8. **Done — Add preview and confirm API contracts:**
+    [T41](workflow/done/T41_add_pairing_preview_confirm_api.md) added
+    section-oriented preview and confirm routes with explicit Pydantic
+    read/command models. Preview calls the same pure planning path without
+    writes. Confirm independently reloads and validates state before calling the
+    transactional command; a stale preview is never an authorization token.
+    Responses expose target round, format, games, byes/non-paired outcomes,
+    seed order, policy labels, warnings, and actionable domain errors.
 9. **Integrate the section operation UI:** In
     `app/static/operations.js`, add a visible **Preview next round** action for
     eligible active sections. Render the returned pairing table, colors, byes,
