@@ -482,3 +482,17 @@
   browser-rendered keyboard behavior, real tournament-sized interaction, and
   live PostgreSQL operation were not exercised by an automated browser or
   database integration test.
+
+- **T32 – Planning Pairing Automation:** Added an implementation-ready
+  automation plan for Swiss, single round-robin, and knockout sections. The
+  plan grounds round-count formulas, seed inputs, format mechanics, shared
+  transactional generation, color-allocation boundaries, persistence
+  invariants, API/operator integration, testing, and implementation slices in
+  the existing data model while leaving unapproved policy as explicit decision
+  gates. Files changed: `docs/AUTOMATION.md`, this changelog, and
+  [T32](../done/T32_plan_pairing_automation.md). Validation: Markdown boundary
+  validation passed (1 test), done-task evaluation boundary validation passed
+  (1 test), and the full unittest suite passed (92 tests). Residual risk:
+  seeding, Swiss profile, bye, color, knockout draw-resolution, double
+  round-robin, and absence/withdrawal policies still require operator
+  decisions before code implementation.
