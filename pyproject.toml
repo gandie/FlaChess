@@ -19,4 +19,4 @@ dependencies = [
 include = ["app*"]
 
 [tool.setuptools.package-data]
-app = ["static/*.html"]
+app = ["static/*"]
