@@ -573,6 +573,20 @@
   preview/confirm routes, and operator UI integration remain intentionally out
   of scope.
 
+- **T40 - Adding Transactional Pairing Generation:** Added an authoritative
+  domain command for Swiss, round-robin, and knockout next-round generation.
+  The command locks and reloads section state, validates lifecycle, counts,
+  seeds, eligibility, numbering, history completeness, and stale round
+  conflicts, then persists the round, games, and participation rows in one
+  commit with rollback on every failure. Round-robin membership now remains
+  fixed after round one. Files changed: `app/pairing/`,
+  `tests/test_pairing_generation.py`, `docs/AUTOMATION.md`, this changelog, and
+  [T40](../done/T40_add_transactional_pairing_generation.md). Validation: 11
+  focused generation tests, 28 planner regression tests, refactor boundary
+  validation, and all 161 full-suite unittest tests passed. Residual risk:
+  preview/confirm HTTP contracts and operator UI integration remain
+  intentionally out of scope.
+
 - **T39 - Implementing Knockout Pairing:** Added a pure standard-seeded
   knockout planner with padded bracket placement, scoreless first-round
   structural byes, bracket-ordered decisive advancement, draw and unresolved

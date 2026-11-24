@@ -1,4 +1,9 @@
 from app.pairing.colors import ColorAllocationError, allocate_colors
+from app.pairing.generation import GeneratedRound, generate_next_round
+from app.pairing.generation_state import (
+    PairingGenerationConflict,
+    PairingGenerationError,
+)
 from app.pairing.knockout import KnockoutPairingError, plan_knockout_round
 from app.pairing.ordering import (
     downward_float_order_key,
@@ -44,7 +49,10 @@ __all__ = [
     "ColorAssignment",
     "KnockoutPairingError",
     "KnockoutPredecessor",
+    "GeneratedRound",
     "PairingFormat",
+    "PairingGenerationConflict",
+    "PairingGenerationError",
     "PairingParticipant",
     "PairingPlan",
     "PairingValidationError",
@@ -65,6 +73,7 @@ __all__ = [
     "plan_knockout_round",
     "plan_round_robin_round",
     "plan_swiss_round",
+    "generate_next_round",
     "seed_order_key",
     "standings_order_key",
     "validate_complete_plan",

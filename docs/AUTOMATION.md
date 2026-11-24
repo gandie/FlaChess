@@ -266,12 +266,13 @@ existing operator workspace.
     seeded padded bracket, structural first-round byes, decisive predecessor
     advancement in bracket order, draw/unresolved blocking, shared color
     allocation, and pure in-memory plans.
-7. **Add transactional generation:** Implement a domain command that reloads
-    authoritative section state, checks active lifecycle, planned/calculated
-    round count, seed completeness, eligibility, uninterrupted numbering,
-    previous-round completeness, and existing-round conflicts, then creates the
-    complete round, games, and round-participant records in one commit.
-    Any domain or persistence failure must roll back everything.
+7. **Done — Add transactional generation:**
+    [T40](workflow/done/T40_add_transactional_pairing_generation.md) added an
+    authoritative, row-locked domain command that validates section state and
+    history, dispatches the pure format planner, and persists the complete
+    round, games, and round-participant records in one commit. Domain and
+    persistence failures roll back all changes, and round-robin membership is
+    frozen after round one.
 8. **Add preview and confirm API contracts:** Add section-oriented preview and
     confirm routes with explicit Pydantic read/command models. Preview calls the
     same pure planning path without writes. Confirm independently reloads and
