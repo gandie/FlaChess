@@ -496,3 +496,29 @@
   seeding, Swiss profile, bye, color, knockout draw-resolution, double
   round-robin, and absence/withdrawal policies still require operator
   decisions before code implementation.
+
+- **T33 - Resolving Pairing Automation Policy:** Resolved all seven operator
+  policy gates required before implementation. Operators own arbitrary seed
+  positions; Swiss uses FIDE Dutch-style pairing with deterministic downward
+  floating; Swiss byes are one-point and at most once per participant; colors
+  avoid third consecutive assignments where possible; knockout draws block
+  advancement; round-robin is single-cycle; and absence does not replace an
+  explicit withdrawal. Files changed: `docs/AUTOMATION.md`, this changelog,
+  and [T33](../done/T33_resolve_pairing_automation_policy.md). Validation:
+  Markdown boundary validation passed (1 test), and the full unittest suite
+  passed (92 tests). Residual risk: the approved policy is documented but not
+  yet implemented or exercised by pairing-engine and route tests.
+
+- **T34 - Finalizing the Actionable Automation Plan:** Marked the policy step
+  complete and converted the pairing plan into a dependency-ordered chain that
+  includes seed and withdrawal persistence, shared pure services, all three
+  format engines, transactional generation, preview/confirm routes, and
+  explicit integration in the existing section-operation frontend. The
+  completion gate now requires operators to generate a round, record results,
+  recompute standings, and preview the next round entirely through the UI.
+  Files changed: `docs/AUTOMATION.md`, this changelog, and
+  [T34](../done/T34_finalize_actionable_automation_plan.md). Validation:
+  Markdown boundary validation passed (1 test), and the full unittest suite
+  passed (92 tests). Residual risk: the plan describes required implementation
+  work; pairing engines, routes, persistence, and frontend automation remain to
+  be built and tested.

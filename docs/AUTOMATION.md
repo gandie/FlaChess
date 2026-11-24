@@ -8,9 +8,11 @@ the mechanics that can be derived from existing data, the shared generation
 workflow, the validation boundaries, and the implementation slices.
 
 This is a planning contract, not an authorization to invent tournament policy.
-Manual round and pairing creation remains supported. No automatic pairing
-behavior should be enabled until the decision gates at the end of this
-document are resolved.
+Manual round and pairing creation remains supported. The decision gates were
+resolved and recorded in
+[T33](workflow/done/T33_resolve_pairing_automation_policy.md); implementation
+must conform to those approved policies rather than introduce alternate
+defaults.
 
 ## Existing Foundation
 
@@ -48,9 +50,9 @@ one coherent state.
 - **Color history** contains earlier white/black assignments per participant.
 
 The current model has ratings and `source_rank`, but no explicit initial
-`seed_position`. Rating order can be a seed convention only if approved. An
-arbitrary operator-defined seed order requires a persisted field or an
-equivalent explicit seed list before the pairing engine is added.
+`seed_position` or section-level withdrawal state. Because the approved policy
+uses arbitrary operator-assigned seeds and explicit withdrawal/re-entry, those
+states must be persisted and exposed before pairing automation is added.
 
 ## Round-Count Rules
 
@@ -227,25 +229,68 @@ as stale authority. Manual creation remains a separate explicit path.
 
 ## Actionable Implementation Steps
 
-1. Resolve the decision gates below and record the selected policy in this
-   document.
-2. Add pure pairing-domain types and round-count functions with exhaustive
-   unit tests. Keep SQLAlchemy and FastAPI out of these tests.
-3. Implement and independently verify round-robin circle scheduling,
-   including odd-field byes and complete pair coverage.
-4. Implement Swiss legal-matching with deterministic ordering, bounded
-   backtracking, and no-database persistence.
-5. Implement knockout bracket mapping and winner-only advancement, gated on a
-   decisive-result policy.
-6. Implement one color-allocation policy shared by the format engines.
-7. Add a transactional `generate_next_round` domain command with lifecycle,
-   numbering, completeness, and existing-round conflicts.
-8. Add section API preview/confirm routes and explicit Pydantic read/command
-   contracts; reuse operation read models where possible.
-9. Add operator preview, confirmation, and result display without replacing
-   manual pairing controls.
-10. Update `docs/DATA.md`, `docs/DESIGN.md`, and user-facing examples with only
-    the policies actually shipped.
+This chain is dependency-ordered. Each step is complete only with its stated
+validation, and the final steps must expose the generated behavior in the
+existing operator workspace.
+
+1. **Done — Resolve policy:** [T33](workflow/done/T33_resolve_pairing_automation_policy.md)
+    recorded all seven approved decisions in this document. Do not reintroduce
+    them as runtime defaults or silently alter them during implementation.
+2. **Persist and edit pairing prerequisites:** Add operator-assigned,
+    section-unique seed positions and explicit section-membership withdrawal
+    state. Add migration, schemas, CRUD/service validation, and section
+    structure/operator controls. Draft activation must reject missing,
+    duplicate, or invalid seeds for pairable fields. Withdrawal and re-entry
+    must remain explicit actions while historical games and scores remain
+    unchanged.
+3. **Add the pure common pairing layer:** Define side-effect-free input/output
+    types, format-specific round-count functions, complete-plan validators,
+    deterministic tie ordering, and the shared color allocator. Keep SQLAlchemy
+    and FastAPI out of this layer. Cover the approved first-round, streak,
+    balance, and fallback rules exhaustively.
+4. **Implement single round-robin:** Build and independently verify circle
+    scheduling for even and odd eligible fields, structural byes, one complete
+    unordered pairing set, and calculated round counts. Return an in-memory plan
+    only; do not write database rows.
+5. **Implement Swiss:** Build FIDE/Dutch-style score-group matching from seeds
+    or latest standings, repeat avoidance, controlled down-floats, bounded
+    backtracking, one-bye selection, impossible-plan failure, and the shared
+    color allocator. Return an in-memory plan only.
+6. **Implement knockout:** Map operator seeds into the padded bracket, create
+    structural first-round byes, advance only completed decisive winners in
+    bracket order, and reject drawn or unresolved predecessor matches. Return an
+    in-memory plan only.
+7. **Add transactional generation:** Implement a domain command that reloads
+    authoritative section state, checks active lifecycle, planned/calculated
+    round count, seed completeness, eligibility, uninterrupted numbering,
+    previous-round completeness, and existing-round conflicts, then creates the
+    complete round, games, and round-participant records in one commit.
+    Any domain or persistence failure must roll back everything.
+8. **Add preview and confirm API contracts:** Add section-oriented preview and
+    confirm routes with explicit Pydantic read/command models. Preview calls the
+    same pure planning path without writes. Confirm independently reloads and
+    validates state before calling the transactional command; a stale preview is
+    never an authorization token. Responses must expose target round, format,
+    games, byes/non-paired outcomes, seed order, policy labels, warnings, and
+    actionable domain errors.
+9. **Integrate the section operation UI:** In
+    `app/static/operations.js`, add a visible **Preview next round** action for
+    eligible active sections. Render the returned pairing table, colors, byes,
+    warnings, and next round number; provide a separate **Confirm generation**
+    action; and display backend conflicts without discarding the operator's
+    context. Preserve the existing manual round/pairing path.
+10. **Complete the post-confirm workflow:** After confirmation, navigate to or
+     refresh the generated round, refresh operation/standings data, focus its
+     result-entry controls, and let the operator record results with the
+     existing game editor. Once that round is complete, recompute standings
+     and make the next preview available. Ensure spectator/display responses see
+     the committed generated round through the existing operation contract.
+11. **Prove the operator journey and document it:** Add end-to-end route/UI
+     coverage for every format from preview through confirmation, result entry,
+     standings visibility, and next-round availability, including stale preview,
+     conflict, rollback, and manual fallback paths. Update `docs/DATA.md`,
+     `docs/DESIGN.md`, README usage, and any operator examples only after the
+     tested behavior ships.
 
 ## Required Tests
 
@@ -263,33 +308,62 @@ Pure-engine tests should cover:
 Route/transaction tests should cover active-section requirements, draft and
 finished rejection, missing plan rejection, skipped/existing round conflicts,
 incomplete prior-round rejection, atomic rollback, same-section enforcement,
-and generated round visibility in operation/standings responses.
+generated round visibility in operation/standings/display responses, stale
+preview rejection, and error responses usable by the frontend.
 
-## Operator Decisions Required
+Frontend tests should cover visibility of preview/confirm controls only in
+eligible active sections, preview tables and warnings, confirm behavior,
+non-destructive conflict display, manual pairing coexistence, post-confirm
+navigation/refresh, result-entry focus, and next-round availability.
 
-1. **Seed persistence:** Should initial seed be rating-descending with a stable
-   ID tie-break, or must operators assign arbitrary seed positions?
-2. **Swiss profile:** Which pairing profile is authoritative (for example,
-   FIDE Dutch-style), and which float/repeat preferences and tie ordering apply?
-3. **Byes:** Who receives a bye, can a participant receive more than one, and
-   is the awarded score always `1`, `0.5`, or format-dependent?
-4. **Color policy:** What maximum consecutive-color imbalance is allowed, and
-   what initial-round color rule and fallback order should be used?
-5. **Knockout resolution:** Is a draw followed by another game, decided by a
-   configured tie-break, or forbidden? Must tied-score results be represented
-   as a multi-game match rather than one `Game` row?
-6. **Round-robin scope:** Is the first slice single round-robin only, or is a
-   double-round option required now?
-7. **Absence and withdrawal:** Which existing `absent`/`unplayed` states affect
-   eligibility in later rounds, and can a participant re-enter?
+## Approved Operator Decisions
+
+1. **Seed persistence — decided:** Operators assign arbitrary seed positions.
+   Stored seed positions are authoritative; pairing engines do not derive
+   initial seeds from ratings. This is required for players without ratings.
+2. **Swiss profile — decided:** Use a FIDE Dutch-style profile. Pair within
+   score groups where possible, avoid repeat opponents where possible, and use
+   bounded backtracking for a legal plan. When a downward float is required,
+   select the eligible player with the highest seed number first. Resolve ties
+   deterministically by seed ascending, then stable player ID.
+3. **Byes — decided:** In Swiss pairing, select the lowest-ranked eligible
+   player who has not previously received a bye. A bye awards `1` point and a
+   participant may receive at most one. If every active participant has already
+   received a bye, generation fails explicitly rather than granting a second
+   one. Round-robin schedule placeholders and knockout bracket advancements are
+   structural byes, not score-awarding Swiss byes.
+4. **Color policy — decided:** Avoid giving a participant the same color three
+   times consecutively whenever the current pairing plan permits. In the first
+   Swiss round, alternate the higher-seeded participant's color across
+   top-versus-bottom pairings: White for pair 1, Black for pair 2, White for
+   pair 3, and so on. Color fallback priority is: legal score-group pairing,
+   repeat-opponent avoidance, avoid a third consecutive color, minimize
+   total White-minus-Black imbalance, then deterministic seed/ID order.
+5. **Knockout resolution — decided:** A draw is forbidden from advancing a
+   participant. One generated knockout pairing initially creates one `Game`;
+   a drawn or tied result leaves the match unresolved and blocks later-round
+   generation. The operator must record a separate decisive playoff game
+   manually; automatic rematches, tie-break winners, and multi-game match
+   aggregation are outside the first slice.
+6. **Round-robin scope — decided:** The first slice supports single
+   round-robin only. Every participant is scheduled against every other
+   participant once; a double-round option remains future work.
+7. **Absence and withdrawal — decided:** An `absent` or `unplayed` result
+   affects only its own round and does not automatically remove the participant
+   from later-round eligibility. Only an explicit withdrawal makes the
+   participant ineligible. Re-entry is allowed only through an explicit
+   operator action, and historical results remain unchanged.
 
 These choices affect public behavior and stored data. Implementation should not
 silently select answers to them.
 
 ## Completion Criteria for the Implementation Slice
 
-The automation implementation is complete only when a section with an explicit
-approved policy can preview and transactionally generate the next legal round,
-manual operation still works, round counts match the format, no partial data is
-committed, and focused pure-engine plus route tests prove every format's
-invariants.
+The automation implementation is complete only when an operator can open an
+active section, preview the next legal round, understand its pairings/colors/
+byes and warnings, confirm generation, see the persisted round in the existing
+workspace, record its results, recompute standings, and preview the following
+round without using an API client or database tool. Manual operation must still
+work, round counts must match the format, no partial data may be committed, and
+pure-engine, route, transaction, frontend, and end-to-end tests must prove every
+format's invariants and the failure paths.
