@@ -191,6 +191,45 @@ h2 {
   font-weight: 700;
 }
 
+.record-link {
+  color: var(--accent);
+  font-weight: 750;
+}
+
+.catalog-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+.form-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.35fr) minmax(0, 1fr);
+  gap: 0.65rem 1rem;
+  margin: 1.25rem 0 0;
+}
+
+.detail-list dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.detail-list dd {
+  margin: 0;
+}
+
 .button-secondary {
   color: var(--accent);
   background: transparent;
@@ -415,7 +454,7 @@ th {
 
   .primary-nav {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .primary-nav a {
@@ -423,6 +462,11 @@ th {
   }
 
   .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-layout,
+  .form-grid {
     grid-template-columns: 1fr;
   }
 

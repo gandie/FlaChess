@@ -28,6 +28,7 @@ from app.schemas import (
     TournamentCreate,
     TournamentParticipantCreate,
     TournamentParticipantUpdate,
+    TournamentResponse,
     TournamentPhaseCreate,
     TournamentPhaseUpdate,
     TournamentRoundCreate,
@@ -48,6 +49,7 @@ def _include_crud(
     path: str,
     tags: list[str],
     deleted_methods: list[str] | None = None,
+    select_schema: type | None = None,
 ) -> None:
     router.include_router(
         crud_router(
@@ -58,6 +60,7 @@ def _include_crud(
             path=path,
             tags=tags,
             deleted_methods=deleted_methods,
+            select_schema=select_schema,
         ),
     )
 
@@ -73,6 +76,7 @@ _include_crud(
     model=Tournament,
     create_schema=TournamentCreate,
     update_schema=TournamentUpdate,
+    select_schema=TournamentResponse,
     path="/tournaments",
     tags=["Tournaments"],
 )

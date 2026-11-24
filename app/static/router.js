@@ -9,6 +9,29 @@ export function createRouter({
   let activeController = null;
   let generation = 0;
 
+  function routeFor(path) {
+    for (const [pattern, load] of routes) {
+      const keys = [];
+      const expression = pattern.replace(
+        /:([A-Za-z][A-Za-z0-9_]*)/g,
+        (_, key) => {
+          keys.push(key);
+          return "([^/]+)";
+        },
+      );
+      const match = path.match(new RegExp(`^${expression}$`));
+      if (match) {
+        return {
+          load,
+          params: Object.fromEntries(
+            keys.map((key, index) => [key, match[index + 1]]),
+          ),
+        };
+      }
+    }
+    return { load: notFound, params: {} };
+  }
+
   function currentPath() {
     const hash = window.location.hash.replace(/^#/, "");
     return hash || "/";
@@ -19,13 +42,13 @@ export function createRouter({
     activeController = new AbortController();
     const currentGeneration = ++generation;
     const signal = activeController.signal;
-    const load = routes.get(path) ?? notFound;
+    const { load, params } = routeFor(path);
 
     onNavigate?.(path);
     onLoading?.();
 
     try {
-      const view = await load({ path, signal });
+      const view = await load({ path, params, signal });
       if (signal.aborted || currentGeneration !== generation) {
         return;
       }

@@ -154,11 +154,20 @@ export async function pendingAction(button, operation) {
 }
 
 export function errorSummary(error) {
-  if (error instanceof ApiError && error.status) {
-    return `${error.message} (HTTP ${error.status})`;
-  }
   if (error instanceof ApiError) {
-    return error.message;
+    let message = error.message;
+    if (typeof error.detail === "string") {
+      message = `${message} ${error.detail}`;
+    } else if (Array.isArray(error.detail)) {
+      const details = error.detail
+        .map((item) => item?.msg)
+        .filter(Boolean)
+        .join("; ");
+      if (details) {
+        message = `${message} ${details}`;
+      }
+    }
+    return error.status ? `${message} (HTTP ${error.status})` : message;
   }
   return "The page could not be loaded.";
 }

@@ -23,8 +23,10 @@ $env:DATABASE_URL = "postgresql+asyncpg://fla_chess:fla_chess@127.0.0.1:5432/fla
 
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000) for the operator application
 shell. The framework-free SPA includes URL-backed Overview and System views;
-the System view runs a database-independent health check and demonstrates
-normalized API error handling.
+Tournament views list status and structure counts, create draft tournaments,
+and open stable overviews where draft metadata can be edited. The System view
+runs a database-independent health check and demonstrates normalized API error
+handling.
 
 The API is available at
 [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health) for the
@@ -37,7 +39,9 @@ With `DATABASE_URL` configured, CRUD is available under `/api/players`,
 `/api/tournaments`, and `/api/tournament-participants`. Tournaments start in
 `draft`; use `POST /api/tournaments/{id}/activate` after registering at least
 two participants, then `POST /api/tournaments/{id}/finish`. Other lifecycle
-transitions return a `409` response.
+transitions return a `409` response. The operator catalog uses
+`GET /api/tournament-summaries`, which returns lifecycle and participant,
+phase, and section counts without a paginated CRUD envelope.
 
 The SQLAdmin interface is mounted at
 [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and provides list,

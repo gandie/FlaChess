@@ -14,6 +14,7 @@ from app.routes.games import router as games_router
 from app.routes.lifecycle import router as lifecycle_router
 from app.routes.memberships import router as memberships_router
 from app.routes.round_participants import router as round_participants_router
+from app.routes.tournament_catalog import router as tournament_catalog_router
 from app.routes.tiebreaks import router as tiebreaks_router
 from app.schemas import SectionStandingResponse
 from app.tournament_standings import (
@@ -29,6 +30,7 @@ router.include_router(memberships_router)
 router.include_router(round_participants_router)
 router.include_router(games_router)
 router.include_router(lifecycle_router)
+router.include_router(tournament_catalog_router)
 
 
 @router.get(

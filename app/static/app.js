@@ -9,6 +9,10 @@ import {
   status,
 } from "./render.js";
 import { createRouter } from "./router.js";
+import {
+  tournamentCatalogView,
+  tournamentOverviewView,
+} from "./tournaments.js";
 
 const view = document.querySelector("#app-view");
 const connectionStatus = document.querySelector("#app-connection-status");
@@ -33,10 +37,15 @@ function overviewView() {
 
   const next = element("article", { className: "card" });
   next.append(
-    badge("Next slice", "accent"),
+    badge("Operator workflow", "accent"),
     element("h2", { text: "Tournament catalog" }),
     element("p", {
-      text: "Tournament listing and draft creation will be added in the next operator workflow.",
+      text: "Review tournaments, create a draft, and open its editable overview.",
+    }),
+    element("a", {
+      className: "button button-secondary",
+      text: "Open tournaments",
+      attributes: { href: "#/tournaments" },
     }),
   );
 
@@ -163,6 +172,12 @@ function notFoundView() {
 const router = createRouter({
   routes: new Map([
     ["/", overviewView],
+    ["/tournaments", () => tournamentCatalogView(router.navigate)],
+    [
+      "/tournaments/:id",
+      ({ params }) =>
+        tournamentOverviewView({ tournamentId: params.id }),
+    ],
     ["/system", systemView],
   ]),
   notFound: notFoundView,
@@ -183,7 +198,9 @@ const router = createRouter({
   },
   onNavigate(path) {
     for (const link of document.querySelectorAll("[data-route-link]")) {
-      const active = link.dataset.routeLink === path;
+      const route = link.dataset.routeLink;
+      const active =
+        path === route || (route !== "/" && path.startsWith(`${route}/`));
       link.classList.toggle("active", active);
       if (active) {
         link.setAttribute("aria-current", "page");

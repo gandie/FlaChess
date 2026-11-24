@@ -70,6 +70,7 @@ class AppTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/html", response.headers["content-type"])
         self.assertIn("Fla Chess", response.text)
+        self.assertIn('href="#/tournaments"', response.text)
         self.assertIn('href="#/system"', response.text)
         self.assertIn('id="app-view"', response.text)
         self.assertIn('src="/static/app.js"', response.text)
@@ -82,6 +83,7 @@ class AppTests(unittest.TestCase):
             "api.js": "class ApiError",
             "router.js": "AbortController",
             "render.js": "pendingAction",
+            "tournaments.js": "/api/tournament-summaries",
         }
 
         for asset, marker in expected_assets.items():

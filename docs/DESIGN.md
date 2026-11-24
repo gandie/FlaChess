@@ -182,7 +182,7 @@ earlier contract.
      patterns.
    - Add a frontend smoke path and prove navigation and backend error handling
      without requiring a database for the health check.
-1. **Tournament catalog and draft creation**
+1. **Tournament catalog and draft creation — complete (T25)**
    - List tournaments and expose a focused create form for tournament metadata.
    - Add the smallest summary contract needed for the list.
    - Open a tournament overview containing lifecycle and edit state.

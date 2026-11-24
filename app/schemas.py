@@ -38,6 +38,22 @@ class TournamentCreate(TournamentDateMixin):
     time_control: str | None = Field(default=None, max_length=255)
 
 
+class TournamentResponse(TournamentDateMixin):
+    id: int
+    name: str
+    description: str | None
+    lifecycle: TournamentLifecycle
+    time_control: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class TournamentSummary(TournamentResponse):
+    participant_count: int
+    phase_count: int
+    section_count: int
+
+
 class TournamentUpdate(TournamentDateMixin):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = None

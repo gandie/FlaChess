@@ -370,3 +370,19 @@
   live Uvicorn HTTP smoke test. Residual risk: browser rendering and keyboard
   interaction were not exercised by an automated browser test; static serving,
   URL contracts, and module syntax were validated.
+
+- **T25 – Implementing the Tournament Catalog and Draft Creation:** Added
+  `/api/tournament-summaries` with lifecycle, date, participant, phase, and
+  section counts; typed tournament read responses; catalog and tournament
+  overview navigation; focused draft creation; and draft-only metadata editing
+  with backend-authoritative refresh and explicit loading, empty, validation,
+  conflict, and unavailable-service states. Files changed: `app/schemas.py`,
+  `app/api.py`, `app/routes/crud.py`, `app/routes/tournament_catalog.py`,
+  `app/static/`, `tests/test_app.py`, `tests/test_tournament_catalog.py`,
+  `README.md`, this changelog, and
+  [T25](../done/T25_implement_tournament_catalog.md). Validation: frontend
+  JavaScript syntax checks passed, focused catalog and app tests passed, the
+  refactor boundary test passed, and the full unittest suite passed
+  (74 tests). The operator also completed live browser interaction, including
+  creating a test tournament and opening its overview successfully. Residual
+  risk: keyboard interaction remains unverified by an automated browser test.
