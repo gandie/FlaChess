@@ -9,10 +9,15 @@ from app.lifecycle import (
     transition_tournament,
 )
 from app.models import (
+    SectionParticipant,
     SectionLifecycle,
     Tournament,
     TournamentLifecycle,
     TournamentSection,
+)
+from app.section_memberships import (
+    SectionMembershipValidationError,
+    validate_pairing_seed_positions,
 )
 from app.schemas import (
     SectionTransitionResponse,
@@ -91,8 +96,16 @@ async def apply_section_transition(
         )
 
     try:
+        if target is SectionLifecycle.ACTIVE:
+            result = await session.execute(
+                select(
+                    SectionParticipant.seed_position,
+                    SectionParticipant.is_withdrawn,
+                ).where(SectionParticipant.section_id == section.id),
+            )
+            validate_pairing_seed_positions(result.all())
         await transition_section(section, target, session)
-    except LifecycleTransitionError as error:
+    except (LifecycleTransitionError, SectionMembershipValidationError) as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(error),

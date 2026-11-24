@@ -79,6 +79,8 @@ def workspace_member() -> SimpleNamespace:
         source_section_id=1,
         source_section_name="Preliminary",
         source_rank=2,
+        seed_position=4,
+        is_withdrawn=False,
     )
 
 
@@ -139,6 +141,8 @@ class TournamentWorkspaceRouteTests(unittest.TestCase):
             "Preliminary",
         )
         self.assertEqual(open_section["participants"][0]["source_rank"], 2)
+        self.assertEqual(open_section["participants"][0]["seed_position"], 4)
+        self.assertFalse(open_section["participants"][0]["is_withdrawn"])
         self.assertTrue(open_section["tiebreaks"][0]["supported"])
         self.assertEqual(
             payload["supported_tiebreak_codes"],
@@ -207,6 +211,10 @@ class TournamentWorkspaceFrontendTests(unittest.TestCase):
         self.assertIn("Only standings-supported codes", structure)
         self.assertIn("source_section_id", structure)
         self.assertIn("source_rank", structure)
+        self.assertIn("seed_position", structure)
+        self.assertIn("is_withdrawn", structure)
+        self.assertIn("re-enter", structure)
+        self.assertIn("withdraw", structure)
         self.assertIn("Review final standings", structure)
         self.assertIn("/workspace", overview)
 

@@ -86,6 +86,15 @@ class SectionParticipant(Base):
             "source_rank IS NULL OR source_rank > 0",
             name="ck_section_participant_source_rank_positive",
         ),
+        CheckConstraint(
+            "seed_position IS NULL OR seed_position > 0",
+            name="ck_section_participant_seed_position_positive",
+        ),
+        UniqueConstraint(
+            "section_id",
+            "seed_position",
+            name="uq_section_participant_seed_position",
+        ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -104,6 +113,13 @@ class SectionParticipant(Base):
         nullable=True,
     )
     source_rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    seed_position: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_withdrawn: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default="false",
+    )
     participant: Mapped[TournamentParticipant] = relationship(
         back_populates="section_memberships",
         lazy="joined",

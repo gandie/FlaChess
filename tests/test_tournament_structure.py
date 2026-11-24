@@ -1,6 +1,6 @@
 import unittest
 
-from sqlalchemy import BigInteger, DateTime, Integer, String
+from sqlalchemy import BigInteger, Boolean, DateTime, Integer, String
 
 from app.database import Base
 from app.models import (
@@ -64,6 +64,9 @@ class TournamentStructureModelTests(unittest.TestCase):
         self.assertIsInstance(table.c.rating.type, Integer)
         self.assertIsInstance(table.c.rating_source.type, String)
         self.assertEqual(table.c.rating_source.type.length, 64)
+        self.assertIsInstance(table.c.seed_position.type, Integer)
+        self.assertIsInstance(table.c.is_withdrawn.type, Boolean)
+        self.assertFalse(table.c.is_withdrawn.nullable)
         self.assertEqual(len(table.foreign_keys), 3)
         constraint_names = {constraint.name for constraint in table.constraints}
         self.assertIn("uq_section_participant_membership", constraint_names)
@@ -75,6 +78,11 @@ class TournamentStructureModelTests(unittest.TestCase):
             "ck_section_participant_source_rank_positive",
             constraint_names,
         )
+        self.assertIn(
+            "ck_section_participant_seed_position_positive",
+            constraint_names,
+        )
+        self.assertIn("uq_section_participant_seed_position", constraint_names)
 
 
 class TournamentStructureSchemaTests(unittest.TestCase):
@@ -113,10 +121,12 @@ class TournamentStructureSchemaTests(unittest.TestCase):
             rating_source="fide",
             source_section_id=4,
             source_rank=1,
+            seed_position=2,
         )
 
         self.assertEqual(section.planned_round_count, 7)
         self.assertEqual(membership.source_rank, 1)
+        self.assertEqual(membership.seed_position, 2)
         for update in ({"planned_round_count": 0}, {"sequence": 0}):
             values = {
                 "phase_id": 1,
@@ -128,6 +138,12 @@ class TournamentStructureSchemaTests(unittest.TestCase):
                 TournamentSectionCreate(**values)
         with self.assertRaises(ValueError):
             SectionParticipantCreate(participant_id=2, section_id=3, rating=0)
+        with self.assertRaises(ValueError):
+            SectionParticipantCreate(
+                participant_id=2,
+                section_id=3,
+                seed_position=0,
+            )
         with self.assertRaises(ValueError):
             SectionParticipantUpdate(section_id=None)
 

@@ -236,13 +236,13 @@ existing operator workspace.
 1. **Done — Resolve policy:** [T33](workflow/done/T33_resolve_pairing_automation_policy.md)
     recorded all seven approved decisions in this document. Do not reintroduce
     them as runtime defaults or silently alter them during implementation.
-2. **Persist and edit pairing prerequisites:** Add operator-assigned,
-    section-unique seed positions and explicit section-membership withdrawal
-    state. Add migration, schemas, CRUD/service validation, and section
-    structure/operator controls. Draft activation must reject missing,
-    duplicate, or invalid seeds for pairable fields. Withdrawal and re-entry
-    must remain explicit actions while historical games and scores remain
-    unchanged.
+2. **Done — Persist and edit pairing prerequisites:**
+    [T35](workflow/done/T35_persist_pairing_prerequisites.md) added
+    operator-assigned, section-unique seed positions, explicit section-membership
+    withdrawal state, migration and service validation, and section
+    structure/operator controls. Draft activation rejects missing, duplicate, or
+    invalid seeds for pairable fields. Withdrawal and re-entry are dedicated
+    actions and leave historical games and scores unchanged.
 3. **Add the pure common pairing layer:** Define side-effect-free input/output
     types, format-specific round-count functions, complete-plan validators,
     deterministic tie ordering, and the shared color allocator. Keep SQLAlchemy

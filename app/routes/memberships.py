@@ -10,6 +10,10 @@ from app.schemas import (
     SectionParticipantUpdate,
 )
 from app.tournament_structure import membership_tournament_ids
+from app.section_memberships import (
+    SectionMembershipValidationError,
+    ensure_seed_position_available,
+)
 
 router = APIRouter()
 
@@ -55,6 +59,27 @@ async def commit_section_membership(
     return membership
 
 
+async def validate_seed_position(
+    section_id: int,
+    seed_position: int | None,
+    session: AsyncSession,
+    *,
+    membership_id: int | None = None,
+) -> None:
+    try:
+        await ensure_seed_position_available(
+            section_id,
+            seed_position,
+            session,
+            membership_id=membership_id,
+        )
+    except SectionMembershipValidationError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+
+
 @router.post(
     "/section-participants",
     response_model=SectionParticipantResponse,
@@ -69,7 +94,12 @@ async def create_section_participant(
         payload.section_id,
         session,
     )
-    membership = SectionParticipant(**payload.model_dump())
+    await validate_seed_position(
+        payload.section_id,
+        payload.seed_position,
+        session,
+    )
+    membership = SectionParticipant(**payload.model_dump(), is_withdrawn=False)
     session.add(membership)
     return await commit_section_membership(membership, session)
 
@@ -94,6 +124,51 @@ async def update_section_participant(
     participant_id = values.get("participant_id", membership.participant_id)
     section_id = values.get("section_id", membership.section_id)
     await validate_section_membership(participant_id, section_id, session)
+    seed_position = values.get("seed_position", membership.seed_position)
+    await validate_seed_position(
+        section_id,
+        seed_position,
+        session,
+        membership_id=membership.id,
+    )
     for field, value in values.items():
         setattr(membership, field, value)
     return await commit_section_membership(membership, session)
+
+
+async def set_membership_withdrawal(
+    id: int,
+    is_withdrawn: bool,
+    session: AsyncSession,
+) -> SectionParticipant:
+    membership = await session.get(SectionParticipant, id)
+    if membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section participant not found",
+        )
+    membership.is_withdrawn = is_withdrawn
+    await session.commit()
+    return membership
+
+
+@router.post(
+    "/section-participants/{id}/withdraw",
+    response_model=SectionParticipantResponse,
+)
+async def withdraw_section_participant(
+    id: int,
+    session: AsyncSession = Depends(get_session),
+) -> SectionParticipant:
+    return await set_membership_withdrawal(id, True, session)
+
+
+@router.post(
+    "/section-participants/{id}/re-enter",
+    response_model=SectionParticipantResponse,
+)
+async def reenter_section_participant(
+    id: int,
+    session: AsyncSession = Depends(get_session),
+) -> SectionParticipant:
+    return await set_membership_withdrawal(id, False, session)

@@ -27,6 +27,8 @@ class WorkspaceSectionParticipant(BaseModel):
     source_section_id: int | None
     source_section_name: str | None
     source_rank: int | None
+    seed_position: int | None
+    is_withdrawn: bool
 
     model_config = {"from_attributes": True}
 

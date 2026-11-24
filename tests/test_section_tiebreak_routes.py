@@ -26,6 +26,9 @@ class TiebreakSession:
     async def scalar(self, statement: object) -> object:
         return next(self.scalar_values)
 
+    async def execute(self, statement: object) -> SimpleNamespace:
+        return SimpleNamespace(all=lambda: [])
+
     async def get(
         self,
         model: type[SectionTiebreak],

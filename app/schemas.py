@@ -173,21 +173,27 @@ class SectionStandingResponse(BaseModel):
 
 
 class SectionParticipantCreate(BaseModel):
+    model_config = {"extra": "forbid"}
+
     participant_id: int = Field(gt=0)
     section_id: int = Field(gt=0)
     rating: int | None = Field(default=None, gt=0)
     rating_source: str | None = Field(default=None, max_length=64)
     source_section_id: int | None = Field(default=None, gt=0)
     source_rank: int | None = Field(default=None, gt=0)
+    seed_position: int | None = Field(default=None, gt=0)
 
 
 class SectionParticipantUpdate(BaseModel):
+    model_config = {"extra": "forbid"}
+
     participant_id: int | None = Field(default=None, gt=0)
     section_id: int | None = Field(default=None, gt=0)
     rating: int | None = Field(default=None, gt=0)
     rating_source: str | None = Field(default=None, max_length=64)
     source_section_id: int | None = Field(default=None, gt=0)
     source_rank: int | None = Field(default=None, gt=0)
+    seed_position: int | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
     def require_non_null_relationship_ids(self) -> "SectionParticipantUpdate":
@@ -206,6 +212,8 @@ class SectionParticipantResponse(BaseModel):
     rating_source: str | None
     source_section_id: int | None
     source_rank: int | None
+    seed_position: int | None
+    is_withdrawn: bool
 
     model_config = {"from_attributes": True}
 

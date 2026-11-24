@@ -93,6 +93,8 @@ async def section_participants(
             SectionParticipant.rating_source,
             SectionParticipant.source_section_id,
             SectionParticipant.source_rank,
+            SectionParticipant.seed_position,
+            SectionParticipant.is_withdrawn,
             TournamentParticipant.id.label("registration_id"),
             TournamentParticipant.player_id,
             Player.name.label("player_name"),
@@ -161,10 +163,21 @@ def readiness(
     if not sections:
         warnings.append("Add at least one section before operating rounds.")
     for section in sections:
+        eligible_members = [
+            member for member in section.participants if not member.is_withdrawn
+        ]
         if section.planned_round_count is None:
             warnings.append(f"{section.name}: planned round count is missing.")
         if not section.participants:
             warnings.append(f"{section.name}: no players are assigned.")
+        if len(eligible_members) >= 2:
+            seeds = [member.seed_position for member in eligible_members]
+            if any(seed is None for seed in seeds):
+                warnings.append(
+                    f"{section.name}: an eligible player is missing a seed.",
+                )
+            elif len(set(seeds)) != len(seeds):
+                warnings.append(f"{section.name}: seed positions are duplicated.")
         if any(not rule.supported for rule in section.tiebreaks):
             warnings.append(
                 f"{section.name}: unsupported tie-break codes are configured.",

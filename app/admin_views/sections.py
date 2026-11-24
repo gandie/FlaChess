@@ -5,6 +5,10 @@ from starlette.requests import Request
 
 from app.admin_views.support import ensure_section_is_draft
 from app.models import SectionParticipant, SectionTiebreak
+from app.section_memberships import (
+    SectionMembershipValidationError,
+    ensure_seed_position_available,
+)
 from app.tournament_structure import membership_tournament_ids
 
 
@@ -81,6 +85,8 @@ class SectionParticipantAdmin(ModelView, model=SectionParticipant):
         SectionParticipant.rating_source,
         SectionParticipant.source_section,
         SectionParticipant.source_rank,
+        SectionParticipant.seed_position,
+        SectionParticipant.is_withdrawn,
     ]
     form_columns = [
         SectionParticipant.participant,
@@ -89,6 +95,7 @@ class SectionParticipantAdmin(ModelView, model=SectionParticipant):
         SectionParticipant.rating_source,
         SectionParticipant.source_section,
         SectionParticipant.source_rank,
+        SectionParticipant.seed_position,
     ]
 
     async def on_model_change(
@@ -116,6 +123,20 @@ class SectionParticipantAdmin(ModelView, model=SectionParticipant):
                 participant_tournament_id,
                 section_tournament_id,
             ) = await membership_tournament_ids(participant_id, section_id, session)
+            seed_value = data.get(
+                "seed_position",
+                getattr(model, "seed_position", None),
+            )
+            seed_position = None if seed_value in (None, "") else int(seed_value)
+            try:
+                await ensure_seed_position_available(
+                    section_id,
+                    seed_position,
+                    session,
+                    membership_id=None if is_created else model.id,
+                )
+            except SectionMembershipValidationError as error:
+                raise ValueError(str(error)) from error
 
         if participant_tournament_id is None or section_tournament_id is None:
             raise ValueError("Participant or section no longer exists")

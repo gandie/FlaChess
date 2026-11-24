@@ -145,6 +145,41 @@ function deleteButton({ text, message, onDelete }) {
   return button;
 }
 
+function membershipActionButton(context, section, member) {
+  const reentering = member.is_withdrawn;
+  const action = reentering ? "re-enter" : "withdraw";
+  const button = element("button", {
+    className: "button button-secondary button-small",
+    text: reentering ? "Re-enter" : "Withdraw",
+    attributes: { type: "button" },
+  });
+  button.addEventListener("click", () => {
+    if (
+      confirmAction(
+        `${reentering ? "Re-enter" : "Withdraw"} ${member.player_name} ${
+          reentering ? "in" : "from"
+        } ${section.name}? Historical results will remain unchanged.`,
+      )
+    ) {
+      void pendingAction(button, async () => {
+        try {
+          await api.post(
+            `/api/section-participants/${member.id}/${action}`,
+            {},
+            { signal: context.signal },
+          );
+          await context.refresh();
+        } catch (error) {
+          if (error?.name !== "AbortError") {
+            button.after(status(errorSummary(error), "error"));
+          }
+        }
+      });
+    }
+  });
+  return button;
+}
+
 function phaseEditor(context, phase) {
   const form = writeForm({
     fields: () => {
@@ -344,13 +379,18 @@ function membershipEditor(context, section, member) {
     row.append(
       element("span", {
         className: "muted",
-        text: `${
+        text: `Seed ${member.seed_position ?? "not set"} · ${
           member.rating
             ? `${member.rating}${member.rating_source ? ` ${member.rating_source}` : ""}`
             : "Unrated"
-        } · ${provenance}`,
+        } · ${provenance} · ${
+          member.is_withdrawn ? "Withdrawn" : "Eligible"
+        }`,
       }),
     );
+    if (context.membershipActions) {
+      row.append(membershipActionButton(context, section, member));
+    }
     return row;
   }
   const form = writeForm({
@@ -368,19 +408,27 @@ function membershipEditor(context, section, member) {
         value: member.rating_source ?? "",
       });
       source.control.maxLength = 64;
+      const seed = formField({
+        id: `member_${member.id}_seed`,
+        label: "Seed position",
+        type: "number",
+        value: member.seed_position ?? "",
+      });
+      seed.control.min = "1";
       const sourceSection = sourceSectionField(context, section, member);
       const sourceRank = sourceRankField(member);
       sourceRank.control.min = "1";
-      return [rating, source, sourceSection, sourceRank];
+      return [rating, source, seed, sourceSection, sourceRank];
     },
     submitText: "Save membership",
     className: "structure-form inline-form",
-    onWrite: async ([rating, source, sourceSection, sourceRank]) => {
+    onWrite: async ([rating, source, seed, sourceSection, sourceRank]) => {
       await api.patch(
         `/api/section-participants/${member.id}`,
         {
           rating: numberValue(rating.control),
           rating_source: source.control.value.trim() || null,
+          seed_position: numberValue(seed.control),
           source_section_id: numberValue(sourceSection.control),
           source_rank: numberValue(sourceRank.control),
         },
@@ -401,6 +449,9 @@ function membershipEditor(context, section, member) {
       },
     }),
   );
+  if (context.membershipActions) {
+    form.append(membershipActionButton(context, section, member));
+  }
   row.append(form);
   return row;
 }
@@ -448,10 +499,16 @@ function membershipPanel(context, section) {
         const sourceSection = sourceSectionField(context, section);
         const sourceRank = sourceRankField(null, section.id);
         sourceRank.control.min = "1";
-        return [player, sourceSection, sourceRank];
+        const seed = formField({
+          id: `section_${section.id}_participant_seed`,
+          label: "Seed position",
+          type: "number",
+        });
+        seed.control.min = "1";
+        return [player, seed, sourceSection, sourceRank];
       },
       submitText: "Add to section",
-      onWrite: async ([player, sourceSection, sourceRank]) => {
+      onWrite: async ([player, seed, sourceSection, sourceRank]) => {
         await api.post(
           "/api/section-participants",
           {
@@ -459,6 +516,7 @@ function membershipPanel(context, section) {
             section_id: section.id,
             rating: null,
             rating_source: null,
+            seed_position: numberValue(seed.control),
             source_section_id: numberValue(sourceSection.control),
             source_rank: numberValue(sourceRank.control),
           },
@@ -624,6 +682,9 @@ function sectionCard(context, section) {
     membershipEditable:
       context.workspace.lifecycle !== "finished" &&
       section.lifecycle === "draft",
+    membershipActions:
+      context.workspace.lifecycle !== "finished" &&
+      section.lifecycle !== "finished",
   };
   const card = element("article", { className: "section-card" });
   card.append(

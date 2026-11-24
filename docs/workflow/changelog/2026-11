@@ -522,3 +522,18 @@
   passed (92 tests). Residual risk: the plan describes required implementation
   work; pairing engines, routes, persistence, and frontend automation remain to
   be built and tested.
+
+- **T35 - Persisting Pairing Prerequisites:** Added nullable positive,
+  section-unique seed positions and explicit withdrawal state for section
+  memberships, with migration constraints, membership and admin validation,
+  activation rejection for incomplete or invalid pairable fields, named
+  withdraw/re-enter commands, workspace exposure, and structure UI controls.
+  Files changed: `app/model_definitions/sections.py`,
+  `app/section_memberships.py`, membership/lifecycle/workspace routes and
+  schemas, `app/admin_views/sections.py`, `app/static/structure.js`, the
+  pairing-prerequisite migration, focused tests, `docs/AUTOMATION.md`, this
+  changelog, and
+  [T35](../done/T35_persist_pairing_prerequisites.md). Validation: 27 focused
+  tests passed, and the full unittest suite passed (98 tests). Residual risk:
+  live PostgreSQL migration execution and browser interaction were not
+  exercised by an automated integration test.
