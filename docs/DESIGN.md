@@ -175,7 +175,7 @@ Each step is a complete vertical slice with an operator-visible result and
 backend/API contract tests. A later step must not depend on an unverified
 earlier contract.
 
-0. **SPA foundation**
+0. **SPA foundation — complete (T24)**
    - Replace the hello-world page with the application shell and responsive
      navigation.
    - Add the shared API client, router, rendering primitives, and status/error
