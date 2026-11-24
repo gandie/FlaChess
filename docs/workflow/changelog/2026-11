@@ -355,3 +355,18 @@
   boundary validation passed (1 test), and the full unittest suite passed
   (70 tests). Residual risk: API aggregate contracts and detailed UI behavior
   still require validation when each vertical slice is implemented.
+
+- **T24 – Implementing the SPA Foundation:** Replaced the hello-world page with
+  a responsive, accessible application shell and hash-backed Overview/System
+  navigation. Added browser-native API, router, and rendering modules with
+  cancellable view activation, normalized network/HTTP/validation errors,
+  loading/status/empty/form/table/confirmation primitives, and a
+  database-independent health and safe-404 smoke flow. Files changed:
+  `app/static/`, `pyproject.toml`, `tests/test_app.py`, `README.md`, this
+  changelog, and [T24](../done/T24_implement_spa_foundation.md). Validation:
+  frontend JavaScript syntax checks passed, focused app tests passed
+  (9 tests), Markdown and done-task evaluation boundary tests passed
+  (1 test each), and the full unittest suite passed (71 tests), including the
+  live Uvicorn HTTP smoke test. Residual risk: browser rendering and keyboard
+  interaction were not exercised by an automated browser test; static serving,
+  URL contracts, and module syntax were validated.

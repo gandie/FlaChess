@@ -64,24 +64,44 @@ class AppTests(unittest.TestCase):
     def setUp(self) -> None:
         self.client = TestClient(app)
 
-    def test_homepage_serves_static_hello_world(self) -> None:
+    def test_homepage_serves_application_shell(self) -> None:
         response = self.client.get("/")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/html", response.headers["content-type"])
-        self.assertIn("Hello, Fla Chess!", response.text)
+        self.assertIn("Fla Chess", response.text)
+        self.assertIn('href="#/system"', response.text)
+        self.assertIn('id="app-view"', response.text)
+        self.assertIn('src="/static/app.js"', response.text)
 
-    def test_static_frontend_files_are_served(self) -> None:
-        response = self.client.get("/static/index.html")
+    def test_static_frontend_modules_are_served(self) -> None:
+        expected_assets = {
+            "index.html": "Fla Chess",
+            "styles.css": ".app-shell",
+            "app.js": '"/api/health"',
+            "api.js": "class ApiError",
+            "router.js": "AbortController",
+            "render.js": "pendingAction",
+        }
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Hello, Fla Chess!", response.text)
+        for asset, marker in expected_assets.items():
+            with self.subTest(asset=asset):
+                response = self.client.get(f"/static/{asset}")
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn(marker, response.text)
 
     def test_health_route_returns_ok(self) -> None:
         response = self.client.get("/api/health")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"status": "ok"})
+
+    def test_frontend_smoke_error_path_returns_404_json(self) -> None:
+        response = self.client.get("/api/frontend-smoke/missing")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"detail": "Not Found"})
 
     def test_missing_database_url_warns_and_app_starts(self) -> None:
         with patch.dict(os.environ, {"DATABASE_URL": ""}):
@@ -206,10 +226,12 @@ class UvicornSmokeTests(unittest.TestCase):
         with urlopen(f"{self.base_url}/") as response:
             homepage = response.read().decode()
             self.assertEqual(response.status, 200)
-            self.assertIn("Hello, Fla Chess!", homepage)
+            self.assertIn('id="app-view"', homepage)
+            self.assertIn('href="#/system"', homepage)
 
-        with urlopen(f"{self.base_url}/static/index.html") as response:
+        with urlopen(f"{self.base_url}/static/app.js") as response:
             self.assertEqual(response.status, 200)
+            self.assertIn(b'"/api/health"', response.read())
 
         with urlopen(f"{self.base_url}/api/health") as response:
             self.assertEqual(response.status, 200)

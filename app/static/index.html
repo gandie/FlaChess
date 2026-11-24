@@ -3,12 +3,42 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#17211b">
     <title>Fla Chess</title>
+    <link rel="stylesheet" href="/static/styles.css">
   </head>
   <body>
-    <main>
-      <h1>Hello, Fla Chess!</h1>
-      <p>Your local app is running.</p>
-    </main>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="app-shell">
+      <header class="app-header">
+        <a class="brand" href="#/" aria-label="Fla Chess overview">
+          <span class="brand-mark" aria-hidden="true">FC</span>
+          <span>Fla Chess</span>
+        </a>
+        <nav class="primary-nav" aria-label="Primary navigation">
+          <a href="#/" data-route-link="/"><span>Overview</span></a>
+          <a href="#/system" data-route-link="/system"><span>System</span></a>
+        </nav>
+      </header>
+
+      <main id="main-content" class="app-main" tabindex="-1">
+        <div id="app-view" class="view" aria-live="polite">
+          <section class="loading-state">
+            <span class="spinner" aria-hidden="true"></span>
+            <p>Loading the application&hellip;</p>
+          </section>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <span>Local tournament operations</span>
+        <span id="app-connection-status">Ready</span>
+      </footer>
+    </div>
+
+    <noscript>
+      <p class="noscript-message">Fla Chess requires JavaScript to run.</p>
+    </noscript>
+    <script type="module" src="/static/app.js"></script>
   </body>
 </html>

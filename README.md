@@ -21,7 +21,12 @@ $env:DATABASE_URL = "postgresql+asyncpg://fla_chess:fla_chess@127.0.0.1:5432/fla
 .\venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000) for the hello-world page,
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000) for the operator application
+shell. The framework-free SPA includes URL-backed Overview and System views;
+the System view runs a database-independent health check and demonstrates
+normalized API error handling.
+
+The API is available at
 [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health) for the
 API health response, or [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 for the interactive API documentation. The app checks PostgreSQL during
