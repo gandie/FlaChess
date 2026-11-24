@@ -341,3 +341,17 @@
   violations, and VS Code Problems reported no errors under `app/`.
   Residual risk: live PostgreSQL and browser-based SQLAdmin interaction were
   not rerun during this structural refactor.
+
+## 2026-11-24
+
+- **T23 – Planning Frontend Implementation:** Expanded `docs/DESIGN.md` from a
+  four-item outline into an operator-screen map, SPA foundation, API-contract
+  strategy, and seven dependency-ordered implementation slices. The plan now
+  distinguishes player registry management, tournament registration, section
+  setup, manual operation, standings, manual advancement, and closeout, while
+  deferring pairing automation and other unresolved policy. Files changed:
+  `docs/DESIGN.md`, this changelog, and
+  [T23](../done/T23_plan_frontend_implementation.md). Validation: Markdown
+  boundary validation passed (1 test), and the full unittest suite passed
+  (70 tests). Residual risk: API aggregate contracts and detailed UI behavior
+  still require validation when each vertical slice is implemented.
