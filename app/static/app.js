@@ -13,6 +13,7 @@ import {
   tournamentCatalogView,
   tournamentOverviewView,
 } from "./tournaments.js";
+import { playerDirectoryView } from "./players.js";
 
 const view = document.querySelector("#app-view");
 const connectionStatus = document.querySelector("#app-connection-status");
@@ -178,6 +179,7 @@ const router = createRouter({
       ({ params }) =>
         tournamentOverviewView({ tournamentId: params.id }),
     ],
+    ["/players", playerDirectoryView],
     ["/system", systemView],
   ]),
   notFound: notFoundView,

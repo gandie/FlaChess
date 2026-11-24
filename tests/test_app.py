@@ -71,6 +71,7 @@ class AppTests(unittest.TestCase):
         self.assertIn("text/html", response.headers["content-type"])
         self.assertIn("Fla Chess", response.text)
         self.assertIn('href="#/tournaments"', response.text)
+        self.assertIn('href="#/players"', response.text)
         self.assertIn('href="#/system"', response.text)
         self.assertIn('id="app-view"', response.text)
         self.assertIn('src="/static/app.js"', response.text)
@@ -84,6 +85,7 @@ class AppTests(unittest.TestCase):
             "router.js": "AbortController",
             "render.js": "pendingAction",
             "tournaments.js": "/api/tournament-summaries",
+            "players.js": "/api/player-summaries",
         }
 
         for asset, marker in expected_assets.items():

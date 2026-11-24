@@ -186,7 +186,7 @@ earlier contract.
    - List tournaments and expose a focused create form for tournament metadata.
    - Add the smallest summary contract needed for the list.
    - Open a tournament overview containing lifecycle and edit state.
-2. **Player and tournament registration**
+2. **Player and tournament registration — complete (T26)**
    - Add reusable player create/edit/list behavior.
    - Register and unregister players for a draft tournament.
    - Display participant names, not only foreign-key IDs.

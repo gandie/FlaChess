@@ -10,6 +10,7 @@ import {
   status,
   table,
 } from "./render.js";
+import { tournamentRegistrationCard } from "./players.js";
 
 function lifecycleBadge(lifecycle) {
   const tones = {
@@ -257,7 +258,7 @@ export function tournamentOverviewView({ tournamentId }) {
           element("dd", { text: value }),
         );
       }
-      result.append(card);
+      result.append(card, tournamentRegistrationCard(tournament, signal));
       return;
     }
 
@@ -298,7 +299,7 @@ export function tournamentOverviewView({ tournamentId }) {
       { signal },
     );
     card.append(form);
-    result.append(card);
+    result.append(card, tournamentRegistrationCard(tournament, signal));
   }
 
   async function loadTournament(signal) {

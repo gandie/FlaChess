@@ -386,3 +386,16 @@
   (74 tests). The operator also completed live browser interaction, including
   creating a test tournament and opening its overview successfully. Residual
   risk: keyboard interaction remains unverified by an automated browser test.
+
+- **T26 – Implementing Player and Tournament Registration:** Added direct player
+  summaries and named tournament participant contracts, draft-only
+  registration and unregistration routes, a reusable player directory with
+  create/edit behavior, and read-only versus editable tournament rosters.
+  Files changed: `app/player_registration_schemas.py`, `app/routes/`,
+  `app/static/`, API schemas and routing, focused frontend/API tests, `README.md`,
+  `docs/DESIGN.md`, this changelog, and
+  [T26](../done/T26_implement_player_registration.md). Validation: frontend
+  JavaScript syntax checks passed, focused registration and app tests passed,
+  refactor and Markdown boundary tests passed, and the full unittest suite
+  passed (80 tests). Residual risk: browser keyboard interaction remains
+  unverified by an automated browser test.
