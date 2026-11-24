@@ -7,6 +7,7 @@ from app.models import (
     GameResultType,
     ParticipationType,
     SectionLifecycle,
+    TournamentLifecycle,
 )
 
 
@@ -66,6 +67,7 @@ class SectionOperationResponse(BaseModel):
     id: int
     tournament_id: int
     tournament_name: str
+    tournament_lifecycle: TournamentLifecycle
     name: str
     sequence: int
     lifecycle: SectionLifecycle

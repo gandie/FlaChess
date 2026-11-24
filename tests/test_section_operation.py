@@ -9,7 +9,12 @@ from fastapi.testclient import TestClient
 
 from app.database import get_session
 from app.main import app
-from app.models import GameResultType, ParticipationType, SectionLifecycle
+from app.models import (
+    GameResultType,
+    ParticipationType,
+    SectionLifecycle,
+    TournamentLifecycle,
+)
 
 
 class OperationResult:
@@ -80,7 +85,7 @@ def named_operation_session() -> OperationSession:
     )
     return OperationSession(
         [
-            OperationResult(row=(section, 7, "Club Open")),
+            OperationResult(row=(section, 7, "Club Open", TournamentLifecycle.ACTIVE)),
             OperationResult(values=[participant]),
             OperationResult(values=[round_]),
             OperationResult(values=[tiebreak]),
@@ -126,6 +131,7 @@ class SectionOperationRouteTests(unittest.TestCase):
         payload = response.json()
         self.assertEqual(payload["tournament_id"], 7)
         self.assertEqual(payload["tournament_name"], "Club Open")
+        self.assertEqual(payload["tournament_lifecycle"], "active")
         self.assertEqual(payload["participants"][0]["player_name"], "Nora")
         self.assertEqual(payload["tiebreaks"][0]["code"], "buchholz_cut_1")
         self.assertEqual(payload["rounds"][0]["number"], 1)
@@ -165,8 +171,16 @@ class SectionOperationFrontendTests(unittest.TestCase):
         self.assertIn('"Incomplete"', operations)
         self.assertIn("White and black must be different", operations)
         self.assertIn("whiteScore + blackScore !== 1", operations)
+        self.assertIn("Finish section", operations)
+        self.assertIn("will become read-only", operations)
+        self.assertIn("Final standings through round", standings)
+        self.assertIn('operation.lifecycle === "active"', standings)
+        self.assertIn('operation.tournament_lifecycle === "active"', standings)
+        self.assertIn("Historical section", operations)
         self.assertIn("Open section operation", structure)
+        self.assertIn("Finish tournament", tournaments)
         self.assertIn("/activate", tournaments)
+        self.assertIn("/finish", tournaments)
 
 
 if __name__ == "__main__":

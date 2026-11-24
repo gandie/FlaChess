@@ -1,6 +1,7 @@
 import { api } from "./api.js";
 import {
   badge,
+  confirmAction,
   element,
   emptyState,
   errorSummary,
@@ -451,21 +452,45 @@ function roundNavigation(operation, tournamentId, activeRoundId) {
 }
 
 function sectionAction(context) {
-  if (context.operation.lifecycle !== "draft") {
+  if (context.operation.tournament_lifecycle === "finished") {
+    return null;
+  }
+  const transition = {
+    draft: {
+      action: "Activate section",
+      pending: "Activating section\u2026",
+      target: "activate",
+    },
+    active: {
+      action: "Finish section",
+      pending: "Finishing section\u2026",
+      target: "finish",
+      confirmation:
+        "Finish this section? Its operation and standings will become read-only.",
+    },
+  }[context.operation.lifecycle];
+  if (!transition) {
     return null;
   }
   const button = element("button", {
-    className: "button",
-    text: "Activate section",
+    className:
+      transition.target === "finish" ? "button button-danger" : "button",
+    text: transition.action,
     attributes: { type: "button" },
   });
   const result = element("div", { className: "result-slot" });
   button.addEventListener("click", () => {
+    if (
+      transition.confirmation &&
+      !confirmAction(transition.confirmation)
+    ) {
+      return;
+    }
     void pendingAction(button, async () => {
-      result.replaceChildren(status("Activating section\u2026"));
+      result.replaceChildren(status(transition.pending));
       try {
         await api.post(
-          `/api/tournament-sections/${context.operation.id}/activate`,
+          `/api/tournament-sections/${context.operation.id}/${transition.target}`,
           {},
           { signal: context.signal },
         );
@@ -503,7 +528,9 @@ export function sectionOperationView({
     const context = {
       operation,
       signal,
-      editable: operation.lifecycle === "active",
+      editable:
+        operation.tournament_lifecycle === "active" &&
+        operation.lifecycle === "active",
       refresh: () => load(signal),
       refreshAfterResult: async (changedRoundId) => {
         await recomputeStandings({
@@ -529,12 +556,21 @@ export function sectionOperationView({
     if (action) {
       summary.append(action);
     }
-    if (operation.lifecycle === "draft") {
+    if (operation.tournament_lifecycle === "finished") {
+      summary.append(
+        status(
+          "Historical section: the finished tournament workspace is read-only.",
+          "success",
+        ),
+      );
+    } else if (operation.lifecycle === "draft") {
       summary.append(
         status("Activate the section before creating rounds and recording results.", "warning"),
       );
-    } else if (operation.lifecycle !== "active") {
-      summary.append(status("This section operation view is read-only.", "warning"));
+    } else if (operation.lifecycle === "finished") {
+      summary.append(
+        status("Final section standings and round records are read-only.", "success"),
+      );
     }
     result.append(summary);
     if (activeRound) {

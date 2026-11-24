@@ -55,6 +55,47 @@ function nextSequence(items) {
   return Math.max(0, ...items.map((item) => item.sequence)) + 1;
 }
 
+function earlierSections(context, section) {
+  const phase = context.workspace.phases.find(
+    (item) => item.sections.some((candidate) => candidate.id === section.id),
+  );
+  if (!phase) {
+    return [];
+  }
+  return context.workspace.phases
+    .filter((item) => item.sequence < phase.sequence)
+    .flatMap((item) =>
+      item.sections.map((candidate) => ({
+        id: candidate.id,
+        name: `Phase ${item.sequence}: ${candidate.name}`,
+      })),
+    );
+}
+
+function sourceSectionField(context, section, member = null) {
+  return formField({
+    id: `member_${member?.id ?? section.id}_source_section`,
+    label: "Source section",
+    value: member?.source_section_id ?? "",
+    options: [
+      ["", "Initial assignment"],
+      ...earlierSections(context, section).map((candidate) => [
+        candidate.id,
+        candidate.name,
+      ]),
+    ],
+  });
+}
+
+function sourceRankField(member = null, sectionId = null) {
+  return formField({
+    id: `member_${member?.id ?? sectionId}_source_rank`,
+    label: "Source rank",
+    type: "number",
+    value: member?.source_rank ?? "",
+  });
+}
+
 function writeForm({ fields, submitText, className = "structure-form", onWrite }) {
   const form = element("form", { className });
   const controls = fields();
@@ -294,13 +335,20 @@ function sectionCreator(context, phase) {
 function membershipEditor(context, section, member) {
   const row = element("div", { className: "member-row" });
   row.append(element("strong", { text: member.player_name }));
-  if (!context.editable) {
+  if (!context.membershipEditable) {
+    const provenance = member.source_section_id
+      ? `Advanced from ${member.source_section_name ?? "a previous section"}${
+          member.source_rank ? ` at rank ${member.source_rank}` : ""
+        }`
+      : "Initial assignment";
     row.append(
       element("span", {
         className: "muted",
-        text: member.rating
-          ? `${member.rating}${member.rating_source ? ` ${member.rating_source}` : ""}`
-          : "Unrated",
+        text: `${
+          member.rating
+            ? `${member.rating}${member.rating_source ? ` ${member.rating_source}` : ""}`
+            : "Unrated"
+        } · ${provenance}`,
       }),
     );
     return row;
@@ -320,16 +368,21 @@ function membershipEditor(context, section, member) {
         value: member.rating_source ?? "",
       });
       source.control.maxLength = 64;
-      return [rating, source];
+      const sourceSection = sourceSectionField(context, section, member);
+      const sourceRank = sourceRankField(member);
+      sourceRank.control.min = "1";
+      return [rating, source, sourceSection, sourceRank];
     },
-    submitText: "Save rating",
+    submitText: "Save membership",
     className: "structure-form inline-form",
-    onWrite: async ([rating, source]) => {
+    onWrite: async ([rating, source, sourceSection, sourceRank]) => {
       await api.patch(
         `/api/section-participants/${member.id}`,
         {
           rating: numberValue(rating.control),
           rating_source: source.control.value.trim() || null,
+          source_section_id: numberValue(sourceSection.control),
+          source_rank: numberValue(sourceRank.control),
         },
         { signal: context.signal },
       );
@@ -362,7 +415,7 @@ function membershipPanel(context, section) {
   } else {
     panel.append(emptyState("No section members", "Assign registered players."));
   }
-  if (!context.editable) {
+  if (!context.membershipEditable) {
     return panel;
   }
   const assigned = new Set(
@@ -382,8 +435,8 @@ function membershipPanel(context, section) {
   }
   panel.append(
     writeForm({
-      fields: () => [
-        formField({
+      fields: () => {
+        const player = formField({
           id: `section_${section.id}_participant`,
           label: "Registered player",
           options: available.map((participant) => [
@@ -391,10 +444,14 @@ function membershipPanel(context, section) {
             participant.player_name,
           ]),
           required: true,
-        }),
-      ],
+        });
+        const sourceSection = sourceSectionField(context, section);
+        const sourceRank = sourceRankField(null, section.id);
+        sourceRank.control.min = "1";
+        return [player, sourceSection, sourceRank];
+      },
       submitText: "Add to section",
-      onWrite: async ([player]) => {
+      onWrite: async ([player, sourceSection, sourceRank]) => {
         await api.post(
           "/api/section-participants",
           {
@@ -402,6 +459,8 @@ function membershipPanel(context, section) {
             section_id: section.id,
             rating: null,
             rating_source: null,
+            source_section_id: numberValue(sourceSection.control),
+            source_rank: numberValue(sourceRank.control),
           },
           { signal: context.signal },
         );
@@ -562,6 +621,9 @@ function sectionCard(context, section) {
   const sectionContext = {
     ...context,
     editable: context.editable && section.lifecycle === "draft",
+    membershipEditable:
+      context.workspace.lifecycle !== "finished" &&
+      section.lifecycle === "draft",
   };
   const card = element("article", { className: "section-card" });
   card.append(
@@ -577,7 +639,10 @@ function sectionCard(context, section) {
   card.append(
     element("a", {
       className: "button button-secondary button-small",
-      text: "Open section operation",
+      text:
+        section.lifecycle === "finished"
+          ? "Review final standings"
+          : "Open section operation",
       attributes: {
         href: `#/tournaments/${context.workspace.id}/sections/${section.id}`,
       },
@@ -643,7 +708,9 @@ export function tournamentStructureCards(workspace, signal, refresh) {
     editable: workspace.lifecycle === "draft",
   };
   const wrapper = element("div", { className: "workspace-structure" });
-  wrapper.append(readinessCard(workspace.readiness));
+  if (workspace.lifecycle === "draft") {
+    wrapper.append(readinessCard(workspace.readiness));
+  }
   const phasesCard = element("section", { className: "card structure-card" });
   phasesCard.append(
     badge(context.editable ? "Draft configuration" : "Structure history", "accent"),

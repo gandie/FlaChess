@@ -24,6 +24,9 @@ class WorkspaceSectionParticipant(BaseModel):
     player_name: str
     rating: int | None
     rating_source: str | None
+    source_section_id: int | None
+    source_section_name: str | None
+    source_rank: int | None
 
     model_config = {"from_attributes": True}
 

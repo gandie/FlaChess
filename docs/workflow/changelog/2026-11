@@ -447,3 +447,20 @@
   tests, and the full unittest suite passed (89 tests). Residual risk: browser
   keyboard behavior and live PostgreSQL interaction remain unverified by
   automated browser or database integration tests.
+
+- **T30 – Implementing Phase Advancement and Closeout:** Added confirmed
+  section and tournament finish controls, manual membership advancement from
+  earlier phases with source section/rank provenance, final-standings review,
+  and focused read-only tournament history. The workspace and section-operation
+  contracts now carry provenance and tournament lifecycle so finished
+  tournament section URLs cannot expose mutation controls. Files changed:
+  `app/tournament_workspace_schemas.py`,
+  `app/routes/tournament_workspace.py`, `app/section_operation_schemas.py`,
+  `app/routes/section_operation.py`, `app/static/`, focused frontend/API tests,
+  `README.md`, `docs/DESIGN.md`, this changelog, and
+  [T30](../done/T30_implement_phase_advancement_closeout.md). Validation:
+  JavaScript syntax checks passed; focused workspace and operation tests passed
+  (9 tests total); refactor and Markdown boundary tests passed; and the full
+  unittest suite passed (89 tests). Residual risk: browser keyboard behavior and
+  live PostgreSQL interaction remain unverified by automated browser or database
+  integration tests.

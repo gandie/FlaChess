@@ -67,6 +67,21 @@ def section() -> TournamentSection:
     )
 
 
+def workspace_member() -> SimpleNamespace:
+    return SimpleNamespace(
+        id=20,
+        section_id=3,
+        registration_id=10,
+        player_id=4,
+        player_name="Nora",
+        rating=1800,
+        rating_source="fide",
+        source_section_id=1,
+        source_section_name="Preliminary",
+        source_rank=2,
+    )
+
+
 class TournamentWorkspaceRouteTests(unittest.TestCase):
     def setUp(self) -> None:
         self.client = TestClient(app)
@@ -97,15 +112,6 @@ class TournamentWorkspaceRouteTests(unittest.TestCase):
             player_id=4,
             player_name="Nora",
         )
-        member = SimpleNamespace(
-            id=20,
-            section_id=3,
-            registration_id=10,
-            player_id=4,
-            player_name="Nora",
-            rating=1800,
-            rating_source="fide",
-        )
         rule = SectionTiebreak(
             id=30,
             section_id=3,
@@ -116,7 +122,7 @@ class TournamentWorkspaceRouteTests(unittest.TestCase):
         self.use_session(
             WorkspaceSession(
                 tournament,
-                [[participant], [phase()], [section()], [member], [rule]],
+                [[participant], [phase()], [section()], [workspace_member()], [rule]],
             ),
         )
 
@@ -128,6 +134,11 @@ class TournamentWorkspaceRouteTests(unittest.TestCase):
         self.assertEqual(payload["participants"][0]["player_name"], "Nora")
         open_section = payload["phases"][0]["sections"][0]
         self.assertEqual(open_section["participants"][0]["rating"], 1800)
+        self.assertEqual(
+            open_section["participants"][0]["source_section_name"],
+            "Preliminary",
+        )
+        self.assertEqual(open_section["participants"][0]["source_rank"], 2)
         self.assertTrue(open_section["tiebreaks"][0]["supported"])
         self.assertEqual(
             payload["supported_tiebreak_codes"],
@@ -194,6 +205,9 @@ class TournamentWorkspaceFrontendTests(unittest.TestCase):
         self.assertIn("/api/section-participants", structure)
         self.assertIn("/api/section-tiebreaks", structure)
         self.assertIn("Only standings-supported codes", structure)
+        self.assertIn("source_section_id", structure)
+        self.assertIn("source_rank", structure)
+        self.assertIn("Review final standings", structure)
         self.assertIn("/workspace", overview)
 
 

@@ -93,13 +93,25 @@ export async function recomputeStandings({ sectionId, roundId, signal }) {
 
 export function standingsReview({ operation, round, signal }) {
   const card = element("section", { className: "card standings-card" });
+  const isFinal =
+    operation.tournament_lifecycle === "finished" ||
+    operation.lifecycle === "finished";
+  const canRecompute =
+    operation.tournament_lifecycle === "active" &&
+    operation.lifecycle === "active";
   const heading = element("div", { className: "section-heading" });
   const copy = element("div");
   copy.append(
-    element("h2", { text: `Standings through round ${round.number}` }),
+    element("h2", {
+      text: isFinal
+        ? `Final standings through round ${round.number}`
+        : `Standings through round ${round.number}`,
+    }),
     element("p", {
       className: "muted",
-      text: "Rankings use the section's active tie-break order.",
+      text: isFinal
+        ? "This final snapshot is preserved with the completed section."
+        : "Rankings use the section's active tie-break order.",
     }),
   );
   const recomputeButton = element("button", {
@@ -107,7 +119,10 @@ export function standingsReview({ operation, round, signal }) {
     text: "Recompute standings",
     attributes: { type: "button" },
   });
-  heading.append(copy, recomputeButton);
+  heading.append(copy);
+  if (canRecompute) {
+    heading.append(recomputeButton);
+  }
   const snapshot = element("p", { className: "snapshot-time muted" });
   const result = element("div", { className: "result-slot" });
   card.append(heading, snapshot, result);
@@ -135,27 +150,29 @@ export function standingsReview({ operation, round, signal }) {
     }
   }
 
-  recomputeButton.addEventListener(
-    "click",
-    () => {
-      void pendingAction(recomputeButton, async () => {
-        result.replaceChildren(status("Recomputing standings\u2026"));
-        try {
-          await recomputeStandings({
-            sectionId: operation.id,
-            roundId: round.id,
-            signal,
-          });
-          await load();
-        } catch (error) {
-          if (error?.name !== "AbortError") {
-            result.replaceChildren(status(errorSummary(error), "error"));
+  if (canRecompute) {
+    recomputeButton.addEventListener(
+      "click",
+      () => {
+        void pendingAction(recomputeButton, async () => {
+          result.replaceChildren(status("Recomputing standings\u2026"));
+          try {
+            await recomputeStandings({
+              sectionId: operation.id,
+              roundId: round.id,
+              signal,
+            });
+            await load();
+          } catch (error) {
+            if (error?.name !== "AbortError") {
+              result.replaceChildren(status(errorSummary(error), "error"));
+            }
           }
-        }
-      });
-    },
-    { signal },
-  );
+        });
+      },
+      { signal },
+    );
+  }
   void load();
   return card;
 }

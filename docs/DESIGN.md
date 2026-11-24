@@ -210,7 +210,7 @@ earlier contract.
      snapshot time.
    - Provide round-by-round navigation and distinguish incomplete games from
      recorded results.
-6. **Phase advancement and closeout**
+6. **Phase advancement and closeout — complete (T30)**
    - Finish sections and tournaments through explicit transitions.
    - Support manual participant membership in later sections with
      `source_section_id` and `source_rank`.

@@ -193,6 +193,7 @@ async def get_section_operation(
             TournamentSection,
             Tournament.id.label("tournament_id"),
             Tournament.name.label("tournament_name"),
+            Tournament.lifecycle.label("tournament_lifecycle"),
         )
         .join(TournamentPhase, TournamentSection.phase_id == TournamentPhase.id)
         .join(Tournament, TournamentPhase.tournament_id == Tournament.id)
@@ -204,7 +205,7 @@ async def get_section_operation(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Tournament section not found",
         )
-    section, tournament_id, tournament_name = row
+    section, tournament_id, tournament_name, tournament_lifecycle = row
     participants = await operation_participants(section_id, session)
     rounds = await operation_rounds(section_id, session)
     tiebreaks = await operation_tiebreaks(section_id, session)
@@ -213,6 +214,7 @@ async def get_section_operation(
         id=section.id,
         tournament_id=tournament_id,
         tournament_name=tournament_name,
+        tournament_lifecycle=tournament_lifecycle,
         name=section.name,
         sequence=section.sequence,
         lifecycle=section.lifecycle,

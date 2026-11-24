@@ -1,6 +1,7 @@
 import { api } from "./api.js";
 import {
   badge,
+  confirmAction,
   element,
   emptyState,
   errorSummary,
@@ -54,6 +55,49 @@ function formValues(form) {
     starts_at: startsAt ? new Date(startsAt).toISOString() : null,
     ends_at: endsAt ? new Date(endsAt).toISOString() : null,
   };
+}
+
+function tournamentCloseoutAction(tournament, signal, refresh) {
+  if (tournament.lifecycle !== "active") {
+    return null;
+  }
+  const wrapper = element("div", { className: "lifecycle-action" });
+  const button = element("button", {
+    className: "button button-danger",
+    text: "Finish tournament",
+    attributes: { type: "button" },
+  });
+  const result = element("div", { className: "result-slot" });
+  button.addEventListener(
+    "click",
+    () => {
+      if (
+        !confirmAction(
+          "Finish this tournament? Its workspace will become read-only.",
+        )
+      ) {
+        return;
+      }
+      void pendingAction(button, async () => {
+        result.replaceChildren(status("Finishing tournament\u2026"));
+        try {
+          await api.post(
+            `/api/tournaments/${tournament.id}/finish`,
+            {},
+            { signal },
+          );
+          await refresh();
+        } catch (error) {
+          if (error?.name !== "AbortError") {
+            result.replaceChildren(status(errorSummary(error), "error"));
+          }
+        }
+      });
+    },
+    { signal },
+  );
+  wrapper.append(button, result);
+  return wrapper;
 }
 
 function metadataForm(tournament = {}) {
@@ -244,7 +288,12 @@ export function tournamentOverviewView({ tournamentId }) {
     card.append(lifecycleBadge(tournament.lifecycle), title);
     if (tournament.lifecycle !== "draft") {
       card.append(
-        status("This tournament is read-only outside draft state.", "warning"),
+        status(
+          tournament.lifecycle === "finished"
+            ? "Historical workspace: this tournament is finished and read-only."
+            : "The tournament is active. Draft metadata and registration are read-only.",
+          tournament.lifecycle === "finished" ? "success" : "warning",
+        ),
         element("dl", { className: "detail-list" }),
       );
       const details = card.lastElementChild;
@@ -258,6 +307,14 @@ export function tournamentOverviewView({ tournamentId }) {
           element("dt", { text: label }),
           element("dd", { text: value }),
         );
+      }
+      const closeout = tournamentCloseoutAction(
+        tournament,
+        signal,
+        () => loadTournament(signal),
+      );
+      if (closeout) {
+        card.append(closeout);
       }
       result.append(
         card,

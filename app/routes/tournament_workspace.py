@@ -3,6 +3,7 @@ from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from app.database import get_session
 from app.models import (
@@ -83,21 +84,29 @@ async def section_participants(
     tournament_id: int,
     session: AsyncSession,
 ) -> list[tuple[int, WorkspaceSectionParticipant]]:
+    source_section = aliased(TournamentSection)
     result = await session.execute(
         select(
             SectionParticipant.id,
             SectionParticipant.section_id,
             SectionParticipant.rating,
             SectionParticipant.rating_source,
+            SectionParticipant.source_section_id,
+            SectionParticipant.source_rank,
             TournamentParticipant.id.label("registration_id"),
             TournamentParticipant.player_id,
             Player.name.label("player_name"),
+            source_section.name.label("source_section_name"),
         )
         .join(
             TournamentParticipant,
             TournamentParticipant.id == SectionParticipant.participant_id,
         )
         .join(Player, Player.id == TournamentParticipant.player_id)
+        .outerjoin(
+            source_section,
+            source_section.id == SectionParticipant.source_section_id,
+        )
         .where(TournamentParticipant.tournament_id == tournament_id)
         .order_by(Player.name, SectionParticipant.id),
     )
