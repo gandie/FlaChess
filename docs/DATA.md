@@ -6,9 +6,9 @@ below are implemented with SQLAlchemy models and Alembic migrations.
 ## Implementation Status: Complete
 
 All 12 entities documented here have an SQLAlchemy model, an Alembic-created
-SQL table, and a registered SQLAdmin view. This completes the data-structure
-implementation milestone. Pairing automation, tournament advancement, and
-additional tie-break formulas are application behavior, not missing data
+SQL table, and a registered SQLAdmin view. Pairing preview and confirmation are
+implemented application behavior over this model; tournament advancement and
+additional tie-break formulas remain application work rather than missing data
 entities.
 
 ## Implemented Tables
@@ -218,6 +218,22 @@ should reject pairs from different sections.
 Pairings are represented by `game` rows. Each round may contain generated,
 changed, or manually adjusted game rows. Pairing-plan entities are not planned
 for the first implementation.
+
+#### Pairing generation writes
+
+Pairing preview is read-only. It loads the active section, authoritative seed
+order, prior rounds, games, participation records, and tie-break rules, then
+returns an in-memory Swiss, round-robin, or knockout plan without creating
+rows. Confirmation independently reloads and validates the expected target
+round; a stale preview is not accepted as authorization to write.
+
+A successful confirmation creates the complete `tournament_round`, its
+`game` rows, and the `round_participant` rows for paired players and any
+non-paired outcomes in one transaction. Constraint or commit failures roll the
+whole generation back and return a conflict. Once committed, the existing
+round, operation, standings, and player-display contracts expose the generated
+rows. Manual rounds, games, and participation records continue to use the same
+tables and remain available as operator fallbacks.
 
 ### `round_participant`
 

@@ -1,7 +1,7 @@
 ---
 name: Friday
 description: Use when implementing or evolving repository code, API/service behavior, runtime orchestration, configuration, security boundaries, and infrastructure wiring with disciplined one-pass execution.
-tools: [execute, read, edit, search, agent, web, todo, vscode/usages, vscode/codebase, vscode/problems, vscode/runTask, vscode/getTaskOutput, vscode/createAndRunTask, vscode/runTests, vscode/testFailure, vscode/toolSearch, 'codebase-memory-mcp/*']
+tools: [execute, read, edit, search, agent, web, todo, 'playwright/*', vscode/usages, vscode/codebase, vscode/problems, vscode/runTask, vscode/getTaskOutput, vscode/createAndRunTask, vscode/runTests, vscode/testFailure, vscode/toolSearch, 'codebase-memory-mcp/*']
 user-invocable: true
 ---
 

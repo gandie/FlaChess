@@ -115,6 +115,8 @@ form:
 5. **Section operation**
    - Activate a section, create rounds, and display round membership.
    - Create manual pairings and record or correct game results.
+   - Preview and confirm Swiss, round-robin, or knockout pairings, then
+     continue through generated-round result entry and standings.
    - Record paired, bye, unplayed, and absent participation outcomes.
    - Recompute and display standings and tie-break values after results change.
 6. **Closeout and history**
@@ -225,22 +227,31 @@ earlier contract.
      responsive tables for keyboard and operator workflows.
    - Cover the composed display and complete operator lifecycle surfaces with
      focused frontend smoke tests.
+8. **Pairing automation — complete (T32-T44)**
+   - Persist authoritative seeds and withdrawal state, then provide pure
+     deterministic Swiss, single round-robin, and knockout planners.
+   - Preview without writes and confirm the expected round through one
+     transactional generation command.
+   - Keep stale, conflict, and rollback errors non-destructive in the operator
+     UI while preserving manual round and pairing controls.
+   - Navigate confirmed plans into result entry, recompute standings, expose
+     committed data to displays, and gate the following preview on round
+     completion.
+   - Prove the complete operator journey for every format with composed route
+     and frontend contract coverage.
 
 ### Deferred or Requires a Separate Policy Decision
 
 The following are application behavior, not implied by the current data model:
 
-- Swiss, round-robin, or knockout pairing automation;
-- color allocation and repeat-pairing policy;
 - automatic phase advancement or placement rules;
 - additional tie-break formulas and virtual-opponent policy;
 - shared tournament-place rules when a tournament has multiple sections;
 - imports, printing/export, authentication, and live multi-operator updates.
 
-The first frontend may support manual pairings and manual advancement. It must
-not silently invent defaults for a deferred policy. Pairing automation should
-become a separate implementation slice with a documented algorithm and focused
-backend tests.
+The frontend supports manual pairings and manual advancement alongside the
+implemented pairing automation. It must not silently invent defaults for any
+remaining deferred policy.
 
 New backend routes are created in tandem with the frontend slice that needs
 them. Each route addition must preserve the existing domain services and use a

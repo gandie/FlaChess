@@ -47,6 +47,43 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertIn("operation-disclosure", operations)
         self.assertIn("Activate this section?", operations)
 
+    def test_operator_can_preview_and_confirm_generated_pairings(self) -> None:
+        operations = self.static_asset("operations.js")
+
+        self.assertIn("Preview next round", operations)
+        self.assertIn("Confirm generation", operations)
+        self.assertIn("/pairing/preview", operations)
+        self.assertIn("/pairing/confirm", operations)
+        self.assertIn("expected_round_number: preview.target_round", operations)
+        self.assertIn("generated.round_id", operations)
+        self.assertIn("window.location.hash =", operations)
+        self.assertIn("/rounds/${generatedRoundId}", operations)
+        self.assertIn("focusResultEntry(activeRound)", operations)
+        self.assertIn('label: "White"', operations)
+        self.assertIn('label: "Black"', operations)
+        self.assertIn("Byes and non-paired outcomes", operations)
+        self.assertIn("pairing-preview-warnings", operations)
+        self.assertIn("Preview the next round before committing", operations)
+        self.assertIn("previewResult.replaceChildren(review)", operations)
+        self.assertIn("/api/tournament-rounds", operations)
+        self.assertIn("New manual pairing", operations)
+
+    def test_operator_advances_only_after_generated_round_is_complete(self) -> None:
+        operations = self.static_asset("operations.js")
+        display = self.static_asset("display.js")
+
+        self.assertIn("roundIsComplete(latestRound)", operations)
+        self.assertIn("if (changedRound) {", operations)
+        self.assertIn("recomputeStandings({", operations)
+        self.assertIn("previewButton.disabled = !previewReady", operations)
+        self.assertIn("Record every result in round", operations)
+        self.assertIn("function latestRound(operation)", display)
+        self.assertIn(
+            "/api/tournament-sections/${section.id}/operation",
+            display,
+        )
+        self.assertIn("latestRound(operation)", display)
+
     def test_dense_views_keep_navigation_and_tables_keyboard_friendly(self) -> None:
         styles = self.static_asset("styles.css")
         tournaments = self.static_asset("tournaments.js")

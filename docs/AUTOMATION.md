@@ -281,24 +281,29 @@ existing operator workspace.
     transactional command; a stale preview is never an authorization token.
     Responses expose target round, format, games, byes/non-paired outcomes,
     seed order, policy labels, warnings, and actionable domain errors.
-9. **Integrate the section operation UI:** In
-    `app/static/operations.js`, add a visible **Preview next round** action for
-    eligible active sections. Render the returned pairing table, colors, byes,
-    warnings, and next round number; provide a separate **Confirm generation**
-    action; and display backend conflicts without discarding the operator's
-    context. Preserve the existing manual round/pairing path.
-10. **Complete the post-confirm workflow:** After confirmation, navigate to or
-     refresh the generated round, refresh operation/standings data, focus its
-     result-entry controls, and let the operator record results with the
-     existing game editor. Once that round is complete, recompute standings
-     and make the next preview available. Ensure spectator/display responses see
+9. **Done — Integrate the section operation UI:**
+    [T42](workflow/done/T42_integrate_pairing_preview_ui.md) added a visible
+    **Preview next round** action for eligible active sections. The section
+    workspace renders the pairing table, colors, byes, warnings, and next round
+    number, provides a separate **Confirm generation** action, and retains the
+    preview and operator context when backend requests conflict. The existing
+    manual round and pairing paths remain available.
+10. **Done — Complete the post-confirm workflow:**
+     [T43](workflow/done/T43_complete_post_confirm_workflow.md) navigates after
+     confirmation to the committed round, refreshes its operation and standings
+     data, focuses existing result-entry controls, and recomputes standings
+     when the round becomes complete. The next preview remains unavailable
+     until that completion, while spectator/display responses continue to read
      the committed generated round through the existing operation contract.
-11. **Prove the operator journey and document it:** Add end-to-end route/UI
-     coverage for every format from preview through confirmation, result entry,
-     standings visibility, and next-round availability, including stale preview,
-     conflict, rollback, and manual fallback paths. Update `docs/DATA.md`,
-     `docs/DESIGN.md`, README usage, and any operator examples only after the
-     tested behavior ships.
+11. **Done — Prove the operator journey and document it:**
+     [T44](workflow/done/T44_prove_pairing_operator_journey.md) added a
+     composed route and UI contract for Swiss, round-robin, and knockout from
+     preview through confirmation, result entry, standings recomputation, and
+     completion-gated next-round availability. The coverage also proves stale
+     preview rejection, transactional rollback on persistence conflict,
+     non-destructive confirmation errors, and the retained manual round,
+     pairing, and participation fallback. The canonical data, design, and
+     README usage documentation now matches the tested behavior.
 
 ## Required Tests
 
@@ -319,10 +324,12 @@ incomplete prior-round rejection, atomic rollback, same-section enforcement,
 generated round visibility in operation/standings/display responses, stale
 preview rejection, and error responses usable by the frontend.
 
-Frontend tests should cover visibility of preview/confirm controls only in
-eligible active sections, preview tables and warnings, confirm behavior,
-non-destructive conflict display, manual pairing coexistence, post-confirm
-navigation/refresh, result-entry focus, and next-round availability.
+Frontend and composed journey tests should cover visibility of preview/confirm
+controls only in eligible active sections, format-specific preview/confirm
+responses, preview tables and warnings, confirm behavior, non-destructive
+conflict display, transactional rollback, manual pairing coexistence,
+post-confirm navigation/refresh, result entry, standings visibility, and
+next-round availability.
 
 ## Approved Operator Decisions
 

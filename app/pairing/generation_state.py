@@ -50,6 +50,7 @@ async def load_generation_state(
     session: AsyncSession,
 ) -> GenerationState:
     section = await load_section(section_id, session)
+    pairing_format = PairingFormat(section.phase.format.value)
     participants = await load_participants(section_id, session)
     rounds = await load_rounds(section_id, session)
     round_ids = [round_.id for round_ in rounds]
@@ -58,7 +59,7 @@ async def load_generation_state(
     tiebreaks = await load_tiebreaks(section_id, session)
     return GenerationState(
         section=section,
-        pairing_format=PairingFormat(section.phase.format.value),
+        pairing_format=pairing_format,
         participants=participants,
         rounds=rounds,
         games=games,

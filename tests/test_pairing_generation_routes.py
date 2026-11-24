@@ -81,6 +81,18 @@ class PreviewSession:
         self.rollback_count += 1
 
 
+class ExpiringPreviewSession(PreviewSession):
+    async def scalars(self, statement: object) -> PreviewResult:
+        self.section.phase = PhaseUnavailable()
+        return await super().scalars(statement)
+
+
+class PhaseUnavailable:
+    @property
+    def format(self) -> object:
+        raise AssertionError("Expired phase triggered an async lazy load")
+
+
 def swiss_preview() -> PairingPreview:
     return PairingPreview(
         section_id=9,
@@ -122,6 +134,11 @@ class PairingPreviewDomainTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(session.added, [])
         self.assertEqual(session.commit_count, 0)
         self.assertEqual(session.rollback_count, 0)
+
+    async def test_preview_does_not_read_phase_after_other_state_loads(self) -> None:
+        preview = await preview_next_round(7, ExpiringPreviewSession())
+
+        self.assertIs(preview.pairing_format, PairingFormat.SWISS)
 
 
 class PairingGenerationRouteTests(unittest.TestCase):

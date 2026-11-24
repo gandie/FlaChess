@@ -8,6 +8,7 @@ import {
   page,
   pendingAction,
   status,
+  table,
 } from "./render.js";
 import {
   recomputeStandings,
@@ -250,6 +251,26 @@ function resultQueue(context, round) {
   }
   queue.append(links);
   return queue;
+}
+
+function roundIsComplete(round) {
+  return (
+    (round.games.length > 0 || round.records.length > 0) &&
+    round.games.every(
+      (game) => game.white_score !== null && game.black_score !== null,
+    )
+  );
+}
+
+function focusResultEntry(round) {
+  const firstIncomplete = round.games.find(
+    (game) => game.white_score === null || game.black_score === null,
+  );
+  if (firstIncomplete) {
+    jumpToGame(firstIncomplete.id);
+    return;
+  }
+  document.querySelector(".result-queue")?.focus();
 }
 
 function creationDisclosure(title, summary, content) {
@@ -534,6 +555,227 @@ function roundNavigation(operation, tournamentId, activeRoundId) {
   return navigation;
 }
 
+function nextRoundNumber(operation) {
+  return Math.max(0, ...operation.rounds.map((round) => round.number)) + 1;
+}
+
+function pairingParticipantLabel(context, preview, participantId) {
+  const participant = context.operation.participants.find(
+    (candidate) => String(candidate.id) === String(participantId),
+  );
+  const seed = preview.seed_order.find(
+    (candidate) => String(candidate.participant_id) === String(participantId),
+  );
+  const name = participant?.player_name ?? `Participant ${participantId}`;
+  return seed ? `${name} (seed ${seed.seed_position})` : name;
+}
+
+function pairingPreviewGames(context, preview) {
+  return table({
+    caption: `Round ${preview.target_round} pairing preview`,
+    columns: [
+      { key: "board", label: "Board" },
+      {
+        key: "white",
+        label: "White",
+        render: (value) => pairingParticipantLabel(context, preview, value),
+      },
+      {
+        key: "black",
+        label: "Black",
+        render: (value) => pairingParticipantLabel(context, preview, value),
+      },
+    ],
+    rows: preview.games.map((game, index) => ({
+      board: index + 1,
+      white: game.white_participant_id,
+      black: game.black_participant_id,
+    })),
+    emptyMessage: "The preview contains no paired games.",
+  });
+}
+
+function pairingPreviewOutcomes(context, preview) {
+  if (!preview.outcomes.length) {
+    return null;
+  }
+  const section = element("section", { className: "pairing-preview-outcomes" });
+  section.append(
+    element("h4", { text: "Byes and non-paired outcomes" }),
+    table({
+      caption: `Round ${preview.target_round} non-paired outcomes`,
+      columns: [
+        {
+          key: "participant",
+          label: "Player",
+          render: (value) => pairingParticipantLabel(context, preview, value),
+        },
+        { key: "outcome", label: "Outcome" },
+        { key: "score", label: "Awarded score" },
+      ],
+      rows: preview.outcomes.map((outcome) => ({
+        participant: outcome.participant_id,
+        outcome: labelFor(outcome.outcome_type),
+        score:
+          outcome.score_awarded === null
+            ? "No score"
+            : Number(outcome.score_awarded),
+      })),
+      emptyMessage: "No player is marked as non-paired.",
+    }),
+  );
+  return section;
+}
+
+function pairingPreviewWarnings(preview) {
+  if (!preview.warnings.length) {
+    return null;
+  }
+  const section = element("section", { className: "pairing-preview-warnings" });
+  const list = element("ul");
+  list.append(
+    ...preview.warnings.map((warning) => element("li", { text: warning })),
+  );
+  section.append(element("h4", { text: "Warnings" }), list);
+  return section;
+}
+
+function pairingPreviewContent(context, preview) {
+  const container = element("div", { className: "pairing-preview" });
+  const outcomeSection = pairingPreviewOutcomes(context, preview);
+  const warningSection = pairingPreviewWarnings(preview);
+  container.append(
+    element("div", { className: "section-heading" }),
+  );
+  container.firstElementChild.append(
+    element("h3", { text: `Preview round ${preview.target_round}` }),
+    badge(labelFor(preview.format), "accent"),
+  );
+  container.append(
+    element("p", {
+      className: "muted",
+      text: `Round ${preview.target_round} of ${preview.planned_round_count} planned; ${preview.calculated_round_count} rounds calculated.`,
+    }),
+    pairingPreviewGames(context, preview),
+  );
+  if (outcomeSection) {
+    container.append(outcomeSection);
+  }
+  if (warningSection) {
+    container.append(warningSection);
+  }
+  return container;
+}
+
+function pairingConfirmAction(context, preview, result) {
+  const button = element("button", {
+    className: "button",
+    text: "Confirm generation",
+    attributes: { type: "button" },
+  });
+  button.addEventListener("click", () => {
+    let generatedRoundId = null;
+    void pendingAction(button, async () => {
+      result.replaceChildren(status("Generating round\u2026"));
+      try {
+        const generated = await api.post(
+          `/api/tournament-sections/${context.operation.id}/pairing/confirm`,
+          { expected_round_number: preview.target_round },
+          { signal: context.signal },
+        );
+        result.replaceChildren(
+          status(
+            `Round ${generated.target_round} generated successfully.`,
+            "success",
+          ),
+        );
+        if (generated.round_id === null) {
+          throw new Error("The confirmed pairing response has no round ID.");
+        }
+        generatedRoundId = generated.round_id;
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          result.replaceChildren(status(errorSummary(error), "error"));
+        }
+      }
+    }).then(() => {
+      if (generatedRoundId !== null) {
+        button.disabled = true;
+        button.textContent = "Generation confirmed";
+        window.location.hash =
+          `/tournaments/${context.operation.tournament_id}/sections/` +
+          `${context.operation.id}/rounds/${generatedRoundId}`;
+      }
+    });
+  });
+  return button;
+}
+
+function pairingAutomation(context) {
+  const nextRound = nextRoundNumber(context.operation);
+  if (
+    !context.editable ||
+    context.operation.planned_round_count === null ||
+    nextRound > context.operation.planned_round_count
+  ) {
+    return null;
+  }
+  const latestRound = context.operation.rounds.at(-1);
+  const previewReady = !latestRound || roundIsComplete(latestRound);
+  const card = element("section", { className: "card pairing-automation-card" });
+  const actionResult = element("div", { className: "result-slot compact" });
+  const previewResult = element("div", { className: "pairing-preview-slot" });
+  const previewButton = element("button", {
+    className: "button",
+    text: "Preview next round",
+    attributes: { type: "button" },
+  });
+  previewButton.disabled = !previewReady;
+  if (!previewReady) {
+    actionResult.append(
+      status(
+        `Record every result in round ${latestRound.number} before previewing round ${nextRound}.`,
+        "warning",
+      ),
+    );
+  }
+  previewButton.addEventListener("click", () => {
+    void pendingAction(previewButton, async () => {
+      actionResult.replaceChildren(status("Preparing pairing preview\u2026"));
+      try {
+        const preview = await api.get(
+          `/api/tournament-sections/${context.operation.id}/pairing/preview`,
+          { signal: context.signal },
+        );
+        const review = pairingPreviewContent(context, preview);
+        const confirmResult = element("div", {
+          className: "result-slot compact pairing-confirm-result",
+        });
+        const actions = element("div", { className: "action-group" });
+        actions.append(pairingConfirmAction(context, preview, confirmResult));
+        review.append(actions, confirmResult);
+        previewResult.replaceChildren(review);
+        actionResult.replaceChildren();
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          actionResult.replaceChildren(status(errorSummary(error), "error"));
+        }
+      }
+    });
+  });
+  card.append(
+    element("h2", { text: "Automated pairing" }),
+    element("p", {
+      className: "muted",
+      text: "Preview the next round before committing its complete pairing plan.",
+    }),
+    previewButton,
+    actionResult,
+    previewResult,
+  );
+  return card;
+}
+
 function sectionAction(context) {
   if (context.operation.tournament_lifecycle === "finished") {
     return null;
@@ -600,7 +842,8 @@ export function sectionOperationView({
   const root = page({
     eyebrow: "Section operation",
     title: "Section",
-    description: "Create rounds, pair players manually, and record round results.",
+    description:
+      "Preview generated pairings, manage manual rounds, and record results.",
   });
   const result = element("div", { className: "result-slot" });
   root.append(result);
@@ -618,23 +861,36 @@ export function sectionOperationView({
         operation.lifecycle === "active",
       refresh: () => load(signal),
       refreshAfterResult: async (changedRoundId) => {
-        await recomputeStandings({
-          sectionId,
-          roundId: changedRoundId,
-          signal,
-        });
-        await load(signal);
-        window.requestAnimationFrame(() => {
-          const next = document.querySelector(
-            ".game-record[data-result-state='incomplete']",
-          );
-          if (next) {
-            next.scrollIntoView({ block: "center" });
-            next.querySelector("select, input, button")?.focus({
-              preventScroll: true,
+        const refreshed = await fetchOperation(signal);
+        const changedRound = refreshed.rounds.find(
+          (round) => String(round.id) === String(changedRoundId),
+        );
+        let standingsError = null;
+        if (changedRound) {
+          try {
+            await recomputeStandings({
+              sectionId,
+              roundId: changedRound.id,
+              signal,
             });
-          } else {
-            document.querySelector(".result-queue")?.focus();
+          } catch (error) {
+            if (error?.name !== "AbortError") {
+              standingsError = error;
+            }
+          }
+        }
+        render(refreshed, signal);
+        if (standingsError) {
+          result.prepend(
+            status(
+              `The result was saved, but standings could not be recomputed. ${errorSummary(standingsError)}`,
+              "error",
+            ),
+          );
+        }
+        window.requestAnimationFrame(() => {
+          if (changedRound) {
+            focusResultEntry(changedRound);
           }
         });
       },
@@ -681,12 +937,22 @@ export function sectionOperationView({
           signal,
         }),
       );
+      if (
+        roundId !== null &&
+        String(activeRound.id) === String(roundId)
+      ) {
+        window.requestAnimationFrame(() => focusResultEntry(activeRound));
+      }
     } else {
       result.append(emptyState("No rounds", "Create the first round for this section."));
     }
+    const automation = pairingAutomation(context);
+    if (automation) {
+      result.append(automation);
+    }
     if (context.editable) {
       const card = element("section", { className: "card" });
-      const nextRound = Math.max(0, ...operation.rounds.map((round) => round.number)) + 1;
+      const nextRound = nextRoundNumber(operation);
       card.append(
         element("h2", { text: "New round" }),
         element("p", {
@@ -725,13 +991,7 @@ export function sectionOperationView({
   async function load(signal) {
     result.replaceChildren(status("Loading section operation\u2026"));
     try {
-      const operation = await api.get(
-        `/api/tournament-sections/${sectionId}/operation`,
-        { signal },
-      );
-      if (String(operation.tournament_id) !== String(tournamentId)) {
-        throw new Error("The requested section does not belong to this tournament.");
-      }
+      const operation = await fetchOperation(signal);
       render(operation, signal);
     } catch (error) {
       if (signal.aborted || error?.name === "AbortError") {
@@ -739,6 +999,17 @@ export function sectionOperationView({
       }
       result.replaceChildren(status(errorSummary(error), "error"));
     }
+  }
+
+  async function fetchOperation(signal) {
+    const operation = await api.get(
+      `/api/tournament-sections/${sectionId}/operation`,
+      { signal },
+    );
+    if (String(operation.tournament_id) !== String(tournamentId)) {
+      throw new Error("The requested section does not belong to this tournament.");
+    }
+    return operation;
   }
 
   return {

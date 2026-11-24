@@ -41,6 +41,16 @@ incomplete-result shortcuts, sticky round navigation, compact collapsed
 pairing/participation creation controls, and save-to-next-result focus.
 Active sections support round creation, manual game pairings, valid score entry,
 result types, comments, and byes, unplayed rounds, absences, and awarded scores.
+They can also preview the next Swiss, round-robin, or knockout round without
+writing data. The preview shows named pairings, colors, byes, awarded scores,
+warnings, seed order, target round, and format policy labels. A separate
+confirmation action reloads and revalidates the expected round before
+transactionally creating it; stale or conflicting confirmations preserve the
+review and surface an actionable error. The confirmed round opens in the
+existing operation view, focuses result entry, and recomputes standings after
+results are saved. Previewing the following round stays disabled until the
+latest round is complete. Manual round, pairing, and participation controls
+remain available throughout as a fallback.
 Section operation includes URL-backed round navigation, explicit incomplete
 versus recorded game states, and standings through the selected round. Result
 changes recompute that round's snapshot; the table shows player names, rank,
@@ -79,6 +89,13 @@ section/rank metadata in one response.
 `GET /api/tournament-sections/{id}/operation` supplies named section members,
 ordered rounds, games, round participation records, tournament lifecycle, and
 active ordered tie-break metadata for the operator and player display views.
+Pairing plans are read through
+`GET /api/tournament-sections/{id}/pairing/preview` and committed with
+`POST /api/tournament-sections/{id}/pairing/confirm` using the returned target
+round as `expected_round_number`. A `409` response means the plan became stale
+or could not be committed; no partial generated round is retained. Manual
+round and result APIs continue to provide recovery without bypassing the
+standard operation view.
 Finished tournaments remain read-only when their section operation URLs are
 revisited. Standing
 snapshots are read from
