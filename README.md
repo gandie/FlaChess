@@ -32,8 +32,16 @@ membership with optional ratings, and ordered tie-break rules. Draft readiness
 mirrors the backend activation blocker and separately reports missing setup
 items; supported standings codes are identified and configured unsupported
 codes remain visibly flagged. Tie-break-locked and non-draft sections are
-read-only in the overview. The System view runs a database-independent health
-check and demonstrates normalized API error handling.
+read-only in the overview. Operators can activate an eligible draft tournament
+from the overview, activate a section, and open its dedicated operation view.
+Active sections support round creation, manual game pairings, valid score entry,
+result types, comments, and byes, unplayed rounds, absences, and awarded scores.
+Section operation includes URL-backed round navigation, explicit incomplete
+versus recorded game states, and standings through the selected round. Result
+changes recompute that round's snapshot; the table shows player names, rank,
+points, wins/draws/losses, active tie-break columns, and snapshot time.
+The System view runs a database-independent health check and demonstrates
+normalized API error handling.
 
 The API is available at
 [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health) for the
@@ -55,6 +63,15 @@ writes reject tournaments outside the `draft` lifecycle. The direct
 `GET /api/tournaments/{id}/workspace` contract supplies named participants,
 nested phases and sections, section memberships and ratings, ordered tie-break
 configuration, supported codes, and activation readiness in one response.
+`GET /api/tournament-sections/{id}/operation` supplies named section members,
+ordered rounds, games, round participation records, and active ordered
+tie-break metadata for the operator view. Standing snapshots are read from
+`GET /api/tournament-sections/{id}/standings?through_round_id={round_id}` and
+recomputed through
+`POST /api/tournament-sections/{id}/standings/recompute?through_round_id={round_id}`.
+Lifecycle actions remain `POST /api/tournaments/{id}/activate` and
+`POST /api/tournament-sections/{id}/activate`, with authoritative `409`
+conflicts for invalid transitions.
 
 The SQLAdmin interface is mounted at
 [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and provides list,

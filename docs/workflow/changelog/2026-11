@@ -417,3 +417,33 @@
   passed, and the full unittest suite passed (85 tests). Residual risk:
   browser keyboard and live PostgreSQL interaction were not exercised by an
   automated browser or database integration test.
+
+- **T28 – Implementing Activation and Section Operation:** Added the named
+  section-operation read contract and a dedicated operator workspace for
+  tournament and section activation, round creation, manual pairings, game
+  result types and comments, and bye, unplayed, absence, and awarded-score
+  records. Invalid game score combinations are refused locally while lifecycle
+  and database conflicts remain server-authoritative. Files changed:
+  `app/section_operation_schemas.py`, `app/routes/section_operation.py`,
+  `app/api.py`, `app/static/`, `tests/test_section_operation.py`,
+  `tests/test_app.py`, `README.md`, `docs/DESIGN.md`, this changelog, and
+  [T28](../done/T28_implement_activation_section_operation.md). Validation:
+  frontend JavaScript syntax checks passed; focused operation, workspace,
+  round-route, and app tests passed; refactor, Markdown, and done-task evaluation
+  boundary tests passed; and the full unittest suite passed (89 tests). Residual
+  risk: browser keyboard and live PostgreSQL interaction remain unverified by
+  automated browser or database integration tests.
+
+- **T29 – Implementing Standings and Round Review:** Added active tie-break
+  metadata to the section operation contract, URL-backed round navigation,
+  explicit incomplete versus recorded game states, and named standings through
+  the selected round with rank, points, wins/draws/losses, tie-break values, and
+  snapshot time. Standings-affecting writes now recompute the affected round
+  snapshot. Files changed: `app/section_operation_schemas.py`,
+  `app/routes/section_operation.py`, `app/static/`, focused frontend/API
+  tests, `README.md`, `docs/DESIGN.md`, this changelog, and
+  [T29](../done/T29_implement_standings_round_review.md). Validation: JavaScript
+  syntax checks, focused operation and app tests, refactor and Markdown boundary
+  tests, and the full unittest suite passed (89 tests). Residual risk: browser
+  keyboard behavior and live PostgreSQL interaction remain unverified by
+  automated browser or database integration tests.

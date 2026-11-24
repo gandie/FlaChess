@@ -334,6 +334,100 @@ h2 {
   margin-top: 0;
 }
 
+.operation-summary {
+  display: grid;
+  justify-items: start;
+  gap: 0.65rem;
+}
+
+.round-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.round-navigation-link {
+  padding: 0.55rem 0.8rem;
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.round-navigation-link:hover,
+.round-navigation-link:focus-visible,
+.round-navigation-link.active {
+  color: white;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.section-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.section-heading h2,
+.section-heading p {
+  margin-bottom: 0.35rem;
+}
+
+.standings-card .result-slot {
+  margin-top: 0.5rem;
+}
+
+.snapshot-time {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+}
+
+.round-card {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.15rem, 3vw, 1.75rem);
+  background: rgb(255 253 248 / 90%);
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+}
+
+.operation-panel,
+.operation-record {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.operation-panel,
+.operation-record {
+  padding: 1rem;
+  background: #fafbf8;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+}
+
+.operation-record > .badge {
+  justify-self: start;
+  margin-bottom: 0;
+}
+
+.operation-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.operation-form .result-slot {
+  grid-column: 1 / -1;
+}
+
+.operation-form.game-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .button:hover:not(:disabled) {
   filter: brightness(0.94);
 }
@@ -575,8 +669,15 @@ th {
   }
 
   .structure-form,
-  .inline-form {
+  .inline-form,
+  .operation-form,
+  .operation-form.game-form {
     grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .app-footer {

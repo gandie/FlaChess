@@ -196,7 +196,7 @@ earlier contract.
      codes explicit.
    - Add tournament workspace/readiness data so the operator can see what is
      missing before activation.
-4. **Activation and section operation**
+4. **Activation and section operation — complete (T28)**
    - Surface tournament and section lifecycle actions and their conflict
      messages.
    - Create rounds and manual pairings.
@@ -204,7 +204,7 @@ earlier contract.
      awarded scores.
    - Refuse invalid score combinations in the UI and preserve the server's
      authoritative response.
-5. **Standings and round review**
+5. **Standings and round review — complete (T29)**
    - Recompute and display section standings after result entry.
    - Show ranks, points, wins/draws/losses, configured tie-break columns, and
      snapshot time.

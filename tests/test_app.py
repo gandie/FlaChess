@@ -87,6 +87,8 @@ class AppTests(unittest.TestCase):
             "tournaments.js": "/api/tournament-summaries",
             "players.js": "/api/player-summaries",
             "structure.js": "/api/section-tiebreaks",
+            "operations.js": "/api/tournament-rounds",
+            "standings.js": "/standings/recompute",
         }
 
         for asset, marker in expected_assets.items():

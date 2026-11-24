@@ -304,6 +304,45 @@ export function tournamentOverviewView({ tournamentId }) {
       { signal },
     );
     card.append(form);
+    const activateButton = element("button", {
+      className: "button",
+      text: "Activate tournament",
+      attributes: { type: "button" },
+    });
+    const activationResult = element("div", { className: "result-slot" });
+    activateButton.addEventListener(
+      "click",
+      () => {
+        void pendingAction(activateButton, async () => {
+          activationResult.replaceChildren(status("Activating tournament\u2026"));
+          try {
+            await api.post(`/api/tournaments/${tournamentId}/activate`, {}, {
+              signal,
+            });
+            await loadTournament(signal);
+          } catch (error) {
+            if (signal.aborted || error?.name === "AbortError") {
+              return;
+            }
+            activationResult.replaceChildren(
+              status(errorSummary(error), "error"),
+            );
+          }
+        });
+      },
+      { signal },
+    );
+    const lifecycle = element("section", { className: "structure-panel" });
+    lifecycle.append(
+      element("h3", { text: "Activation" }),
+      element("p", {
+        className: "muted",
+        text: "The backend confirms registered-player readiness before activation.",
+      }),
+      activateButton,
+      activationResult,
+    );
+    card.append(lifecycle);
     result.append(
       card,
       tournamentRegistrationCard(tournament, signal, () => loadTournament(signal)),

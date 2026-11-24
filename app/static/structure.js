@@ -574,6 +574,15 @@ function sectionCard(context, section) {
         : "Planned round count not set",
     }),
   );
+  card.append(
+    element("a", {
+      className: "button button-secondary button-small",
+      text: "Open section operation",
+      attributes: {
+        href: `#/tournaments/${context.workspace.id}/sections/${section.id}`,
+      },
+    }),
+  );
   if (context.editable && section.lifecycle === "draft") {
     card.append(sectionEditor(context, section));
   }
