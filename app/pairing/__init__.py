@@ -1,4 +1,5 @@
 from app.pairing.colors import ColorAllocationError, allocate_colors
+from app.pairing.knockout import KnockoutPairingError, plan_knockout_round
 from app.pairing.ordering import (
     downward_float_order_key,
     order_by_seed,
@@ -23,6 +24,7 @@ from app.pairing.types import (
     Color,
     ColorAllocationContext,
     ColorAssignment,
+    KnockoutPredecessor,
     PairingFormat,
     PairingParticipant,
     PairingPlan,
@@ -40,6 +42,8 @@ __all__ = [
     "ColorAllocationContext",
     "ColorAllocationError",
     "ColorAssignment",
+    "KnockoutPairingError",
+    "KnockoutPredecessor",
     "PairingFormat",
     "PairingParticipant",
     "PairingPlan",
@@ -58,6 +62,7 @@ __all__ = [
     "order_by_seed",
     "order_by_standings",
     "order_for_downward_float",
+    "plan_knockout_round",
     "plan_round_robin_round",
     "plan_swiss_round",
     "seed_order_key",

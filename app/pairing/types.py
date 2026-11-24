@@ -46,6 +46,14 @@ class PlannedOutcome:
 
 
 @dataclass(frozen=True)
+class KnockoutPredecessor:
+    first_participant_id: int
+    second_participant_id: int | None = None
+    first_score: Decimal | None = None
+    second_score: Decimal | None = None
+
+
+@dataclass(frozen=True)
 class PairingPlan:
     round_number: int
     games: tuple[PlannedGame, ...] = ()

@@ -572,3 +572,14 @@
   full-suite unittest tests passed. Residual risk: transactional generation,
   preview/confirm routes, and operator UI integration remain intentionally out
   of scope.
+
+- **T39 - Implementing Knockout Pairing:** Added a pure standard-seeded
+  knockout planner with padded bracket placement, scoreless first-round
+  structural byes, bracket-ordered decisive advancement, draw and unresolved
+  predecessor rejection, and shared color allocation. Files changed:
+  `app/pairing/`, `tests/test_pairing_knockout.py`, `docs/AUTOMATION.md`, this
+  changelog, and [T39](../done/T39_implement_knockout_pairing.md). Validation:
+  9 focused knockout tests, refactor and Markdown boundary tests, and all 150
+  full-suite unittest tests passed. Residual risk: transactional generation,
+  preview/confirm routes, and operator UI integration remain intentionally out
+  of scope.

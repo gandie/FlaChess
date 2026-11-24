@@ -261,10 +261,11 @@ existing operator workspace.
     backtracking with controlled down-floats, one-bye selection, explicit
     impossible-plan failure, and the shared color allocator. It returns an
     in-memory plan only.
-6. **Implement knockout:** Map operator seeds into the padded bracket, create
-    structural first-round byes, advance only completed decisive winners in
-    bracket order, and reject drawn or unresolved predecessor matches. Return an
-    in-memory plan only.
+6. **Done — Implement knockout:**
+    [T39](workflow/done/T39_implement_knockout_pairing.md) added a standard
+    seeded padded bracket, structural first-round byes, decisive predecessor
+    advancement in bracket order, draw/unresolved blocking, shared color
+    allocation, and pure in-memory plans.
 7. **Add transactional generation:** Implement a domain command that reloads
     authoritative section state, checks active lifecycle, planned/calculated
     round count, seed completeness, eligibility, uninterrupted numbering,
