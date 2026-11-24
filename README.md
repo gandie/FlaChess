@@ -26,9 +26,14 @@ shell. The framework-free SPA includes URL-backed Overview and System views;
 Tournament views list status and structure counts, create draft tournaments,
 and open stable overviews where draft metadata can be edited. The Player view
 creates and edits reusable player records. Draft tournament overviews register
-and unregister named players; active and finished rosters are read-only. The
-System view runs a database-independent health check and demonstrates normalized
-API error handling.
+and unregister named players; active and finished rosters are read-only. They
+also configure ordered phases and sections, planned rounds, named section
+membership with optional ratings, and ordered tie-break rules. Draft readiness
+mirrors the backend activation blocker and separately reports missing setup
+items; supported standings codes are identified and configured unsupported
+codes remain visibly flagged. Tie-break-locked and non-draft sections are
+read-only in the overview. The System view runs a database-independent health
+check and demonstrates normalized API error handling.
 
 The API is available at
 [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health) for the
@@ -46,7 +51,10 @@ transitions return a `409` response. The operator catalog uses
 phase, and section counts without a paginated CRUD envelope. Operator player
 contracts are `GET /api/player-summaries` and the scoped
 `/api/tournaments/{id}/participants` read, create, and delete routes. Participant
-writes reject tournaments outside the `draft` lifecycle.
+writes reject tournaments outside the `draft` lifecycle. The direct
+`GET /api/tournaments/{id}/workspace` contract supplies named participants,
+nested phases and sections, section memberships and ratings, ordered tie-break
+configuration, supported codes, and activation readiness in one response.
 
 The SQLAdmin interface is mounted at
 [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and provides list,

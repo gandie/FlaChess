@@ -11,6 +11,19 @@ from app.standings.types import (
     UnsupportedTiebreakError,
 )
 
+SUPPORTED_TIEBREAK_CODES = (
+    "direct_encounter",
+    "number_of_wins",
+    "progressive_score",
+    "buchholz",
+    "buchholz_cut_1",
+    "buchholz_cut_2",
+    "buchholz_median_1",
+    "buchholz_median_2",
+    "sonneborn_berger",
+    "sonneborn_berger_cut_1",
+)
+
 
 def ranking_values(
     participant_ids: list[int],
@@ -61,15 +74,9 @@ def tiebreak_values(
         }
     if code == "progressive_score":
         return progressive_scores(participant_ids, round_points, round_numbers)
-    if code in {
-        "buchholz",
-        "buchholz_cut_1",
-        "buchholz_cut_2",
-        "buchholz_median_1",
-        "buchholz_median_2",
-    }:
+    if code in SUPPORTED_TIEBREAK_CODES[3:8]:
         return buchholz(code, participant_ids, totals, games)
-    if code in {"sonneborn_berger", "sonneborn_berger_cut_1"}:
+    if code in SUPPORTED_TIEBREAK_CODES[8:]:
         return sonneborn_berger(code, participant_ids, totals, games)
     raise UnsupportedTiebreakError(code)
 

@@ -190,7 +190,7 @@ earlier contract.
    - Add reusable player create/edit/list behavior.
    - Register and unregister players for a draft tournament.
    - Display participant names, not only foreign-key IDs.
-3. **Draft tournament structure and rules**
+3. **Draft tournament structure and rules — complete (T27)**
    - Add phases, sections, planned rounds, section membership, and ratings.
    - Add ordered tie-break configuration and make supported versus unsupported
      codes explicit.

@@ -399,3 +399,21 @@
   refactor and Markdown boundary tests passed, and the full unittest suite
   passed (80 tests). Residual risk: browser keyboard interaction remains
   unverified by an automated browser test.
+
+- **T27 – Implementing Draft Tournament Structure and Rules:** Added the
+  direct tournament workspace contract and draft overview controls for ordered
+  phases and sections, planned rounds, named section membership and ratings,
+  and ordered tie-break rules. Readiness now mirrors the existing two-player
+  activation rule while separately listing setup warnings, and supported versus
+  unsupported standings codes are explicit. Tie-break-locked and non-draft
+  section configuration remains read-only. Files changed: `app/api.py`,
+  `app/routes/tournament_workspace.py`,
+  `app/tournament_workspace_schemas.py`, `app/standings/ranking.py`,
+  `app/static/`, `tests/test_tournament_workspace.py`, `tests/test_app.py`,
+  `README.md`, `docs/DESIGN.md`, this changelog, and
+  [T27](../done/T27_implement_tournament_structure_frontend.md). Validation:
+  frontend JavaScript syntax checks passed, focused workspace tests passed
+  (5 tests), app tests passed (9 tests), refactor and Markdown boundary tests
+  passed, and the full unittest suite passed (85 tests). Residual risk:
+  browser keyboard and live PostgreSQL interaction were not exercised by an
+  automated browser or database integration test.

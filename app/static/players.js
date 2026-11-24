@@ -182,7 +182,7 @@ function registrationForm(players, onRegister) {
   return form;
 }
 
-export function tournamentRegistrationCard(tournament, signal) {
+export function tournamentRegistrationCard(tournament, signal, onChange = null) {
   const card = element("section", { className: "card" });
   card.append(
     badge(
@@ -267,6 +267,7 @@ export function tournamentRegistrationCard(tournament, signal) {
         { signal },
       );
       await loadRegistration();
+      await onChange?.();
     } catch (error) {
       if (!signal.aborted && error?.name !== "AbortError") {
         result.replaceChildren(status(errorSummary(error), "error"));
@@ -284,6 +285,7 @@ export function tournamentRegistrationCard(tournament, signal) {
         { signal },
       );
       await loadRegistration();
+      await onChange?.();
     } catch (error) {
       if (!signal.aborted && error?.name !== "AbortError") {
         result.replaceChildren(status(errorSummary(error), "error"));

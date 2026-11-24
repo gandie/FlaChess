@@ -11,6 +11,7 @@ import {
   table,
 } from "./render.js";
 import { tournamentRegistrationCard } from "./players.js";
+import { tournamentStructureCards } from "./structure.js";
 
 function lifecycleBadge(lifecycle) {
   const tones = {
@@ -236,7 +237,7 @@ export function tournamentOverviewView({ tournamentId }) {
   const result = element("div", { className: "result-slot" });
   root.append(result);
 
-  function renderTournament(tournament, signal) {
+  function renderTournament(tournament, workspace, signal) {
     result.replaceChildren();
     const card = element("section", { className: "card" });
     const title = element("h2", { text: tournament.name });
@@ -258,7 +259,11 @@ export function tournamentOverviewView({ tournamentId }) {
           element("dd", { text: value }),
         );
       }
-      result.append(card, tournamentRegistrationCard(tournament, signal));
+      result.append(
+        card,
+        tournamentRegistrationCard(tournament, signal, () => loadTournament(signal)),
+        tournamentStructureCards(workspace, signal, () => loadTournament(signal)),
+      );
       return;
     }
 
@@ -299,17 +304,21 @@ export function tournamentOverviewView({ tournamentId }) {
       { signal },
     );
     card.append(form);
-    result.append(card, tournamentRegistrationCard(tournament, signal));
+    result.append(
+      card,
+      tournamentRegistrationCard(tournament, signal, () => loadTournament(signal)),
+      tournamentStructureCards(workspace, signal, () => loadTournament(signal)),
+    );
   }
 
   async function loadTournament(signal) {
     result.replaceChildren(status("Loading tournament\u2026"));
     try {
-      const tournament = await api.get(
-        `/api/tournaments/${tournamentId}`,
-        { signal },
-      );
-      renderTournament(tournament, signal);
+      const [tournament, workspace] = await Promise.all([
+        api.get(`/api/tournaments/${tournamentId}`, { signal }),
+        api.get(`/api/tournaments/${tournamentId}/workspace`, { signal }),
+      ]);
+      renderTournament(tournament, workspace, signal);
     } catch (error) {
       if (signal.aborted || error?.name === "AbortError") {
         return;

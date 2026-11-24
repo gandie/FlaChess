@@ -86,6 +86,7 @@ class AppTests(unittest.TestCase):
             "render.js": "pendingAction",
             "tournaments.js": "/api/tournament-summaries",
             "players.js": "/api/player-summaries",
+            "structure.js": "/api/section-tiebreaks",
         }
 
         for asset, marker in expected_assets.items():

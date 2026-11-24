@@ -261,6 +261,79 @@ h2 {
   flex: 1;
 }
 
+.workspace-structure {
+  display: grid;
+  gap: 1rem;
+}
+
+.readiness-card > .status {
+  margin-top: 0.65rem;
+}
+
+.structure-card,
+.phase-card,
+.section-card,
+.structure-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.phase-card {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.section-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.section-card,
+.structure-panel {
+  padding: 1rem;
+  background: #fafbf8;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+}
+
+.structure-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.structure-form .result-slot {
+  grid-column: 1 / -1;
+}
+
+.structure-form > .button-danger {
+  justify-self: start;
+}
+
+.inline-form {
+  grid-template-columns: repeat(2, minmax(8rem, 1fr)) auto auto;
+}
+
+.member-row,
+.tiebreak-row {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.member-row:last-child,
+.tiebreak-row:last-child {
+  border-bottom: 0;
+}
+
+.result-slot.compact {
+  min-height: 0;
+  margin-top: 0;
+}
+
 .button:hover:not(:disabled) {
   filter: brightness(0.94);
 }
@@ -499,6 +572,11 @@ th {
   .registration-form {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .structure-form,
+  .inline-form {
+    grid-template-columns: 1fr;
   }
 
   .app-footer {
