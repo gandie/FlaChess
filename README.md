@@ -24,11 +24,14 @@ $env:DATABASE_URL = "postgresql+asyncpg://fla_chess:fla_chess@127.0.0.1:5432/fla
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000) for the operator application
 shell. The framework-free SPA includes URL-backed Overview and System views;
 Tournament views list status and structure counts, create draft tournaments,
-and open stable overviews where draft metadata can be edited. The Player view
+and open compact overviews where draft metadata can be edited. The Player view
 creates and edits reusable player records. Draft tournament overviews register
-and unregister named players; active and finished rosters are read-only. They
+and unregister named players directly from the complete player list; active
+and finished rosters are read-only. They
 also configure ordered phases and sections, planned rounds, named section
-membership with optional ratings, and ordered tie-break rules. Draft readiness
+membership with optional ratings, and ordered tie-break rules. Section
+membership uses the same player-list action pattern and defaults each new
+assignment to the next seed position. Draft readiness
 mirrors the backend activation blocker and separately reports missing setup
 items; supported standings codes are identified and configured unsupported
 codes remain visibly flagged. Tie-break-locked and non-draft sections are

@@ -145,41 +145,70 @@ export function playerDirectoryView() {
   };
 }
 
-function registrationForm(players, onRegister) {
-  const form = element("form", { className: "registration-form" });
-  const wrapper = element("div", { className: "field" });
-  const label = element("label", {
-    text: "Available player",
-    attributes: { for: "registration_player" },
-  });
-  const select = element("select", {
-    attributes: { id: "registration_player", name: "player_id" },
-  });
-  select.append(element("option", { text: "Choose a player\u2026", attributes: { value: "" } }));
+function playerInitials(name) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+}
+
+function registrationRoster(players, participants, onRegister, onUnregister, signal) {
+  const roster = element("div", { className: "player-action-list" });
+  const registered = new Map(
+    participants.map((participant) => [participant.player_id, participant]),
+  );
+  const heading = element("div", { className: "list-heading" });
+  heading.append(
+    element("h3", { text: "Tournament roster" }),
+    element("span", {
+      className: "count-label",
+      text: `${participants.length} of ${players.length} registered`,
+    }),
+  );
+  roster.append(heading);
+
   for (const player of players) {
-    select.append(
-      element("option", {
-        text: player.name,
-        attributes: { value: String(player.id) },
+    const participant = registered.get(player.id);
+    const row = element("div", {
+      className: `player-action-row${participant ? " is-registered" : ""}`,
+    });
+    const identity = element("div", { className: "player-identity" });
+    identity.append(
+      element("span", {
+        className: "player-monogram",
+        text: playerInitials(player.name),
+        attributes: { "aria-hidden": "true" },
       }),
+      element("span", { text: player.name }),
     );
+    const button = element("button", {
+      className: `button button-small roster-action ${
+        participant ? "button-danger" : "button-secondary"
+      }`,
+      text: participant ? "\u2212 Remove" : "+ Add",
+      attributes: {
+        type: "button",
+        "aria-label": participant
+          ? `Remove ${player.name} from the tournament`
+          : `Add ${player.name} to the tournament`,
+      },
+    });
+    button.addEventListener(
+      "click",
+      () =>
+        void pendingAction(button, () =>
+          participant
+            ? onUnregister(participant.registration_id, player.name)
+            : onRegister(player.id),
+        ),
+      { signal },
+    );
+    row.append(identity, button);
+    roster.append(row);
   }
-  const submit = element("button", {
-    className: "button",
-    text: "Register player",
-    attributes: { type: "submit" },
-  });
-  submit.disabled = !players.length;
-  select.disabled = !players.length;
-  wrapper.append(label, select);
-  form.append(wrapper, submit);
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (select.value) {
-      void pendingAction(submit, () => onRegister(Number(select.value)));
-    }
-  });
-  return form;
+  return roster;
 }
 
 export function tournamentRegistrationCard(tournament, signal, onChange = null) {
@@ -207,13 +236,6 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
       const [participants, players = []] = await Promise.all(requests);
       actionArea.replaceChildren();
       if (tournament.lifecycle === "draft") {
-        const registered = new Set(participants.map((item) => item.player_id));
-        actionArea.append(
-          registrationForm(
-            players.filter((player) => !registered.has(player.id)),
-            registerPlayer,
-          ),
-        );
         if (!players.length) {
           actionArea.append(
             element("p", {
@@ -221,7 +243,26 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
               text: "Create a player in the player directory before registration.",
             }),
           );
+        } else {
+          actionArea.append(
+            registrationRoster(
+              players,
+              participants,
+              registerPlayer,
+              unregisterPlayer,
+              signal,
+            ),
+          );
         }
+        result.replaceChildren(
+          participants.length
+            ? element("p", {
+                className: "helper-copy",
+                text: "Add and remove players directly. Changes are saved immediately.",
+              })
+            : emptyState("No registered players", "Select Add next to a player above."),
+        );
+        return;
       }
       if (!participants.length) {
         result.replaceChildren(
@@ -229,28 +270,12 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
         );
         return;
       }
-      const columns = [{ key: "player_name", label: "Player" }];
-      if (tournament.lifecycle === "draft") {
-        columns.push({
-          key: "registration_id",
-          label: "Action",
-          render: (registrationId, participant) => {
-            const remove = element("button", {
-              className: "button button-danger button-small",
-              text: "Unregister",
-              attributes: { type: "button" },
-            });
-            remove.addEventListener(
-              "click",
-              () => void pendingAction(remove, () => unregisterPlayer(registrationId, participant.player_name)),
-              { signal },
-            );
-            return remove;
-          },
-        });
-      }
       result.replaceChildren(
-        table({ caption: "Registered players", columns, rows: participants }),
+        table({
+          caption: "Registered players",
+          columns: [{ key: "player_name", label: "Player" }],
+          rows: participants,
+        }),
       );
     } catch (error) {
       if (!signal.aborted && error?.name !== "AbortError") {

@@ -95,6 +95,29 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertIn("Open player display", tournaments)
         self.assertIn("Activate this tournament?", tournaments)
 
+    def test_tournament_setup_uses_direct_player_actions_and_compact_sections(self) -> None:
+        players = self.static_asset("players.js")
+        structure = self.static_asset("structure.js")
+        tournaments = self.static_asset("tournaments.js")
+        styles = self.static_asset("styles.css")
+
+        self.assertIn("registrationRoster", players)
+        self.assertIn("Add ${player.name}", players)
+        self.assertIn("Remove ${player.name}", players)
+        self.assertNotIn("registration_player", players)
+        self.assertIn("membershipAssignmentRow", structure)
+        self.assertIn("nextSeedPosition", structure)
+        self.assertIn("Next seed ${nextSeed}", structure)
+        self.assertIn("Advancement details", structure)
+        self.assertNotIn('label: "Registered player"', structure)
+        self.assertIn("setupDisclosure", structure)
+        self.assertIn("tournament-workspace", tournaments)
+        self.assertIn("Edit tournament metadata", tournaments)
+        self.assertIn(".tournament-workspace", styles)
+        self.assertIn(".player-action-row", styles)
+        self.assertIn(".membership-assignment-row", styles)
+        self.assertIn(".setup-disclosure", styles)
+
 
 if __name__ == "__main__":
     unittest.main()

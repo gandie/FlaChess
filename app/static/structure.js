@@ -55,6 +55,25 @@ function nextSequence(items) {
   return Math.max(0, ...items.map((item) => item.sequence)) + 1;
 }
 
+function nextSeedPosition(items) {
+  return (
+    Math.max(
+      0,
+      ...items.map((item) => item.seed_position).filter(Number.isFinite),
+    ) + 1
+  );
+}
+
+function setupDisclosure(title, content, open = false) {
+  const details = element("details", { className: "setup-disclosure" });
+  details.open = open;
+  details.append(
+    element("summary", { text: title }),
+    content,
+  );
+  return details;
+}
+
 function earlierSections(context, section) {
   const phase = context.workspace.phases.find(
     (item) => item.sections.some((candidate) => candidate.id === section.id),
@@ -369,8 +388,8 @@ function sectionCreator(context, phase) {
 
 function membershipEditor(context, section, member) {
   const row = element("div", { className: "member-row" });
-  row.append(element("strong", { text: member.player_name }));
   if (!context.membershipEditable) {
+    row.append(element("strong", { text: member.player_name }));
     const provenance = member.source_section_id
       ? `Advanced from ${member.source_section_name ?? "a previous section"}${
           member.source_rank ? ` at rank ${member.source_rank}` : ""
@@ -452,8 +471,84 @@ function membershipEditor(context, section, member) {
   if (context.membershipActions) {
     form.append(membershipActionButton(context, section, member));
   }
-  row.append(form);
+  row.append(
+    setupDisclosure(
+      `${member.player_name} · seed ${member.seed_position ?? "not set"} · ${
+        member.rating ?? "unrated"
+      }`,
+      form,
+    ),
+  );
   return row;
+}
+
+function membershipAssignmentRow(context, section, participant, suggestedSeed) {
+  const form = element("form", { className: "membership-assignment-row" });
+  const seed = formField({
+    id: `section_${section.id}_participant_${participant.registration_id}_seed`,
+    label: "Seed",
+    type: "number",
+    value: suggestedSeed,
+    required: true,
+  });
+  seed.control.min = "1";
+  const advanced = element("details", { className: "inline-disclosure" });
+  advanced.append(element("summary", { text: "Advancement details" }));
+  const assignmentKey = `registration_${participant.registration_id}`;
+  const sourceSection = sourceSectionField(context, section, { id: assignmentKey });
+  const sourceRank = sourceRankField({ id: assignmentKey });
+  sourceRank.control.min = "1";
+  advanced.append(sourceSection.wrapper, sourceRank.wrapper);
+  const submit = element("button", {
+    className: "button button-secondary button-small",
+    text: "+ Add",
+    attributes: {
+      type: "submit",
+      "aria-label": `Add ${participant.player_name} to ${section.name}`,
+    },
+  });
+  const identity = element("div", { className: "player-identity" });
+  identity.append(
+    element("span", {
+      className: "player-monogram",
+      text: participant.player_name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part.charAt(0).toUpperCase())
+        .join(""),
+      attributes: { "aria-hidden": "true" },
+    }),
+    element("strong", { text: participant.player_name }),
+  );
+  const result = element("div", { className: "result-slot compact" });
+  form.append(identity, seed.wrapper, submit, advanced, result);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    void pendingAction(submit, async () => {
+      result.replaceChildren(status("Adding player\u2026"));
+      try {
+        await api.post(
+          "/api/section-participants",
+          {
+            participant_id: participant.registration_id,
+            section_id: section.id,
+            rating: null,
+            rating_source: null,
+            seed_position: numberValue(seed.control),
+            source_section_id: numberValue(sourceSection.control),
+            source_rank: numberValue(sourceRank.control),
+          },
+          { signal: context.signal },
+        );
+        await context.refresh();
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          result.replaceChildren(status(errorSummary(error), "error"));
+        }
+      }
+    });
+  });
+  return form;
 }
 
 function membershipPanel(context, section) {
@@ -484,48 +579,23 @@ function membershipPanel(context, section) {
     );
     return panel;
   }
-  panel.append(
-    writeForm({
-      fields: () => {
-        const player = formField({
-          id: `section_${section.id}_participant`,
-          label: "Registered player",
-          options: available.map((participant) => [
-            participant.registration_id,
-            participant.player_name,
-          ]),
-          required: true,
-        });
-        const sourceSection = sourceSectionField(context, section);
-        const sourceRank = sourceRankField(null, section.id);
-        sourceRank.control.min = "1";
-        const seed = formField({
-          id: `section_${section.id}_participant_seed`,
-          label: "Seed position",
-          type: "number",
-        });
-        seed.control.min = "1";
-        return [player, seed, sourceSection, sourceRank];
-      },
-      submitText: "Add to section",
-      onWrite: async ([player, seed, sourceSection, sourceRank]) => {
-        await api.post(
-          "/api/section-participants",
-          {
-            participant_id: Number(player.control.value),
-            section_id: section.id,
-            rating: null,
-            rating_source: null,
-            seed_position: numberValue(seed.control),
-            source_section_id: numberValue(sourceSection.control),
-            source_rank: numberValue(sourceRank.control),
-          },
-          { signal: context.signal },
-        );
-        await context.refresh();
-      },
+  const nextSeed = nextSeedPosition(section.participants);
+  const assignment = element("div", { className: "player-action-list" });
+  const heading = element("div", { className: "list-heading" });
+  heading.append(
+    element("h5", { text: "Available registered players" }),
+    element("span", {
+      className: "count-label",
+      text: `Next seed ${nextSeed}`,
     }),
   );
+  assignment.append(
+    heading,
+    ...available.map((participant) =>
+      membershipAssignmentRow(context, section, participant, nextSeed),
+    ),
+  );
+  panel.append(assignment);
   return panel;
 }
 
@@ -710,11 +780,11 @@ function sectionCard(context, section) {
     }),
   );
   if (context.editable && section.lifecycle === "draft") {
-    card.append(sectionEditor(context, section));
+    card.append(setupDisclosure("Edit section details", sectionEditor(context, section)));
   }
   card.append(
     membershipPanel(sectionContext, section),
-    tieBreakPanel(sectionContext, section),
+    setupDisclosure("Tie-break rules", tieBreakPanel(sectionContext, section)),
   );
   return card;
 }
@@ -725,7 +795,7 @@ function phaseCard(context, phase) {
     element("h3", { text: `Phase ${phase.sequence}: ${labelFor(phase.format)}` }),
   );
   if (context.editable) {
-    card.append(phaseEditor(context, phase));
+    card.append(setupDisclosure("Edit phase", phaseEditor(context, phase)));
   }
   const sections = element("div", { className: "section-list" });
   sections.append(
@@ -736,8 +806,8 @@ function phaseCard(context, phase) {
   card.append(sections);
   if (context.editable) {
     const creator = element("div", { className: "structure-panel" });
-    creator.append(element("h4", { text: "New section" }), sectionCreator(context, phase));
-    card.append(creator);
+    creator.append(sectionCreator(context, phase));
+    card.append(setupDisclosure("Add another section", creator));
   }
   return card;
 }
@@ -784,8 +854,8 @@ export function tournamentStructureCards(workspace, signal, refresh) {
   }
   if (context.editable) {
     const creator = element("div", { className: "structure-panel" });
-    creator.append(element("h3", { text: "New phase" }), phaseCreator(context));
-    phasesCard.append(creator);
+    creator.append(phaseCreator(context));
+    phasesCard.append(setupDisclosure("Add another phase", creator));
   }
   wrapper.append(phasesCard);
   return wrapper;

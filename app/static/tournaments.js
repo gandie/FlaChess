@@ -57,6 +57,12 @@ function formValues(form) {
   };
 }
 
+function setupDisclosure(title, content) {
+  const details = element("details", { className: "setup-disclosure" });
+  details.append(element("summary", { text: title }), content);
+  return details;
+}
+
 function tournamentCloseoutAction(tournament, signal, refresh) {
   if (tournament.lifecycle !== "active") {
     return null;
@@ -293,7 +299,11 @@ export function tournamentOverviewView({ tournamentId }) {
 
   function renderTournament(tournament, workspace, signal) {
     result.replaceChildren();
+    root.querySelector("#page-title").textContent = tournament.name;
+    root.querySelector(".page-description").textContent =
+      "Build the roster, configure phases and sections, then activate when ready.";
     const card = element("section", { className: "card" });
+    card.classList.add("tournament-summary-card");
     const title = element("h2", { text: tournament.name });
     card.append(
       lifecycleBadge(tournament.lifecycle),
@@ -334,11 +344,17 @@ export function tournamentOverviewView({ tournamentId }) {
       if (closeout) {
         card.append(closeout);
       }
-      result.append(
+      const sidebar = element("aside", { className: "workspace-sidebar" });
+      sidebar.append(
         card,
         tournamentRegistrationCard(tournament, signal, () => loadTournament(signal)),
+      );
+      const layout = element("div", { className: "tournament-workspace" });
+      layout.append(
+        sidebar,
         tournamentStructureCards(workspace, signal, () => loadTournament(signal)),
       );
+      result.append(layout);
       return;
     }
 
@@ -378,7 +394,7 @@ export function tournamentOverviewView({ tournamentId }) {
       },
       { signal },
     );
-    card.append(form);
+    card.append(setupDisclosure("Edit tournament metadata", form));
     const activateButton = element("button", {
       className: "button",
       text: "Activate tournament",
@@ -425,11 +441,17 @@ export function tournamentOverviewView({ tournamentId }) {
       activationResult,
     );
     card.append(lifecycle);
-    result.append(
+    const sidebar = element("aside", { className: "workspace-sidebar" });
+    sidebar.append(
       card,
       tournamentRegistrationCard(tournament, signal, () => loadTournament(signal)),
+    );
+    const layout = element("div", { className: "tournament-workspace" });
+    layout.append(
+      sidebar,
       tournamentStructureCards(workspace, signal, () => loadTournament(signal)),
     );
+    result.append(layout);
   }
 
   async function loadTournament(signal) {
