@@ -549,3 +549,14 @@
   pairing tests, 1 refactor-boundary test, 1 markdown-boundary test, and all
   122 full-suite unittest tests passed. Residual risk: none for the common
   layer; format-specific scheduling engines remain intentionally out of scope.
+
+- **T37 - Implementing Single Round-Robin:** Added a pure seed-ordered circle
+  scheduler that independently verifies round shape, calculated round count, and
+  exact unordered-pair coverage, produces scoreless structural byes for odd
+  fields, and applies the shared deterministic color allocator. Files changed:
+  `app/pairing/`, `tests/test_pairing_round_robin.py`, `docs/AUTOMATION.md`, this
+  changelog, and
+  [T37](../done/T37_implement_single_round_robin.md). Validation: 8 focused
+  pairing tests and all 130 full-suite unittest tests passed. Residual risk:
+  none for the pure scheduling slice; transactional generation and operator
+  routes remain intentionally out of scope.

@@ -249,10 +249,12 @@ existing operator workspace.
     validators, deterministic tie ordering, and the shared color allocator.
     SQLAlchemy and FastAPI remain outside this layer, and focused tests cover
     the approved first-round, streak, balance, and fallback rules.
-4. **Implement single round-robin:** Build and independently verify circle
-    scheduling for even and odd eligible fields, structural byes, one complete
-    unordered pairing set, and calculated round counts. Return an in-memory plan
-    only; do not write database rows.
+4. **Done — Implement single round-robin:**
+    [T37](workflow/done/T37_implement_single_round_robin.md) added a pure
+    seed-ordered circle scheduler with independent schedule-shape and exact
+    unordered-pair verification, scoreless structural byes, calculated round
+    limits, and the shared color allocator. It returns an in-memory plan and
+    performs no database access.
 5. **Implement Swiss:** Build FIDE/Dutch-style score-group matching from seeds
     or latest standings, repeat avoidance, controlled down-floats, bounded
     backtracking, one-bye selection, impossible-plan failure, and the shared
