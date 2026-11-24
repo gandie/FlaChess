@@ -464,3 +464,21 @@
   unittest suite passed (89 tests). Residual risk: browser keyboard behavior and
   live PostgreSQL interaction remain unverified by automated browser or database
   integration tests.
+
+- **T31 – Hardening Tournament Usability:** Added a GET-only player display for
+  the current phase, latest upcoming games, completed results, participation
+  notes, and available standings. Operator result entry now has sticky round
+  navigation, incomplete-game shortcuts, save-to-next focus, compact collapsed
+  creation forms, responsive dense tables, route-heading focus, and confirmed
+  activation actions. Files changed: `app/static/app.js`,
+  `app/static/display.js`, `app/static/operations.js`,
+  `app/static/standings.js`, `app/static/styles.css`,
+  `app/static/tournaments.js`, `tests/test_app.py`,
+  `tests/test_tournament_usability.py`, `README.md`, `docs/DESIGN.md`, this
+  changelog, and [T31](../done/T31_harden_tournament_usability.md). Validation:
+  JavaScript syntax checks passed; focused usability, section-operation,
+  workspace, and app suites passed; Markdown and refactor boundary checks
+  passed; and the full unittest suite passed (92 tests). Residual risk:
+  browser-rendered keyboard behavior, real tournament-sized interaction, and
+  live PostgreSQL operation were not exercised by an automated browser or
+  database integration test.

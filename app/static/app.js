@@ -15,6 +15,7 @@ import {
 } from "./tournaments.js";
 import { playerDirectoryView } from "./players.js";
 import { sectionOperationView } from "./operations.js";
+import { tournamentDisplayView } from "./display.js";
 
 const view = document.querySelector("#app-view");
 const connectionStatus = document.querySelector("#app-connection-status");
@@ -181,6 +182,10 @@ const router = createRouter({
         tournamentOverviewView({ tournamentId: params.id }),
     ],
     [
+      "/display/tournaments/:id",
+      ({ params }) => tournamentDisplayView({ tournamentId: params.id }),
+    ],
+    [
       "/tournaments/:tournamentId/sections/:sectionId",
       ({ params }) =>
         sectionOperationView({
@@ -203,7 +208,7 @@ const router = createRouter({
   notFound: notFoundView,
   mount(element) {
     view.replaceChildren(element);
-    document.querySelector("#page-title")?.focus({ preventScroll: true });
+    document.querySelector("#page-title")?.focus();
   },
   onLoading() {
     view.replaceChildren(

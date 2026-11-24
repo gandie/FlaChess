@@ -215,11 +215,16 @@ earlier contract.
    - Support manual participant membership in later sections with
      `source_section_id` and `source_rank`.
    - Show final standings and retain a read-only historical workspace.
-7. **Usability hardening**
-   - Validate dense-table workflows with real tournament-sized data.
-   - Review keyboard behavior, responsive layouts, accidental-action
-     protection, and repeated operator tasks.
-   - Add integration smoke coverage for the complete draft-to-finished path.
+7. **Usability hardening — complete (T31)**
+   - Put round result-entry shortcuts and the active game editor ahead of
+     standings, keep round navigation available while scrolling, and collapse
+     infrequently used creation controls.
+   - Add a read-only player display for the current phase, upcoming games,
+     completed results, participation notes, and latest available standings.
+   - Protect activation transitions, restore route focus, and preserve dense
+     responsive tables for keyboard and operator workflows.
+   - Cover the composed display and complete operator lifecycle surfaces with
+     focused frontend smoke tests.
 
 ### Deferred or Requires a Separate Policy Decision
 

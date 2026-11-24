@@ -36,7 +36,9 @@ read-only in the overview except that draft section membership can still be
 managed during an active tournament for manual advancement. Membership records
 may carry a prior section and source rank. Operators can activate an eligible
 draft tournament from the overview, activate a section, and open its dedicated
-operation view.
+operation view. The active round is placed before standings, with direct
+incomplete-result shortcuts, sticky round navigation, compact collapsed
+pairing/participation creation controls, and save-to-next-result focus.
 Active sections support round creation, manual game pairings, valid score entry,
 result types, comments, and byes, unplayed rounds, absences, and awarded scores.
 Section operation includes URL-backed round navigation, explicit incomplete
@@ -45,6 +47,11 @@ changes recompute that round's snapshot; the table shows player names, rank,
 points, wins/draws/losses, active tie-break columns, and snapshot time.
 Confirmed section and tournament finish actions retain final section standings
 and switch tournament history to a read-only presentation.
+Every tournament can also be opened through the player display link. The URL
+`/#/display/tournaments/{id}` presents the current phase, that phase's latest
+round pairings and results, participation notes, and latest available standings
+without mutation controls. It uses the existing read contracts and a manual
+refresh action, so players can keep the view open on a shared tournament screen.
 The System view runs a database-independent health check and demonstrates
 normalized API error handling.
 
@@ -71,8 +78,9 @@ configuration, supported codes, activation readiness, and advancement source
 section/rank metadata in one response.
 `GET /api/tournament-sections/{id}/operation` supplies named section members,
 ordered rounds, games, round participation records, tournament lifecycle, and
-active ordered tie-break metadata for the operator view. Finished tournaments
-remain read-only when their section operation URLs are revisited. Standing
+active ordered tie-break metadata for the operator and player display views.
+Finished tournaments remain read-only when their section operation URLs are
+revisited. Standing
 snapshots are read from
 `GET /api/tournament-sections/{id}/standings?through_round_id={round_id}` and
 recomputed through

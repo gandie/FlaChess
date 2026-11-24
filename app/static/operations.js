@@ -111,7 +111,15 @@ function writeForm({ fields, submitText, className, onWrite }) {
 }
 
 function gameEditor(context, round, game) {
-  const article = element("article", { className: "operation-record" });
+  const article = element("article", {
+    className: "operation-record game-record",
+    attributes: {
+      id: `game-${game.id}`,
+      tabindex: "-1",
+      "data-game-id": game.id,
+      "data-result-state": game.white_score === null ? "incomplete" : "recorded",
+    },
+  });
   const recorded = game.white_score !== null;
   article.append(
     element("h4", {
@@ -181,11 +189,77 @@ function gameEditor(context, round, game) {
           },
           { signal: context.signal },
         );
-        await context.refreshAfterResult(round.id);
+        await context.refreshAfterResult(round.id, game.id);
       },
     }),
   );
   return article;
+}
+
+function jumpToGame(gameId) {
+  const record = document.querySelector(`#game-${gameId}`);
+  if (!record) {
+    return;
+  }
+  record.scrollIntoView({ block: "center" });
+  record.querySelector("select, input, button")?.focus({ preventScroll: true });
+}
+
+function resultQueue(context, round) {
+  if (!context.editable || !round.games.length) {
+    return null;
+  }
+  const incomplete = round.games.filter((game) => game.white_score === null);
+  const queue = element("section", {
+    className: "result-queue",
+    attributes: {
+      "aria-label": `Round ${round.number} result entry shortcuts`,
+      tabindex: "-1",
+    },
+  });
+  queue.append(
+    element("div", { className: "result-queue-heading" }),
+  );
+  queue.firstElementChild.append(
+    element("h3", { text: "Result entry" }),
+    element("span", {
+      className: "muted",
+      text: `${incomplete.length} incomplete ${
+        incomplete.length === 1 ? "game" : "games"
+      }`,
+    }),
+  );
+  const links = element("div", { className: "result-jump-list" });
+  const orderedGames = [...round.games].sort(
+    (left, right) =>
+      Number(left.white_score !== null) - Number(right.white_score !== null),
+  );
+  for (const game of orderedGames) {
+    const button = element("button", {
+      className: "result-jump",
+      text: `${game.white_player_name} – ${game.black_player_name}`,
+      attributes: { type: "button" },
+    });
+    if (game.white_score === null) {
+      button.classList.add("incomplete");
+    }
+    button.addEventListener("click", () => jumpToGame(game.id), {
+      signal: context.signal,
+    });
+    links.append(button);
+  }
+  queue.append(links);
+  return queue;
+}
+
+function creationDisclosure(title, summary, content) {
+  const details = element("details", { className: "operation-disclosure" });
+  details.append(
+    element("summary", { text: summary }),
+    element("h4", { text: title }),
+    content,
+  );
+  return details;
 }
 
 function pairingCreator(context, round) {
@@ -394,6 +468,10 @@ function roundPanel(context, round) {
     badge(`Round ${round.number}`, "accent"),
     element("h2", { text: `Round ${round.number}` }),
   );
+  const queue = resultQueue(context, round);
+  if (queue) {
+    card.append(queue);
+  }
   const games = element("section", { className: "operation-panel" });
   games.append(element("h3", { text: "Games and pairings" }));
   if (round.games.length) {
@@ -402,9 +480,13 @@ function roundPanel(context, round) {
     games.append(emptyState("No pairings", "Add a manual pairing for this round."));
   }
   if (context.editable) {
-    const creator = element("div", { className: "operation-panel" });
-    creator.append(element("h4", { text: "New manual pairing" }), pairingCreator(context, round));
-    games.append(creator);
+    games.append(
+      creationDisclosure(
+        "New manual pairing",
+        "Add a manual pairing",
+        pairingCreator(context, round),
+      ),
+    );
   }
   const records = element("section", { className: "operation-panel" });
   records.append(element("h3", { text: "Byes, unplayed rounds, and absences" }));
@@ -418,12 +500,13 @@ function roundPanel(context, round) {
     );
   }
   if (context.editable) {
-    const creator = element("div", { className: "operation-panel" });
-    creator.append(
-      element("h4", { text: "New participation record" }),
-      participationCreator(context, round),
+    records.append(
+      creationDisclosure(
+        "New participation record",
+        "Add a bye, unplayed round, or absence",
+        participationCreator(context, round),
+      ),
     );
-    records.append(creator);
   }
   card.append(games, records);
   return card;
@@ -460,6 +543,8 @@ function sectionAction(context) {
       action: "Activate section",
       pending: "Activating section\u2026",
       target: "activate",
+      confirmation:
+        "Activate this section? Round creation and result entry will become available.",
     },
     active: {
       action: "Finish section",
@@ -539,6 +624,19 @@ export function sectionOperationView({
           signal,
         });
         await load(signal);
+        window.requestAnimationFrame(() => {
+          const next = document.querySelector(
+            ".game-record[data-result-state='incomplete']",
+          );
+          if (next) {
+            next.scrollIntoView({ block: "center" });
+            next.querySelector("select, input, button")?.focus({
+              preventScroll: true,
+            });
+          } else {
+            document.querySelector(".result-queue")?.focus();
+          }
+        });
       },
     };
     result.replaceChildren();
@@ -576,12 +674,12 @@ export function sectionOperationView({
     if (activeRound) {
       result.append(
         roundNavigation(operation, tournamentId, activeRound.id),
+        roundPanel(context, activeRound),
         standingsReview({
           operation,
           round: activeRound,
           signal,
         }),
-        roundPanel(context, activeRound),
       );
     } else {
       result.append(emptyState("No rounds", "Create the first round for this section."));

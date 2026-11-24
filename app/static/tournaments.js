@@ -226,6 +226,16 @@ export function tournamentCatalogView(navigate) {
               key: "section_count",
               label: "Sections",
             },
+            {
+              key: "id",
+              label: "Player display",
+              render: (id) =>
+                element("a", {
+                  className: "record-link",
+                  text: "Open display",
+                  attributes: { href: `#/display/tournaments/${id}` },
+                }),
+            },
           ],
           rows: tournaments,
         }),
@@ -285,7 +295,15 @@ export function tournamentOverviewView({ tournamentId }) {
     result.replaceChildren();
     const card = element("section", { className: "card" });
     const title = element("h2", { text: tournament.name });
-    card.append(lifecycleBadge(tournament.lifecycle), title);
+    card.append(
+      lifecycleBadge(tournament.lifecycle),
+      title,
+      element("a", {
+        className: "button button-secondary button-small",
+        text: "Open player display",
+        attributes: { href: `#/display/tournaments/${tournament.id}` },
+      }),
+    );
     if (tournament.lifecycle !== "draft") {
       card.append(
         status(
@@ -370,6 +388,13 @@ export function tournamentOverviewView({ tournamentId }) {
     activateButton.addEventListener(
       "click",
       () => {
+        if (
+          !confirmAction(
+            "Activate this tournament? Draft metadata and registration will become read-only.",
+          )
+        ) {
+          return;
+        }
         void pendingAction(activateButton, async () => {
           activationResult.replaceChildren(status("Activating tournament\u2026"));
           try {

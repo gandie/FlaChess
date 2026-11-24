@@ -37,7 +37,7 @@ function snapshotTime(standings) {
   }).format(date);
 }
 
-function standingsTable(operation, standings, round) {
+export function standingsTable(operation, standings, round) {
   const names = new Map(
     operation.participants.map((participant) => [
       String(participant.id),
