@@ -773,11 +773,16 @@ function sectionCard(context, section) {
   );
   card.append(
     element("a", {
-      className: "button button-secondary button-small",
+      className:
+        section.lifecycle === "active"
+          ? "button section-operation-action"
+          : "button button-secondary section-operation-action",
       text:
-        section.lifecycle === "finished"
-          ? "Review final standings"
-          : "Open section operation",
+        {
+          draft: "Open section operation",
+          active: "Run section →",
+          finished: "Review final standings →",
+        }[section.lifecycle] ?? "Open section operation",
       attributes: {
         href: `#/tournaments/${context.workspace.id}/sections/${section.id}`,
       },

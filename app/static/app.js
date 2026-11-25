@@ -58,9 +58,7 @@ function overviewView() {
   commandDeck.append(signal, commandCopy);
 
   const launchGrid = element("div", { className: "launch-grid" });
-  const tournamentLaunch = element("article", {
-    className: "launch-card launch-card-primary",
-  });
+  const tournamentLaunch = element("article", { className: "launch-card" });
   tournamentLaunch.append(
     element("span", { className: "launch-number", text: "01" }),
     element("h2", { text: "Tournament catalog" }),
@@ -68,8 +66,8 @@ function overviewView() {
       text: "Create drafts, continue live events, and close finished tournaments.",
     }),
     element("a", {
-      className: "button button-secondary",
-      text: "Open tournaments",
+      className: "text-link",
+      text: "Open tournaments →",
       attributes: { href: "#/tournaments" },
     }),
   );

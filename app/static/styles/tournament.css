@@ -16,6 +16,93 @@
   border-top: 0.3rem solid var(--clock);
 }
 
+.tournament-desk {
+  position: sticky;
+  z-index: 4;
+  top: 0.5rem;
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  background: var(--ink-deep);
+  border: 1px solid var(--ink-deep);
+  box-shadow: 0.25rem 0.25rem 0 var(--clock);
+}
+
+.tournament-desk-label,
+.tournament-desk-link {
+  display: inline-flex;
+  min-height: 3rem;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 0.6rem 0.85rem;
+  font-family: var(--font-utility);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.tournament-desk-label {
+  color: var(--ink-deep);
+  background: var(--gold);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tournament-desk-link {
+  color: var(--panel);
+  border-left: 1px solid var(--color-paper-border-medium);
+  text-decoration: none;
+}
+
+a.tournament-desk-link:hover,
+a.tournament-desk-link:focus-visible,
+.tournament-desk-link.active {
+  color: var(--ink-deep);
+  background: var(--paper);
+}
+
+.tournament-desk-link.active {
+  font-weight: 800;
+}
+
+.tournament-desk-progress {
+  display: grid;
+  min-width: 12rem;
+  margin-left: auto;
+  padding: 0.35rem;
+  background: var(--panel);
+  border-left: 0.2rem solid var(--clock);
+  gap: 0.25rem;
+}
+
+.tournament-desk-progress .button {
+  min-height: 2.25rem;
+  margin: 0;
+}
+
+.tournament-desk-progress .result-slot {
+  min-height: 0;
+  margin: 0;
+}
+
+.tournament-desk-progress .status {
+  padding: 0.45rem 0.6rem;
+}
+
+.tournament-desk-progress .muted {
+  margin: 0;
+  font-size: 0.72rem;
+}
+
+.tournament-next-label {
+  color: var(--accent);
+  font-family: var(--font-utility);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .tournament-workspace {
   display: grid;
   grid-template-columns: minmax(19rem, 0.72fr) minmax(0, 1.7fr);
@@ -64,6 +151,14 @@
 .structure-panel {
   position: relative;
   padding: 1rem;
+}
+
+.section-operation-action {
+  justify-self: start;
+}
+
+.section-card > .section-operation-action {
+  margin-bottom: 0.15rem;
 }
 
 .section-card::before {
@@ -526,6 +621,26 @@
 }
 
 @media (max-width: 42rem) {
+  .tournament-desk {
+    position: static;
+    flex-wrap: wrap;
+  }
+
+  .tournament-desk-label {
+    width: 100%;
+  }
+
+  .tournament-desk-link {
+    min-width: 0;
+    flex: 1 1 50%;
+    white-space: normal;
+  }
+
+  .tournament-desk-progress {
+    width: 100%;
+    margin-left: 0;
+  }
+
   .list-heading,
   .result-queue-heading {
     align-items: flex-start;

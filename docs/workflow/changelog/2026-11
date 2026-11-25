@@ -600,6 +600,23 @@
 
 # 2026-11 Changelog
 
+- [T57](../done/T57_align_frontend_action_hierarchy.md): Unified overview
+  launch actions and introduced a sticky tournament desk rail across overview
+  and section operation views. The rail exposes sibling sections, player
+  display, and lifecycle progression; live sections now use a prominent “Run
+  section” action above setup disclosures, while descriptions match the active
+  tournament state.
+  - Files: `app/static/app.js`, `app/static/tournaments.js`,
+    `app/static/structure.js`, `app/static/operations.js`,
+    `app/static/styles/overview.css`, `app/static/styles/tournament.css`,
+    `tests/test_tournament_usability.py`, and workflow records.
+  - Validation: full unittest discovery passed (184 tests), focused frontend
+    usability validation passed (10 tests), markdown and done-task boundary
+    validation passed (1 test each), IDE diagnostics reported no errors, and
+    `git diff --check` passed.
+  - Residual risk: the shared browser continues to serve the pre-refresh Docker
+    static image; Docker was intentionally left unchanged.
+
 - [T56](../done/T56_refactor_frontend_styles.md): Consolidated the accumulated
   stylesheet override layer into focused token, base, layout, component,
   overview, tournament, and display modules. The current tournament control-room

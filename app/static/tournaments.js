@@ -187,6 +187,48 @@ function tournamentCloseoutAction(tournament, signal, refresh) {
   return wrapper;
 }
 
+function tournamentDesk(tournament, workspace, progression = null) {
+  const navigation = element("nav", {
+    className: "tournament-desk",
+    attributes: { "aria-label": "Tournament navigation" },
+  });
+  navigation.append(
+    element("span", { className: "tournament-desk-label", text: "Tournament desk" }),
+    element("span", {
+      className: "tournament-desk-link active",
+      text: "Overview",
+      attributes: { "aria-current": "page" },
+    }),
+  );
+  for (const phase of workspace.phases) {
+    for (const section of phase.sections) {
+      navigation.append(
+        element("a", {
+          className: "tournament-desk-link",
+          text: section.lifecycle === "finished"
+            ? `${section.name} standings`
+            : `${section.name} operation`,
+          attributes: {
+            href: `#/tournaments/${tournament.id}/sections/${section.id}`,
+          },
+        }),
+      );
+    }
+  }
+  navigation.append(
+    element("a", {
+      className: "tournament-desk-link",
+      text: "Player display",
+      attributes: { href: `#/display/tournaments/${tournament.id}` },
+    }),
+  );
+  if (progression) {
+    progression.classList.add("tournament-desk-progress");
+    navigation.append(progression);
+  }
+  return navigation;
+}
+
 function metadataForm(tournament = {}) {
   const form = element("form", { className: "form-stack" });
   const name = field({
@@ -383,19 +425,17 @@ export function tournamentOverviewView({ tournamentId }) {
   function renderTournament(tournament, workspace, signal) {
     result.replaceChildren();
     root.querySelector("#page-title").textContent = tournament.name;
-    root.querySelector(".page-description").textContent =
-      "Build the roster, configure phases and sections, then activate when ready.";
+    root.querySelector(".page-description").textContent = {
+      draft: "Build the roster, configure phases and sections, then activate when ready.",
+      active: "Run each section, monitor rounds, and move the tournament toward closeout.",
+      finished: "Review the final tournament structure, section results, and standings.",
+    }[tournament.lifecycle];
     const card = element("section", { className: "card" });
     card.classList.add("tournament-summary-card");
     const title = element("h2", { text: tournament.name });
     card.append(
       lifecycleBadge(tournament.lifecycle),
       title,
-      element("a", {
-        className: "button button-secondary button-small",
-        text: "Open player display",
-        attributes: { href: `#/display/tournaments/${tournament.id}` },
-      }),
     );
     if (tournament.lifecycle !== "draft") {
       card.append(
@@ -424,9 +464,6 @@ export function tournamentOverviewView({ tournamentId }) {
         signal,
         () => loadTournament(signal, { preserveView: true }),
       );
-      if (closeout) {
-        card.append(closeout);
-      }
       const sidebar = element("aside", { className: "workspace-sidebar" });
       sidebar.append(
         card,
@@ -441,7 +478,7 @@ export function tournamentOverviewView({ tournamentId }) {
           loadTournament(signal, { preserveView: true }),
         ),
       );
-      result.append(layout);
+      result.append(tournamentDesk(tournament, workspace, closeout), layout);
       return;
     }
 
@@ -517,17 +554,16 @@ export function tournamentOverviewView({ tournamentId }) {
       },
       { signal },
     );
-    const lifecycle = element("section", { className: "structure-panel" });
-    lifecycle.append(
-      element("h3", { text: "Activation" }),
+    const activation = element("div", { className: "lifecycle-action" });
+    activation.append(
+      element("span", { className: "tournament-next-label", text: "Next move" }),
       element("p", {
         className: "muted",
-        text: "The backend confirms registered-player readiness before activation.",
+        text: "Activate after the readiness checks below are clear.",
       }),
       activateButton,
       activationResult,
     );
-    card.append(lifecycle);
     const sidebar = element("aside", { className: "workspace-sidebar" });
     sidebar.append(
       card,
@@ -542,7 +578,7 @@ export function tournamentOverviewView({ tournamentId }) {
         loadTournament(signal, { preserveView: true }),
       ),
     );
-    result.append(layout);
+    result.append(tournamentDesk(tournament, workspace, activation), layout);
   }
 
   async function loadTournament(signal, options = {}) {

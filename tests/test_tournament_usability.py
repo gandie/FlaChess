@@ -72,6 +72,19 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertNotIn("api.patch", display)
         self.assertNotIn("api.delete", display)
 
+    def test_overview_launch_actions_share_one_hierarchy(self) -> None:
+        app_module = self.static_asset("app.js")
+
+        launch_cards = app_module.split("const launchGrid", 1)[1].split(
+            "launchGrid.append",
+            1,
+        )[0]
+        self.assertEqual(launch_cards.count('className: "text-link"'), 3)
+        self.assertNotIn("launch-card-primary", launch_cards)
+        self.assertIn("Open tournaments →", launch_cards)
+        self.assertIn("Manage players →", launch_cards)
+        self.assertIn("Choose a tournament →", launch_cards)
+
     def test_operator_result_entry_has_shortcuts_before_standings(self) -> None:
         operations = self.static_asset("operations.js")
         active_round_block = operations.split("if (activeRound)", 1)[1]
@@ -131,7 +144,7 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertIn(".result-jump", styles)
         self.assertIn(".display-games-grid", styles)
         self.assertIn("@media (max-width: 42rem)", styles)
-        self.assertIn("Open player display", tournaments)
+        self.assertIn("Player display", tournaments)
         self.assertIn("Activate this tournament?", tournaments)
 
     def test_tournament_desk_surfaces_live_work_and_round_actions(self) -> None:
@@ -144,7 +157,7 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertIn("/api/tournament-summaries", app_module)
         self.assertIn("Open tournament", app_module)
         self.assertIn("live-round-rail", operations)
-        self.assertIn("Tournament overview", operations)
+        self.assertIn("Tournament navigation", operations)
         active_round_block = operations.split("if (activeRound)", 1)[1]
         self.assertLess(
             active_round_block.index("automation ? [automation]"),
@@ -156,6 +169,24 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertIn('class="brand-mark"', index)
         self.assertIn('src="/static/fla_chess_icon.png"', index)
         self.assertIn("prefers-reduced-motion", styles)
+
+    def test_tournament_navigation_exposes_sections_and_progression(self) -> None:
+        tournaments = self.static_asset("tournaments.js")
+        structure = self.static_asset("structure.js")
+        operations = self.static_asset("operations.js")
+        styles = self.static_styles()
+
+        self.assertIn("Tournament navigation", tournaments)
+        self.assertIn("tournamentDesk(tournament, workspace", tournaments)
+        self.assertIn("tournament-desk-progress", tournaments)
+        self.assertIn('active: "Run section →"', structure)
+        self.assertIn("section-operation-action", structure)
+        self.assertIn("Tournament navigation", operations)
+        self.assertIn("tournament-desk-progress", operations)
+        self.assertIn("/api/tournaments/${tournamentId}/workspace", operations)
+        self.assertIn("for (const phase of workspace.phases)", operations)
+        self.assertIn(".tournament-desk", styles)
+        self.assertIn(".section-operation-action", styles)
 
     def test_tournament_setup_uses_direct_player_actions_and_compact_sections(self) -> None:
         players = self.static_asset("players.js")

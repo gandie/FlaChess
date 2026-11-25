@@ -847,24 +847,12 @@ export function sectionOperationView({
     title: "Section",
     description:
       "Preview generated pairings, manage manual rounds, and record results.",
-    actions: [
-      element("a", {
-        className: "button button-secondary button-small",
-        text: "Tournament overview",
-        attributes: { href: `#/tournaments/${tournamentId}` },
-      }),
-      element("a", {
-        className: "button button-secondary button-small",
-        text: "Player display",
-        attributes: { href: `#/display/tournaments/${tournamentId}` },
-      }),
-    ],
   });
   root.classList.add("operation-page");
   const result = element("div", { className: "result-slot" });
   root.append(result);
 
-  function render(operation, signal) {
+  function render(operation, workspace, signal) {
     const activeRound =
       operation.rounds.find(
         (round) => String(round.id) === String(roundId),
@@ -895,7 +883,7 @@ export function sectionOperationView({
             }
           }
         }
-        render(refreshed, signal);
+        render(refreshed, workspace, signal);
         if (standingsError) {
           result.prepend(
             status(
@@ -922,10 +910,6 @@ export function sectionOperationView({
         text: `${operation.tournament_name} · ${operation.participants.length} section members`,
       }),
     );
-    const action = sectionAction(context);
-    if (action) {
-      summary.append(action);
-    }
     if (operation.tournament_lifecycle === "finished") {
       summary.append(
         status(
@@ -943,7 +927,47 @@ export function sectionOperationView({
       );
     }
     const automation = pairingAutomation(context);
-    result.append(summary);
+    const navigation = element("nav", {
+      className: "tournament-desk",
+      attributes: { "aria-label": "Tournament navigation" },
+    });
+    navigation.append(
+      element("span", { className: "tournament-desk-label", text: "Tournament desk" }),
+      element("a", {
+        className: "tournament-desk-link",
+        text: "Overview",
+        attributes: { href: `#/tournaments/${tournamentId}` },
+      }),
+    );
+    for (const phase of workspace.phases) {
+      for (const section of phase.sections) {
+        const current = String(section.id) === String(operation.id);
+        navigation.append(
+          element(current ? "span" : "a", {
+            className: `tournament-desk-link${current ? " active" : ""}`,
+            text: current ? `${section.sequence}. ${section.name}` : section.name,
+            attributes: current
+              ? { "aria-current": "page" }
+              : {
+                  href: `#/tournaments/${tournamentId}/sections/${section.id}`,
+                },
+          }),
+        );
+      }
+    }
+    navigation.append(
+      element("a", {
+        className: "tournament-desk-link",
+        text: "Player display",
+        attributes: { href: `#/display/tournaments/${tournamentId}` },
+      }),
+    );
+    const action = sectionAction(context);
+    if (action) {
+      action.classList.add("tournament-desk-progress");
+      navigation.append(action);
+    }
+    result.append(navigation, summary);
     if (activeRound) {
       result.append(
         roundNavigation(operation, tournamentId, activeRound.id),
@@ -1008,8 +1032,11 @@ export function sectionOperationView({
   async function load(signal) {
     result.replaceChildren(status("Loading section operation\u2026"));
     try {
-      const operation = await fetchOperation(signal);
-      render(operation, signal);
+      const [operation, workspace] = await Promise.all([
+        fetchOperation(signal),
+        api.get(`/api/tournaments/${tournamentId}/workspace`, { signal }),
+      ]);
+      render(operation, workspace, signal);
     } catch (error) {
       if (signal.aborted || error?.name === "AbortError") {
         return;
