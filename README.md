@@ -163,10 +163,27 @@ For example:
 .\tools\psql.ps1 -Query "SELECT id, name FROM player;"
 ```
 
+The helper also accepts a SQL file, which makes the checked-in development
+data tools repeatable:
+
+```powershell
+# Add 24 randomized player names and three draft tournaments.
+.\tools\psql.ps1 -File .\tools\seed_database.sql
+
+# Remove all tournament and player data, including dependent rows and identities.
+.\tools\psql.ps1 -File .\tools\cleanup_database.sql
+```
+
+Run the cleanup script before reseeding when a completely fresh development
+dataset is required. The cleanup uses `TRUNCATE ... RESTART IDENTITY CASCADE`,
+so it removes all tournament-owned records through the database foreign keys
+and resets generated IDs.
+
 The helper uses the local `.env.example` values (`fla_chess` for both
 `POSTGRES_USER` and `POSTGRES_DB`); update its `-U`/`-d` values if those
 development settings change. It stops on SQL errors and passes the query as a
-single argument to `psql`'s `-c` option.
+single argument to `psql`'s `-c` option, or streams a selected SQL file through
+standard input.
 
 ## Database migrations
 
