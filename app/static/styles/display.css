@@ -1,0 +1,420 @@
+.tournament-display {
+  display: grid;
+  min-height: 0;
+  gap: 1.25rem;
+}
+
+.display-page h1 {
+  color: var(--ink-deep);
+  font-size: clamp(2.3rem, 6vw, 5rem);
+}
+
+.display-updated {
+  min-height: 1.5rem;
+  margin: -0.75rem 0 0;
+  text-align: right;
+}
+
+.display-summary {
+  position: relative;
+  overflow: hidden;
+  color: var(--color-white);
+  background: var(--ink-deep);
+  border-color: var(--ink-deep);
+  border-top: 0.35rem solid var(--clock);
+}
+
+.display-summary::after {
+  position: absolute;
+  top: -1rem;
+  right: 2rem;
+  color: var(--color-paper-texture);
+  font-family: Georgia, serif;
+  font-size: 10rem;
+  line-height: 1;
+  content: "♞";
+}
+
+.display-summary h2,
+.display-summary p,
+.display-section h2 {
+  color: inherit;
+}
+
+.display-summary-copy {
+  margin-bottom: 0;
+  color: var(--panel);
+  font-size: 1.05rem;
+}
+
+.display-section-list,
+.display-games-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.display-section-list {
+  gap: 1.25rem;
+}
+
+.display-section {
+  border-top: 0.3rem solid var(--data);
+}
+
+.display-section > .badge {
+  margin-bottom: 0.6rem;
+}
+
+.display-section h2 {
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+}
+
+.display-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.display-section-heading h3 {
+  margin: 0;
+}
+
+.display-games-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.display-game-group {
+  min-width: 0;
+}
+
+.display-game-group h4 {
+  margin: 0 0 0.5rem;
+}
+
+.display-game-group th,
+.display-game-group td {
+  padding: 0.65rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.display-game-group td:nth-child(2),
+.display-game-group th:nth-child(2) {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.display-section .table-wrap {
+  box-shadow: 0.25rem 0.25rem 0 var(--color-shadow-silver);
+}
+
+.display-participation {
+  margin: 1rem 0 0;
+}
+
+.display-standings-heading {
+  margin: 1.5rem 0 0.6rem;
+}
+
+.display-round-selector {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  margin: 0.25rem 0 1rem;
+  background: var(--ink-deep);
+  border: 1px solid var(--ink-deep);
+  box-shadow: 0.22rem 0.22rem 0 var(--data);
+}
+
+.display-round-label,
+.display-round-button {
+  min-height: 2.65rem;
+  padding: 0.55rem 0.85rem;
+  border: 0;
+  font-family: var(--font-utility);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.display-round-label {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink-deep);
+  background: var(--gold);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.display-round-button {
+  color: var(--panel);
+  background: transparent;
+  border-left: 1px solid var(--color-paper-border-faint);
+  cursor: pointer;
+}
+
+.display-round-button:hover,
+.display-round-button:focus-visible,
+.display-round-button.active {
+  color: var(--ink-deep);
+  background: var(--clock);
+}
+
+.display-tournament-finished .page-heading {
+  border-bottom-color: var(--gold);
+}
+
+.display-tournament-finished .page-heading::after {
+  width: 8rem;
+  background: var(--gold);
+}
+
+.victory-ceremony {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.32fr) minmax(0, 1fr) minmax(14rem, 0.7fr);
+  min-height: 21rem;
+  align-items: center;
+  overflow: hidden;
+  padding: clamp(1.25rem, 4vw, 3rem);
+  color: var(--paper);
+  background:
+    radial-gradient(circle at 14% 32%, var(--color-glow-brass-victory), transparent 10rem),
+    linear-gradient(
+      135deg,
+      var(--color-ceremony-mid),
+      var(--ink-deep) 58%,
+      var(--color-ceremony-dark)
+    );
+  border: 0.25rem solid var(--gold);
+  box-shadow:
+    0.55rem 0.55rem 0 var(--clock),
+    inset 0 0 0 0.2rem var(--color-paper-border-inset);
+}
+
+.victory-ceremony::before,
+.victory-ceremony::after {
+  position: absolute;
+  width: 5.5rem;
+  height: 5.5rem;
+  border: 0.22rem solid var(--gold);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.victory-ceremony::before {
+  top: -3rem;
+  right: 18%;
+}
+
+.victory-ceremony::after {
+  bottom: -3rem;
+  left: 9%;
+}
+
+.victory-crown {
+  position: relative;
+  z-index: 1;
+  color: var(--gold);
+  font-family: Georgia, serif;
+  font-size: clamp(5rem, 12vw, 10rem);
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0.22rem 0.22rem 0 var(--clock);
+}
+
+.victory-copy {
+  position: relative;
+  z-index: 1;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+}
+
+.victory-kicker,
+.podium-kicker {
+  margin-bottom: 0.65rem;
+  color: var(--gold);
+  font-family: var(--font-utility);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.victory-copy h2 {
+  max-width: 10ch;
+  margin-bottom: 0.75rem;
+  color: var(--color-white);
+  font-size: clamp(2.5rem, 5vw, 5.2rem);
+  line-height: 0.92;
+}
+
+.victory-description {
+  max-width: 36rem;
+  color: var(--panel);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.victory-laurels {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.victory-winner {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.9rem 1rem;
+  color: var(--ink-deep);
+  background: var(--paper);
+  border-left: 0.32rem solid var(--clock);
+  box-shadow: 0.28rem 0.28rem 0 var(--gold);
+}
+
+.victory-winner strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.victory-section,
+.victory-score {
+  font-family: var(--font-utility);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.section-podium {
+  position: relative;
+  margin: 0.5rem 0 1.25rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  overflow: hidden;
+  color: var(--paper);
+  background:
+    linear-gradient(115deg, var(--color-glow-brass-strong), transparent 55%),
+    var(--ink-deep);
+  border-top: 0.35rem solid var(--gold);
+}
+
+.section-podium h3 {
+  margin-bottom: 0.35rem;
+  color: var(--color-white);
+  font-size: 1.65rem;
+}
+
+.section-podium .muted {
+  color: var(--panel);
+}
+
+.podium-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-height: 13rem;
+  align-items: end;
+  gap: 0.65rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.podium-place {
+  display: flex;
+  min-height: 7.5rem;
+  flex-direction: column;
+  justify-content: end;
+  gap: 0.35rem;
+  padding: 1rem;
+  color: var(--ink-deep);
+  background: var(--paper);
+  border-top: 0.3rem solid var(--data);
+}
+
+.podium-place-1 {
+  min-height: 11rem;
+  background: var(--color-podium-gold);
+  border-top-color: var(--gold);
+}
+
+.podium-place-2 {
+  min-height: 9rem;
+  order: -1;
+  background: var(--color-podium-silver);
+  border-top-color: var(--color-podium-silver-line);
+}
+
+.podium-place-3 {
+  min-height: 7.5rem;
+  background: var(--color-podium-bronze);
+  border-top-color: var(--color-podium-bronze-line);
+}
+
+.podium-rank {
+  color: var(--color-rank-muted);
+  font-family: Georgia, serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 0.8;
+}
+
+.podium-medal-label,
+.podium-points {
+  font-family: var(--font-utility);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.podium-place strong {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+}
+
+@media (max-width: 64rem) {
+  .victory-ceremony {
+    grid-template-columns: 7rem minmax(0, 1fr);
+  }
+
+  .victory-laurels {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  }
+}
+
+@media (max-width: 42rem) {
+  .display-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .display-games-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .victory-ceremony {
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .victory-crown {
+    text-align: left;
+  }
+
+  .victory-copy {
+    padding: 1rem 0;
+  }
+
+  .podium-list {
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .podium-place,
+  .podium-place-1,
+  .podium-place-2,
+  .podium-place-3 {
+    min-height: 0;
+    order: initial;
+  }
+}

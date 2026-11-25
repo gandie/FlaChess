@@ -90,7 +90,14 @@ class AppTests(unittest.TestCase):
     def test_static_frontend_modules_are_served(self) -> None:
         expected_assets = {
             "index.html": "Fla Chess",
-            "styles.css": ".app-shell",
+            "styles.css": './styles/tokens.css',
+            "styles/tokens.css": "--color-brass: #d6a54b",
+            "styles/base.css": ".skip-link",
+            "styles/layout.css": ".app-shell",
+            "styles/components.css": ".button",
+            "styles/overview.css": ".command-deck",
+            "styles/tournament.css": ".tournament-workspace",
+            "styles/display.css": ".victory-ceremony",
             "app.js": '"/api/health"',
             "api.js": "class ApiError",
             "router.js": "AbortController",

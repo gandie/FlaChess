@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light;
+
+  --color-charcoal: #191c20;
+  --color-graphite: #222529;
+  --color-silver: #6b7278;
+  --color-scorecard: #e7e5df;
+  --color-porcelain: #f8f7f3;
+  --color-brass: #d6a54b;
+  --color-line: #c8c7c3;
+  --color-data-soft: #e1e4e5;
+  --color-accent-soft: #efe9da;
+  --color-white: #ffffff;
+  --color-nav-muted: #cdd7d0;
+
+  --color-success: #176b4d;
+  --color-success-deep: #0c4835;
+  --color-success-soft: #cfe8da;
+  --color-success-line: #8bc2a6;
+  --color-status-success: #10573e;
+  --color-status-success-line: #9fcdb7;
+
+  --color-warning: #75500c;
+  --color-status-warning: #714900;
+  --color-warning-soft: #fff0bd;
+  --color-warning-line: #d2a83d;
+  --color-status-warning-line: #e5c36c;
+  --color-preview-warning-line: #e2bd62;
+
+  --color-danger: #a82e27;
+  --color-danger-soft: #fbe0dc;
+  --color-danger-line: #e5a7a2;
+
+  --color-gold-soft: #ffe5a4;
+  --color-gold-deep: #684000;
+  --color-podium-gold: #f4d77e;
+  --color-podium-silver: #d9dee1;
+  --color-podium-silver-line: #9aa8ae;
+  --color-podium-bronze: #e4c0a3;
+  --color-podium-bronze-line: #b9784b;
+  --color-ceremony-mid: #34383d;
+  --color-ceremony-dark: #101216;
+
+  --color-grid-line: rgb(34 37 41 / 3%);
+  --color-shadow-ink-soft: rgb(34 37 41 / 4%);
+  --color-shadow-ink-card: rgb(34 37 41 / 8%);
+  --color-shadow-ink-header: rgb(25 28 32 / 18%);
+  --color-shadow-brass: rgb(214 165 75 / 70%);
+  --color-shadow-silver: rgb(107 114 120 / 14%);
+  --color-glow-brass: rgb(214 165 75 / 8%);
+  --color-glow-brass-strong: rgb(214 165 75 / 12%);
+  --color-glow-brass-victory: rgb(214 165 75 / 24%);
+  --color-paper-glow: rgb(248 247 243 / 75%);
+  --color-paper-border: rgb(248 247 243 / 28%);
+  --color-paper-border-soft: rgb(248 247 243 / 20%);
+  --color-paper-border-faint: rgb(248 247 243 / 18%);
+  --color-paper-border-medium: rgb(248 247 243 / 16%);
+  --color-paper-border-inset: rgb(248 247 243 / 10%);
+  --color-paper-grid: rgb(255 255 255 / 5%);
+  --color-paper-texture: rgb(255 255 255 / 7%);
+  --color-rank-muted: rgb(34 37 41 / 32%);
+  --color-footer-paper: rgb(231 229 223 / 88%);
+  --color-success-ring: rgb(23 107 77 / 16%);
+
+  --font-display: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-body: "Aptos", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-utility: "Cascadia Mono", "Consolas", monospace;
+
+  --ink: var(--color-graphite);
+  --ink-deep: var(--color-charcoal);
+  --muted: var(--color-silver);
+  --paper: var(--color-scorecard);
+  --panel: var(--color-porcelain);
+  --line: var(--color-line);
+  --accent: var(--color-charcoal);
+  --accent-soft: var(--color-accent-soft);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --warning-soft: var(--color-warning-soft);
+  --danger: var(--color-danger);
+  --danger-soft: var(--color-danger-soft);
+  --clock: var(--color-brass);
+  --data: var(--color-silver);
+  --data-soft: var(--color-data-soft);
+  --gold: var(--color-brass);
+}

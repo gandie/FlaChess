@@ -600,6 +600,21 @@
 
 # 2026-11 Changelog
 
+- [T56](../done/T56_refactor_frontend_styles.md): Consolidated the accumulated
+  stylesheet override layer into focused token, base, layout, component,
+  overview, tournament, and display modules. The current tournament control-room
+  appearance remains intact, all application palette literals now live in the
+  root token module, and mobile navigation avoids horizontal overflow.
+  - Files: `app/static/styles.css`, `app/static/styles/`,
+    `tests/test_app.py`, `tests/test_tournament_usability.py`, and workflow
+    records.
+  - Validation: full unittest discovery passed (182 tests), markdown and
+    done-task boundary validation passed (1 test each), desktop
+    overview/catalog and mobile overview were visually checked in the shared
+    browser, and `git diff --check` passed.
+  - Residual risk: none known; the app server and Docker build were left
+    unchanged.
+
 - [T55](../done/T55_rework_readme_showcase.md): Reworked the root README into
   a visual project showcase and documentation hub. The supplied brand icon and
   three interface screenshots now introduce the operator workflow, while local

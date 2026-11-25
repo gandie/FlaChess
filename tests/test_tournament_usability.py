@@ -16,6 +16,26 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         return response.text
 
+    def static_styles(self) -> str:
+        entrypoint = self.static_asset("styles.css")
+        module_names = (
+            "tokens",
+            "base",
+            "layout",
+            "components",
+            "overview",
+            "tournament",
+            "display",
+        )
+        modules = []
+        for module_name in module_names:
+            self.assertIn(
+                f'@import url("./styles/{module_name}.css");',
+                entrypoint,
+            )
+            modules.append(self.static_asset(f"styles/{module_name}.css"))
+        return "\n".join((entrypoint, *modules))
+
     def test_player_display_uses_only_existing_read_contracts(self) -> None:
         display = self.static_asset("display.js")
         app_module = self.static_asset("app.js")
@@ -35,7 +55,7 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
 
     def test_player_display_supports_round_history_and_finished_ceremony(self) -> None:
         display = self.static_asset("display.js")
-        styles = self.static_asset("styles.css")
+        styles = self.static_styles()
 
         self.assertIn("display-round-selector", display)
         self.assertIn("selectedSnapshotKey", display)
@@ -104,7 +124,7 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertIn("latestRound(operation)", display)
 
     def test_dense_views_keep_navigation_and_tables_keyboard_friendly(self) -> None:
-        styles = self.static_asset("styles.css")
+        styles = self.static_styles()
         tournaments = self.static_asset("tournaments.js")
 
         self.assertIn("position: sticky", styles)
@@ -117,7 +137,7 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
     def test_tournament_desk_surfaces_live_work_and_round_actions(self) -> None:
         app_module = self.static_asset("app.js")
         operations = self.static_asset("operations.js")
-        styles = self.static_asset("styles.css")
+        styles = self.static_styles()
         index = self.static_asset("index.html")
 
         self.assertIn("Tournament command desk", app_module)
@@ -130,7 +150,7 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
             active_round_block.index("automation ? [automation]"),
             active_round_block.index("roundPanel(context, activeRound)"),
         )
-        self.assertIn("--brass: #d6a54b", styles)
+        self.assertIn("--color-brass: #d6a54b", styles)
         self.assertIn(".command-deck", styles)
         self.assertIn(".live-round-rail", styles)
         self.assertIn('class="brand-mark"', index)
@@ -141,7 +161,7 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         players = self.static_asset("players.js")
         structure = self.static_asset("structure.js")
         tournaments = self.static_asset("tournaments.js")
-        styles = self.static_asset("styles.css")
+        styles = self.static_styles()
 
         self.assertIn("registrationRoster", players)
         self.assertIn("Add ${player.name}", players)
