@@ -74,7 +74,18 @@ class AppTests(unittest.TestCase):
         self.assertIn('href="#/players"', response.text)
         self.assertIn('href="#/system"', response.text)
         self.assertIn('id="app-view"', response.text)
+        self.assertIn(
+            '<link rel="icon" type="image/png" href="/static/fla_chess_icon.png">',
+            response.text,
+        )
         self.assertIn('src="/static/app.js"', response.text)
+
+    def test_favicon_is_served_as_png(self) -> None:
+        response = self.client.get("/static/fla_chess_icon.png")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["content-type"], "image/png")
+        self.assertTrue(response.content.startswith(b"\x89PNG\r\n\x1a\n"))
 
     def test_static_frontend_modules_are_served(self) -> None:
         expected_assets = {

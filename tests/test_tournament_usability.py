@@ -130,10 +130,11 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
             active_round_block.index("automation ? [automation]"),
             active_round_block.index("roundPanel(context, activeRound)"),
         )
-        self.assertIn("--clock: #ef6246", styles)
+        self.assertIn("--brass: #d6a54b", styles)
         self.assertIn(".command-deck", styles)
         self.assertIn(".live-round-rail", styles)
         self.assertIn('class="brand-mark"', index)
+        self.assertIn('src="/static/fla_chess_icon.png"', index)
         self.assertIn("prefers-reduced-motion", styles)
 
     def test_tournament_setup_uses_direct_player_actions_and_compact_sections(self) -> None:
