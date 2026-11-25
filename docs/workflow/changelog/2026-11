@@ -597,3 +597,230 @@
   full-suite unittest tests passed. Residual risk: transactional generation,
   preview/confirm routes, and operator UI integration remain intentionally out
   of scope.
+
+# 2026-11 Changelog
+
+- [T55](../done/T55_rework_readme_showcase.md): Reworked the root README into
+  a visual project showcase and documentation hub. The supplied brand icon and
+  three interface screenshots now introduce the operator workflow, while local
+  setup, API usage, database tools, and migration commands moved to a focused
+  getting-started guide.
+  - Files: `README.md`, `docs/GETTING_STARTED.md`, and workflow records.
+  - Validation: full unittest discovery passed (182 tests), markdown boundary
+    validation passed (1 test), and `git diff --check` passed.
+  - Residual risk: none known; the screenshots are static project assets and
+    should be refreshed after major interface redesigns.
+
+- [T54](../done/T54_align_brand_icon_and_palette.md): Replaced the header's FC
+  letter tile with the supplied chess mark and aligned the interface palette
+  with its charcoal board, silver squares, and brass king. Semantic status
+  colors remain intact.
+  - Files: `app/static/index.html`, `app/static/styles.css`,
+    `tests/test_tournament_usability.py`, and workflow records;
+    `app/static/fla_chess_icon.png` was supplied by the operator and left
+    unchanged.
+  - Validation: focused frontend tests passed (8 tests), full unittest
+    discovery passed (182 tests), markdown boundary validation passed (1 test),
+    done-task evaluation boundary validation passed (1 test), and
+    `git diff --check` passed. The operator rebuilt Docker and confirmed the
+    updated brand in the browser.
+  - Residual risk: none known.
+
+- [T53](../done/T53_add_favicon.md): Set the supplied Fla Chess PNG as the
+  webapp favicon. The existing 320×320 image is served unchanged from the
+  static route.
+  - Files: `app/static/index.html`, `tests/test_app.py`, and workflow records;
+    `app/static/fla_chess_icon.png` was supplied by the operator and left
+    unchanged.
+  - Validation: focused app tests passed (10 tests), full unittest discovery
+    passed (182 tests), markdown boundary validation passed (1 test), and
+    `git diff --check` passed.
+  - Residual risk: none known.
+
+- [T52](../done/T52_add_database_seed_and_cleanup_scripts.md): Added
+  transactional PostgreSQL seed and cleanup tools beside the existing database
+  helper. The seed creates 24 randomized player names and three randomized draft
+  tournaments, while cleanup cascades from `tournament` and `player` and
+  resets generated identities. The helper now accepts either inline SQL or a
+  SQL file.
+  - Files: `tools/psql.ps1`, `tools/seed_database.sql`,
+    `tools/cleanup_database.sql`, `tests/test_database_tools.py`, and
+    `README.md`.
+  - Validation: focused database tool tests passed (3 tests), PowerShell syntax
+    validation passed, a live helper query succeeded against Compose
+    PostgreSQL, markdown boundary validation passed (1 test),
+    `git diff --check` passed, and full unittest discovery passed (181 tests).
+  - Residual risk: destructive seed and cleanup execution was not run against
+    the existing shared Compose dataset; the script contents are contract-tested.
+
+- [T51](../done/T51_enrich_tournament_display.md): Enriched the read-only
+  tournament display with per-section round history controls that switch both
+  games and standings, while finished tournaments now open with an unmistakable
+  victory ceremony, section champion cards, and final podiums backed by the
+  preserved snapshots. Historical rounds remain browsable without incorrectly
+  presenting an earlier table as the final podium.
+  - Files: `app/static/display.js`, `app/static/styles.css`,
+    `tests/test_tournament_usability.py`, and `README.md`.
+  - Validation: focused usability tests passed (8 tests), `git diff --check`
+    passed, and full unittest discovery passed (178 tests). Playwright fixture
+    checks verified newest-round default selection, Round 1 lookup with matching
+    standings, finished champion and podium rendering, and no horizontal
+    overflow at desktop or a 400px effective viewport.
+  - Residual risk: visual fixture verification complements but does not replace
+    a tournament created and finished by the operator; no backend behavior
+    changed.
+
+- [T50](../done/T50_reimagine_tournament_operator_ui.md): Reworked the SPA as
+  a distinctive tournament desk with a live command view, checkerboard brand
+  mark, score-sheet panels, compact action states, and a sticky round rail that
+  places pairing generation before result entry. Active tournament data now
+  drives direct launch actions, while catalog, setup, operation, and player
+  display surfaces share the same responsive visual language.
+  - Files: `app/static/index.html`, `app/static/styles.css`,
+    `app/static/app.js`, `app/static/tournaments.js`,
+    `app/static/operations.js`, `app/static/players.js`,
+    `app/static/display.js`, `tests/test_tournament_usability.py`, and `README.md`.
+  - Validation: focused usability tests passed (7 tests), markdown boundary
+    validation passed (1 test), `git diff --check` passed, and full unittest
+    discovery passed (177 tests). Playwright loaded the changed local assets
+    through browser interception, confirmed the real active tournament launch
+    state, verified round/pairing/result ordering, and measured no control
+    escapes or horizontal overflow at the viable narrow-desktop width.
+  - Residual risk: the currently running Docker image has not been rebuilt, by
+    operator request; rebuild is required before the container serves the
+    redesigned static files.
+
+## 2026-11-24
+
+- [T41](../done/T41_add_pairing_preview_confirm_api.md): Added section pairing
+  preview and confirmation API contracts, including read-only planning,
+  expected-round revalidation, transactional confirmation, complete plan
+  responses, and actionable domain error mapping.
+  - Files: `app/pairing/`, `app/routes/pairing_generation.py`,
+    `app/pairing_generation_schemas.py`, `app/api.py`, focused tests, and
+    automation workflow documentation.
+  - Validation: targeted generation/API tests passed (18 tests), refactor and
+    markdown boundaries passed, and full unittest discovery passed (168 tests).
+  - Residual risk: UI integration and the post-confirm operator workflow remain
+    for automation implementation steps 9-11.
+
+- [T42](../done/T42_integrate_pairing_preview_ui.md): Added the active-section
+  pairing preview and separate confirmation flow, including named white/black
+  pairings, seed positions, byes, awarded scores, warnings, target round
+  context, and conflict feedback that preserves the displayed preview. The
+  existing manual round and pairing controls remain available.
+  - Files: `app/static/operations.js`, `app/static/styles.css`,
+    `tests/test_tournament_usability.py`, and automation workflow
+    documentation.
+  - Validation: JavaScript syntax validation passed, focused operation UI tests
+    passed (8 tests), and full unittest discovery passed (169 tests).
+  - Residual risk: post-confirm navigation, result-entry focus, and the
+    end-to-end operator journey remain for automation implementation steps
+    10-11.
+
+- [T43](../done/T43_complete_post_confirm_workflow.md): Completed the
+  post-confirm section operation flow by opening the committed round, focusing
+  result-entry controls, preserving automatic standings recomputation after
+  result writes, and disabling the next pairing preview until the latest round
+  is complete. Spectator/display views continue to consume the generated round
+  through the existing section operation contract.
+  - Files: `app/static/operations.js`,
+    `tests/test_tournament_usability.py`, and automation workflow
+    documentation.
+  - Validation: JavaScript syntax and patch whitespace checks passed, focused
+    operation UI tests passed (5 tests), markdown boundaries passed, and full
+    unittest discovery passed (170 tests).
+  - Residual risk: end-to-end browser coverage for every pairing format remains
+    for automation implementation step 11.
+
+- [T44](../done/T44_prove_pairing_operator_journey.md): Proved the composed
+  pairing operator journey for Swiss, round-robin, and knockout through the
+  real preview and confirmation routes, transactional generation, result
+  entry, standings recomputation, and completion-gated next-preview UI wiring.
+  The coverage includes stale confirmation, persistence rollback, visible
+  conflict recovery, spectator visibility, and retained manual round, pairing,
+  and participation fallbacks. Canonical usage, data, design, and automation
+  documentation now describes the tested behavior.
+  - Files: `tests/test_pairing_operator_journey.py`, `docs/AUTOMATION.md`,
+    `docs/DATA.md`, `docs/DESIGN.md`, `README.md`, and workflow records.
+  - Validation: focused journey tests passed (4 tests), markdown and refactor
+    boundaries passed, patch whitespace passed, and full unittest discovery
+    passed (174 tests).
+  - Residual risk: browser-engine interaction is outside the repository's
+    current route and frontend-contract test stack.
+
+- [T45](../done/T45_fix_pairing_preview_async_state_load.md): Fixed pairing
+  preview returning 500 with SQLAlchemy `MissingGreenlet` by capturing the
+  validated section format before subsequent `populate_existing` state queries
+  can refresh the section identity and expire its phase relationship. Added a
+  regression fixture that makes any later phase access fail explicitly.
+  - Files: `app/pairing/generation_state.py`,
+    `tests/test_pairing_generation_routes.py`, and workflow records.
+  - Validation: focused route tests passed (8 tests), composed operator journey
+    tests passed (4 tests), markdown and refactor boundaries passed, patch
+    whitespace passed, and full unittest discovery passed (175 tests).
+  - Residual risk: none known; deployment must rebuild the app container to
+    include the fix.
+
+- [T46](../done/T46_improve_operator_gui_workflows.md): Improved tournament
+  setup by replacing player dropdown workflows with direct add/remove lists,
+  defaulting section additions to the next sequential seed, collapsing
+  secondary edit forms into accessible disclosures, and adding a responsive
+  tournament workspace layout with clearer roster and membership hierarchy.
+  - Files: `app/static/players.js`, `app/static/structure.js`,
+    `app/static/tournaments.js`, `app/static/styles.css`,
+    `tests/test_tournament_usability.py`, and `README.md`.
+  - Validation: JavaScript syntax checks passed, focused UI tests passed
+    (6 tests), markdown and done-task boundaries passed, the live shell and
+    updated asset returned HTTP 200, and full unittest discovery passed
+    (176 tests).
+  - Residual risk: browser-engine Playwright interaction was not available in
+    the exposed tool set, so visual interaction remains operator-verified
+    despite live asset and contract coverage.
+
+- [T47](../done/T47_compact_tournament_setup.md): Reduced draft setup-page
+  height by collapsing each section's member and available-player lists behind
+  a native disclosure that shows the assigned-player count. Active and
+  historical section rosters remain expanded.
+  - Files: `app/static/structure.js`, `tests/test_tournament_usability.py`,
+    `README.md`, and workflow records.
+  - Validation: focused tournament usability tests passed (6 tests), markdown
+    and done-task boundaries passed, full unittest discovery passed (176
+    tests), and the live active tournament retained its expanded section
+    roster.
+  - Residual risk: the live catalog had no draft tournament, so visual
+    verification of the new collapsed draft view was not possible; the
+    draft-only presentation is covered by frontend contract tests.
+
+- [T48](../done/T48_preserve_tournament_setup_context.md): Prevented
+  tournament setup actions from resetting operator context by preserving
+  scroll position, open disclosures, unrelated form values, and keyboard focus
+  across workspace refreshes. The workspace now remains two-column at viable
+  narrow desktop widths instead of stacking the entire structure beneath the
+  roster.
+  - Files: `app/static/tournaments.js`, `app/static/players.js`,
+    `app/static/styles.css`, `tests/test_tournament_usability.py`, `README.md`,
+    and workflow records.
+  - Validation: focused usability tests passed (6 tests), markdown boundaries
+    passed, full unittest discovery passed (176 tests), and Playwright measured
+    zero scroll displacement after a roster action while confirming restored
+    focus, disclosure state, and two-column layout at 867px.
+  - Residual risk: the running Docker image requires a rebuild to serve the
+    final static assets; browser verification used the changed local files
+    directly against the live backend.
+
+- [T49](../done/T49_fix_seed_refresh_and_layout_overlap.md): Restored section
+  seed auto-increment by preserving only operator-edited generated seed values
+  across workspace refreshes. Form fields can now shrink within narrow desktop
+  columns, metadata dates stack inside the sidebar, and inline edit forms use a
+  safe two-column layout.
+  - Files: `app/static/structure.js`, `app/static/tournaments.js`,
+    `app/static/styles.css`, `tests/test_tournament_usability.py`, `README.md`,
+    and workflow records.
+  - Validation: focused usability tests passed (6 tests), markdown boundaries
+    passed, and full unittest discovery passed (176 tests). At 867px,
+    Playwright measured zero overlapping fields/buttons and zero controls
+    escaping their forms with every disclosure open. An untouched seed
+    advanced from 2 to 3 while an edited value remained 7.
+  - Residual risk: the running Docker image must be rebuilt before the final
+    static bundle is served to the browser.

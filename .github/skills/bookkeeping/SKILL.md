@@ -126,6 +126,8 @@ agent_evaluation:
 - Changelog is append-only.
 - One completion event per entry.
 - Include: date, task id/link, outcome summary, files changed, validation result, residual risk.
+- Changelog file has NO file ending. This is by design and to protect changelogs from boundary checks done to other markdown files.
+- DO NOT add a file ending to the changelog file, nor start new changelog files without explicit approval.
 
 ## Validation Contract
 - Mandatory completion gate:
