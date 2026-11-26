@@ -14,6 +14,7 @@ from app.models import (
 class OperationParticipant(BaseModel):
     id: int
     player_name: str
+    player_avatar: str | None = None
     rating: int | None
 
     model_config = {"from_attributes": True}
@@ -24,8 +25,10 @@ class OperationGame(BaseModel):
     round_id: int
     white_participant_id: int
     white_player_name: str
+    white_player_avatar: str | None = None
     black_participant_id: int
     black_player_name: str
+    black_player_avatar: str | None = None
     white_score: Decimal | None
     black_score: Decimal | None
     result_type: GameResultType
@@ -40,6 +43,7 @@ class OperationRoundParticipant(BaseModel):
     round_id: int
     participant_id: int
     player_name: str
+    player_avatar: str | None = None
     participation_type: ParticipationType
     score_awarded: Decimal | None
     comment: str | None

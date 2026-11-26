@@ -28,7 +28,10 @@ async def list_player_summaries(
     session: AsyncSession = Depends(get_session),
 ) -> list[PlayerSummary]:
     result = await session.execute(
-        select(Player.id, Player.name).order_by(Player.name, Player.id),
+        select(Player.id, Player.name, Player.avatar).order_by(
+            Player.name,
+            Player.id,
+        ),
     )
     return [PlayerSummary.model_validate(row) for row in result.all()]
 
@@ -79,6 +82,7 @@ async def list_tournament_participants(
             TournamentParticipant.id.label("registration_id"),
             TournamentParticipant.player_id,
             Player.name.label("player_name"),
+            Player.avatar.label("player_avatar"),
         )
         .join(Player, Player.id == TournamentParticipant.player_id)
         .where(TournamentParticipant.tournament_id == tournament_id)
@@ -122,6 +126,7 @@ async def register_tournament_participant(
         registration_id=registration.id,
         player_id=player.id,
         player_name=player.name,
+        player_avatar=player.avatar,
     )
 
 

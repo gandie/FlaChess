@@ -72,6 +72,32 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertNotIn("api.patch", display)
         self.assertNotIn("api.delete", display)
 
+    def test_player_avatars_follow_players_through_tournament_views(self) -> None:
+        players = self.static_asset("players.js")
+        render = self.static_asset("render.js")
+        structure = self.static_asset("structure.js")
+        standings = self.static_asset("standings.js")
+        operations = self.static_asset("operations.js")
+        display = self.static_asset("display.js")
+        styles = self.static_styles()
+
+        self.assertIn('type: "file"', players)
+        self.assertIn("image/png,image/jpeg,image/webp", players)
+        self.assertIn("5 * 1024 * 1024", players)
+        self.assertIn("playerAvatar", render)
+        self.assertIn("playerIdentity", render)
+        self.assertIn("avatar-editor", players)
+        self.assertIn("No avatar yet. Your initials will be shown.", players)
+        self.assertIn("player_avatar", structure)
+        self.assertIn("player_avatar", standings)
+        self.assertIn("white_player_avatar", operations)
+        self.assertIn("white_player_avatar", display)
+        self.assertIn("champion.avatar", display)
+        self.assertIn(".player-avatar", styles)
+        self.assertIn(".avatar-preview", styles)
+        self.assertIn('.avatar-editor .field input[type="file"]', styles)
+        self.assertIn("::file-selector-button", styles)
+
     def test_overview_launch_actions_share_one_hierarchy(self) -> None:
         app_module = self.static_asset("app.js")
 

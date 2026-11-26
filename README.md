@@ -31,8 +31,8 @@ while the clock is running.
   <tr>
     <td width="33%" valign="top">
       <strong>Set the field</strong><br>
-      Build reusable player records, create tournaments, assign sections, seed
-      players, and define the route through the event.
+      Build reusable player records with personal avatars, create tournaments,
+      assign sections, seed players, and define the route through the event.
     </td>
     <td width="33%" valign="top">
       <strong>Run the games</strong><br>
@@ -82,6 +82,8 @@ turns those preserved results into champions, podiums, and browsable history.
 
 ## Designed for a live room
 
+- **Player avatars** stored as normalized 200×200 Base64 PNGs and shown
+  throughout rosters, games, standings, and ceremonies.
 - **Operator-first navigation** that keeps the active round close.
 - **Transactional pairing generation** with preview, revalidation, and
   conflict recovery.

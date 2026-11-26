@@ -8,9 +8,20 @@ import {
   field,
   page,
   pendingAction,
+  playerAvatar,
+  playerIdentity,
   status,
   table,
 } from "./render.js";
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(reader.result), { once: true });
+    reader.addEventListener("error", () => reject(reader.error), { once: true });
+    reader.readAsDataURL(file);
+  });
+}
 
 function playerForm({ player, onSave }) {
   const form = element("form", { className: "form-stack" });
@@ -21,19 +32,93 @@ function playerForm({ player, onSave }) {
   });
   name.control.required = true;
   name.control.maxLength = 255;
+  const avatar = field({
+    id: "player_avatar",
+    label: "Avatar",
+    type: "file",
+    help: "Choose a PNG, JPEG, or WebP up to 5 MB. We will center and resize it automatically.",
+  });
+  avatar.control.accept = "image/png,image/jpeg,image/webp";
+  const preview = element("div", { className: "avatar-preview" });
+  let selectedAvatar = player?.avatar ?? null;
+  let removeAvatar = false;
+  const remove = element("button", {
+    className: "button button-secondary button-small",
+    text: "Remove avatar",
+    attributes: { type: "button" },
+  });
+  remove.hidden = !selectedAvatar;
+  const updatePreview = () => {
+    preview.replaceChildren(
+      playerAvatar({
+        name: name.control.value.trim() || "New player",
+        avatar: selectedAvatar,
+      }),
+      element("span", {
+        className: "muted",
+        text: selectedAvatar
+          ? "Avatar ready to save"
+          : "No avatar yet. Your initials will be shown.",
+      }),
+    );
+    remove.hidden = !selectedAvatar;
+  };
+  updatePreview();
+  name.control.addEventListener("input", updatePreview);
+  avatar.control.addEventListener("change", async () => {
+    const file = avatar.control.files?.[0];
+    if (!file) {
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      avatar.control.value = "";
+      selectedAvatar = player?.avatar ?? null;
+      removeAvatar = false;
+      updatePreview();
+      result.replaceChildren(
+        status("Avatar image must be 5 MB or smaller.", "error"),
+      );
+      return;
+    }
+    try {
+      selectedAvatar = await readFileAsDataUrl(file);
+      removeAvatar = false;
+      updatePreview();
+      result.replaceChildren();
+    } catch {
+      result.replaceChildren(status("The selected avatar could not be read.", "error"));
+    }
+  });
+  remove.addEventListener("click", () => {
+    avatar.control.value = "";
+    selectedAvatar = null;
+    removeAvatar = true;
+    updatePreview();
+  });
   const submit = element("button", {
     className: "button",
     text: player ? "Save player" : "Create player",
     attributes: { type: "submit" },
   });
   const result = element("div", { className: "result-slot" });
-  form.append(name.wrapper, submit, result);
+  const avatarArea = element("div", { className: "avatar-editor" });
+  avatarArea.append(avatar.wrapper, preview, remove);
+  form.append(name.wrapper, avatarArea, submit, result);
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     void pendingAction(submit, async () => {
       result.replaceChildren(status(player ? "Saving player\u2026" : "Creating player\u2026"));
       try {
         const values = { name: name.control.value.trim() };
+        const file = avatar.control.files?.[0];
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) {
+            throw new Error("Avatar image must be 5 MB or smaller.");
+          }
+          values.avatar = await readFileAsDataUrl(file);
+        } else if (removeAvatar) {
+          values.avatar = null;
+        }
         if (player) {
           await onSave(`/api/players/${player.id}`, values, "patch");
         } else {
@@ -41,7 +126,14 @@ function playerForm({ player, onSave }) {
         }
       } catch (error) {
         if (error?.name !== "AbortError") {
-          result.replaceChildren(status(errorSummary(error), "error"));
+          result.replaceChildren(
+            status(
+              error instanceof Error && error.message === "Avatar image must be 5 MB or smaller."
+                ? error.message
+                : errorSummary(error),
+              "error",
+            ),
+          );
         }
       }
     });
@@ -108,7 +200,12 @@ export function playerDirectoryView() {
         table({
           caption: "Player directory",
           columns: [
-            { key: "name", label: "Player" },
+            {
+              key: "name",
+              label: "Player",
+              render: (name, player) =>
+                playerIdentity({ name, avatar: player.avatar }),
+            },
             {
               key: "id",
               label: "Action",
@@ -146,15 +243,6 @@ export function playerDirectoryView() {
   };
 }
 
-function playerInitials(name) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
 function registrationRoster(players, participants, onRegister, onUnregister, signal) {
   const roster = element("div", { className: "player-action-list" });
   const registered = new Map(
@@ -175,15 +263,10 @@ function registrationRoster(players, participants, onRegister, onUnregister, sig
     const row = element("div", {
       className: `player-action-row${participant ? " is-registered" : ""}`,
     });
-    const identity = element("div", { className: "player-identity" });
-    identity.append(
-      element("span", {
-        className: "player-monogram",
-        text: playerInitials(player.name),
-        attributes: { "aria-hidden": "true" },
-      }),
-      element("span", { text: player.name }),
-    );
+    const identity = playerIdentity({
+      name: player.name,
+      avatar: player.avatar,
+    });
     const button = element("button", {
       className: `button button-small roster-action ${
         participant ? "button-danger" : "button-secondary"
@@ -275,7 +358,17 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
       result.replaceChildren(
         table({
           caption: "Registered players",
-          columns: [{ key: "player_name", label: "Player" }],
+          columns: [
+            {
+              key: "player_name",
+              label: "Player",
+              render: (name, participant) =>
+                playerIdentity({
+                  name,
+                  avatar: participant.player_avatar,
+                }),
+            },
+          ],
           rows: participants,
         }),
       );

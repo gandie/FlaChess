@@ -7,6 +7,7 @@ import {
   errorSummary,
   page,
   pendingAction,
+  playerIdentity,
   status,
   table,
 } from "./render.js";
@@ -122,10 +123,20 @@ function gameEditor(context, round, game) {
     },
   });
   const recorded = game.white_score !== null;
-  article.append(
-    element("h4", {
-      text: `${game.white_player_name} – ${game.black_player_name}`,
+  const players = element("h4", { className: "game-players" });
+  players.append(
+    playerIdentity({
+      name: game.white_player_name,
+      avatar: game.white_player_avatar,
     }),
+    element("span", { text: "–" }),
+    playerIdentity({
+      name: game.black_player_name,
+      avatar: game.black_player_avatar,
+    }),
+  );
+  article.append(
+    players,
     badge(recorded ? "Recorded" : "Incomplete", recorded ? "success" : "accent"),
     badge(labelFor(game.result_type)),
   );
@@ -238,9 +249,19 @@ function resultQueue(context, round) {
   for (const game of orderedGames) {
     const button = element("button", {
       className: "result-jump",
-      text: `${game.white_player_name} – ${game.black_player_name}`,
       attributes: { type: "button" },
     });
+    button.append(
+      playerIdentity({
+        name: game.white_player_name,
+        avatar: game.white_player_avatar,
+      }),
+      element("span", { text: "–" }),
+      playerIdentity({
+        name: game.black_player_name,
+        avatar: game.black_player_avatar,
+      }),
+    );
     if (game.white_score === null) {
       button.classList.add("incomplete");
     }
@@ -355,7 +376,14 @@ function pairingCreator(context, round) {
 
 function participationEditor(context, record) {
   const article = element("article", { className: "operation-record" });
-  article.append(element("h4", { text: record.player_name }));
+  const heading = element("h4");
+  heading.append(
+    playerIdentity({
+      name: record.player_name,
+      avatar: record.player_avatar,
+    }),
+  );
+  article.append(heading);
   if (!context.editable) {
     article.append(
       badge(labelFor(record.participation_type), "neutral"),
@@ -562,15 +590,21 @@ function nextRoundNumber(operation) {
   return Math.max(0, ...operation.rounds.map((round) => round.number)) + 1;
 }
 
-function pairingParticipantLabel(context, preview, participantId) {
+function pairingParticipantIdentity(context, preview, participantId) {
   const participant = context.operation.participants.find(
     (candidate) => String(candidate.id) === String(participantId),
   );
   const seed = preview.seed_order.find(
     (candidate) => String(candidate.participant_id) === String(participantId),
   );
-  const name = participant?.player_name ?? `Participant ${participantId}`;
-  return seed ? `${name} (seed ${seed.seed_position})` : name;
+  const identity = playerIdentity({
+    name: participant?.player_name ?? `Participant ${participantId}`,
+    avatar: participant?.player_avatar ?? null,
+  });
+  if (seed) {
+    identity.append(element("span", { className: "muted", text: `Seed ${seed.seed_position}` }));
+  }
+  return identity;
 }
 
 function pairingPreviewGames(context, preview) {
@@ -581,12 +615,12 @@ function pairingPreviewGames(context, preview) {
       {
         key: "white",
         label: "White",
-        render: (value) => pairingParticipantLabel(context, preview, value),
+        render: (value) => pairingParticipantIdentity(context, preview, value),
       },
       {
         key: "black",
         label: "Black",
-        render: (value) => pairingParticipantLabel(context, preview, value),
+        render: (value) => pairingParticipantIdentity(context, preview, value),
       },
     ],
     rows: preview.games.map((game, index) => ({
@@ -611,7 +645,7 @@ function pairingPreviewOutcomes(context, preview) {
         {
           key: "participant",
           label: "Player",
-          render: (value) => pairingParticipantLabel(context, preview, value),
+          render: (value) => pairingParticipantIdentity(context, preview, value),
         },
         { key: "outcome", label: "Outcome" },
         { key: "score", label: "Awarded score" },

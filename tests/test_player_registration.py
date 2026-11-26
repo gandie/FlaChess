@@ -95,14 +95,29 @@ class PlayerRegistrationRouteTests(unittest.TestCase):
 
     def test_player_summaries_return_a_direct_named_contract(self) -> None:
         session = RegistrationSession(
-            rows=[SimpleNamespace(id=4, name="Nora")],
+            rows=[
+                SimpleNamespace(
+                    id=4,
+                    name="Nora",
+                    avatar="data:image/png;base64,AAAA",
+                ),
+            ],
         )
         self.use_session(session)
 
         response = self.client.get("/api/player-summaries")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), [{"id": 4, "name": "Nora"}])
+        self.assertEqual(
+            response.json(),
+            [
+                {
+                    "id": 4,
+                    "name": "Nora",
+                    "avatar": "data:image/png;base64,AAAA",
+                },
+            ],
+        )
 
     def test_tournament_participants_include_player_names(self) -> None:
         tournament = Tournament(id=7, name="Winter Open")
@@ -114,6 +129,7 @@ class PlayerRegistrationRouteTests(unittest.TestCase):
                     registration_id=12,
                     player_id=4,
                     player_name="Nora",
+                    player_avatar="data:image/png;base64,AAAA",
                 ),
             ],
         )
@@ -129,6 +145,7 @@ class PlayerRegistrationRouteTests(unittest.TestCase):
                     "registration_id": 12,
                     "player_id": 4,
                     "player_name": "Nora",
+                    "player_avatar": "data:image/png;base64,AAAA",
                 },
             ],
         )
@@ -137,6 +154,7 @@ class PlayerRegistrationRouteTests(unittest.TestCase):
         tournament = Tournament(id=7, name="Winter Open")
         tournament.lifecycle = TournamentLifecycle.DRAFT
         player = Player(id=4, name="Nora")
+        player.avatar = "data:image/png;base64,AAAA"
         session = RegistrationSession(tournament=tournament, player=player)
         self.use_session(session)
 
@@ -152,6 +170,7 @@ class PlayerRegistrationRouteTests(unittest.TestCase):
                 "registration_id": 11,
                 "player_id": 4,
                 "player_name": "Nora",
+                "player_avatar": "data:image/png;base64,AAAA",
             },
         )
         self.assertTrue(session.committed)

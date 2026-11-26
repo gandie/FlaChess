@@ -38,6 +38,7 @@ async def operation_participants(
         select(
             SectionParticipant.id,
             Player.name.label("player_name"),
+            Player.avatar.label("player_avatar"),
             SectionParticipant.rating,
         )
         .join(
@@ -99,8 +100,10 @@ async def operation_games(
             Game.round_id,
             Game.white_participant_id,
             white_player.name.label("white_player_name"),
+            white_player.avatar.label("white_player_avatar"),
             Game.black_participant_id,
             black_player.name.label("black_player_name"),
+            black_player.avatar.label("black_player_avatar"),
             Game.white_score,
             Game.black_score,
             Game.result_type,
@@ -140,6 +143,7 @@ async def operation_records(
             RoundParticipant.round_id,
             RoundParticipant.participant_id,
             Player.name.label("player_name"),
+            Player.avatar.label("player_avatar"),
             RoundParticipant.participation_type,
             RoundParticipant.score_awarded,
             RoundParticipant.comment,

@@ -110,6 +110,9 @@
 }
 
 .display-participation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 1rem;
   margin: 1rem 0 0;
 }
 
@@ -271,6 +274,26 @@
   background: var(--paper);
   border-left: 0.32rem solid var(--clock);
   box-shadow: 0.28rem 0.28rem 0 var(--gold);
+}
+
+.victory-winner .player-identity,
+.podium-place .player-identity {
+  align-items: center;
+  margin-block: 0.35rem;
+}
+
+.victory-winner .player-avatar,
+.victory-winner .player-monogram {
+  width: 3.25rem;
+  height: 3.25rem;
+  box-shadow: 0.18rem 0.18rem 0 var(--clock);
+}
+
+.podium-place .player-avatar,
+.podium-place .player-monogram {
+  width: clamp(3rem, 6vw, 4.5rem);
+  height: clamp(3rem, 6vw, 4.5rem);
+  color: var(--color-white);
 }
 
 .victory-winner strong {

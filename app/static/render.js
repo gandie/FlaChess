@@ -135,6 +135,49 @@ export function badge(label, tone = "neutral") {
   });
 }
 
+export function playerInitials(name) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+}
+
+export function playerAvatar({
+  name,
+  avatar = null,
+  className = "",
+} = {}) {
+  if (avatar) {
+    return element("img", {
+      className: `player-avatar ${className}`.trim(),
+      attributes: { src: avatar, alt: "", "aria-hidden": "true" },
+    });
+  }
+  return element("span", {
+    className: `player-monogram ${className}`.trim(),
+    text: playerInitials(name),
+    attributes: { "aria-hidden": "true" },
+  });
+}
+
+export function playerIdentity({
+  name,
+  avatar = null,
+  className = "",
+  strong = false,
+} = {}) {
+  const identity = element("span", {
+    className: `player-identity ${className}`.trim(),
+  });
+  identity.append(
+    playerAvatar({ name, avatar }),
+    element(strong ? "strong" : "span", { text: name }),
+  );
+  return identity;
+}
+
 export function confirmAction(message) {
   return window.confirm(message);
 }

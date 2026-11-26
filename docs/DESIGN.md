@@ -43,7 +43,8 @@ those later features.
 ## Player and Tournament Data
 
 - Players are initially managed by the single operator and identified by the
-  name supplied during registration.
+  name supplied during registration, with an optional normalized avatar for
+  roster, game, standings, and ceremony displays.
 - The system supports multiple tournaments and retains tournament results in
   PostgreSQL.
 - Player assignment to tournament phases and tables is handled by the operator

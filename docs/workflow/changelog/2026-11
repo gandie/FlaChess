@@ -856,3 +856,21 @@
     advanced from 2 to 3 while an edited value remained 7.
   - Residual risk: the running Docker image must be rebuilt before the final
     static bundle is served to the browser.
+
+- [T58](../done/T58_add_player_avatars.md): Added personal avatars to reusable
+  player records and carried them through tournament registration, section
+  membership, games, standings, podiums, and the final victory ceremony.
+  Uploads accept PNG, JPEG, and WebP images up to 5 MB; the server center-crops,
+  resizes, converts, and stores them as 200x200 PNG Base64 data URIs.
+  - Files: `app/model_definitions/players.py`, `app/player_avatars.py`,
+    `app/player_schemas.py`, player response and route modules,
+    `app/static/`, `migrations/versions/d3e8f1a6b2c4_add_player_avatar.py`,
+    `pyproject.toml`, focused tests, README/data/operator docs, and workflow
+    records.
+  - Validation: focused player, registration, workspace, operation, database,
+    and frontend tests passed; refactor, Markdown, and done-task boundary
+    checks passed; Python compilation passed; `git diff --check` passed;
+    Playwright confirmed zero avatar-form overflow at a 349px effective
+    viewport; full unittest discovery passed (188 tests).
+  - Residual risk: existing deployments must run the additive Alembic
+    migration and rebuild the application image before avatars can be served.

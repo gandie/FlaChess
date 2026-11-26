@@ -6,6 +6,7 @@ import {
   emptyState,
   errorSummary,
   pendingAction,
+  playerIdentity,
   status,
 } from "./render.js";
 
@@ -389,7 +390,13 @@ function sectionCreator(context, phase) {
 function membershipEditor(context, section, member) {
   const row = element("div", { className: "member-row" });
   if (!context.membershipEditable) {
-    row.append(element("strong", { text: member.player_name }));
+    row.append(
+      playerIdentity({
+        name: member.player_name,
+        avatar: member.player_avatar,
+        strong: true,
+      }),
+    );
     const provenance = member.source_section_id
       ? `Advanced from ${member.source_section_name ?? "a previous section"}${
           member.source_rank ? ` at rank ${member.source_rank}` : ""
@@ -472,8 +479,13 @@ function membershipEditor(context, section, member) {
     form.append(membershipActionButton(context, section, member));
   }
   row.append(
+    playerIdentity({
+      name: member.player_name,
+      avatar: member.player_avatar,
+      strong: true,
+    }),
     setupDisclosure(
-      `${member.player_name} · seed ${member.seed_position ?? "not set"} · ${
+      `Seed ${member.seed_position ?? "not set"} · ${
         member.rating ?? "unrated"
       }`,
       form,
@@ -511,19 +523,11 @@ function membershipAssignmentRow(context, section, participant, suggestedSeed) {
       "aria-label": `Add ${participant.player_name} to ${section.name}`,
     },
   });
-  const identity = element("div", { className: "player-identity" });
-  identity.append(
-    element("span", {
-      className: "player-monogram",
-      text: participant.player_name
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((part) => part.charAt(0).toUpperCase())
-        .join(""),
-      attributes: { "aria-hidden": "true" },
-    }),
-    element("strong", { text: participant.player_name }),
-  );
+  const identity = playerIdentity({
+    name: participant.player_name,
+    avatar: participant.player_avatar,
+    strong: true,
+  });
   const result = element("div", { className: "result-slot compact" });
   form.append(identity, seed.wrapper, submit, advanced, result);
   form.addEventListener("submit", (event) => {

@@ -3,6 +3,7 @@ import {
   element,
   errorSummary,
   pendingAction,
+  playerIdentity,
   status,
   table,
 } from "./render.js";
@@ -38,15 +39,23 @@ function snapshotTime(standings) {
 }
 
 export function standingsTable(operation, standings, round) {
-  const names = new Map(
+  const players = new Map(
     operation.participants.map((participant) => [
       String(participant.id),
-      participant.player_name,
+      participant,
     ]),
   );
   const columns = [
     { key: "rank", label: "Rank" },
-    { key: "player_name", label: "Player" },
+    {
+      key: "player_name",
+      label: "Player",
+      render: (name, standing) =>
+        playerIdentity({
+          name,
+          avatar: standing.player_avatar,
+        }),
+    },
     { key: "points", label: "Points" },
     { key: "wins", label: "W" },
     { key: "draws", label: "D" },
@@ -63,9 +72,11 @@ export function standingsTable(operation, standings, round) {
         displayNumber(value.value),
       ]),
     );
+    const player = players.get(String(standing.participant_id));
     return {
       ...standing,
-      player_name: names.get(String(standing.participant_id)) ?? "Unknown player",
+      player_name: player?.player_name ?? "Unknown player",
+      player_avatar: player?.player_avatar ?? null,
       points: displayNumber(standing.points),
       ...Object.fromEntries(
         operation.tiebreaks.map((rule) => [

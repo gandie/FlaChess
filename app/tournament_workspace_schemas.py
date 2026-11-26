@@ -13,6 +13,7 @@ class WorkspaceParticipant(BaseModel):
     registration_id: int
     player_id: int
     player_name: str
+    player_avatar: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -22,6 +23,7 @@ class WorkspaceSectionParticipant(BaseModel):
     registration_id: int
     player_id: int
     player_name: str
+    player_avatar: str | None = None
     rating: int | None
     rating_source: str | None
     source_section_id: int | None

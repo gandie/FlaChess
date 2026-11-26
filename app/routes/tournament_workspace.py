@@ -39,6 +39,7 @@ async def workspace_participants(
             TournamentParticipant.id.label("registration_id"),
             TournamentParticipant.player_id,
             Player.name.label("player_name"),
+            Player.avatar.label("player_avatar"),
         )
         .join(Player, Player.id == TournamentParticipant.player_id)
         .where(TournamentParticipant.tournament_id == tournament_id)
@@ -98,6 +99,7 @@ async def section_participants(
             TournamentParticipant.id.label("registration_id"),
             TournamentParticipant.player_id,
             Player.name.label("player_name"),
+            Player.avatar.label("player_avatar"),
             source_section.name.label("source_section_name"),
         )
         .join(

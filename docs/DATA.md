@@ -15,14 +15,17 @@ entities.
 
 ### `player`
 
-Stores player names.
+Stores player names and optional avatar images.
 
 | Column | Type | Constraints |
 | --- | --- | --- |
 | `id` | `BIGINT` | Generated primary key |
 | `name` | `VARCHAR(255)` | Not null |
+| `avatar` | `TEXT` | Optional PNG Base64 data URI |
 
-Player names are not constrained to be unique.
+Player names are not constrained to be unique. Uploaded PNG, JPEG, and WebP
+avatars are limited to 5 MB, center-cropped to 200×200, converted to PNG, and
+stored as a Base64 data URI. Missing avatars use player initials in the UI.
 
 ### `tournament`
 

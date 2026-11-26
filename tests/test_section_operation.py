@@ -16,6 +16,8 @@ from app.models import (
     TournamentLifecycle,
 )
 
+AVATAR = "data:image/png;base64,AAAA"
+
 
 class OperationResult:
     def __init__(
@@ -53,7 +55,7 @@ def named_operation_session() -> OperationSession:
         tie_break_locked_at=None,
         planned_round_count=5,
     )
-    participant = SimpleNamespace(id=20, player_name="Nora", rating=1800)
+    participant = SimpleNamespace(id=20, player_name="Nora", player_avatar=AVATAR, rating=1800)
     round_ = SimpleNamespace(id=30, number=1)
     tiebreak = SimpleNamespace(
         id=25,
@@ -66,6 +68,7 @@ def named_operation_session() -> OperationSession:
         round_id=30,
         white_participant_id=20,
         white_player_name="Nora",
+        white_player_avatar=AVATAR,
         black_participant_id=21,
         black_player_name="Jules",
         white_score=Decimal("1"),
@@ -133,9 +136,17 @@ class SectionOperationRouteTests(unittest.TestCase):
         self.assertEqual(payload["tournament_name"], "Club Open")
         self.assertEqual(payload["tournament_lifecycle"], "active")
         self.assertEqual(payload["participants"][0]["player_name"], "Nora")
+        self.assertEqual(
+            payload["participants"][0]["player_avatar"],
+            "data:image/png;base64,AAAA",
+        )
         self.assertEqual(payload["tiebreaks"][0]["code"], "buchholz_cut_1")
         self.assertEqual(payload["rounds"][0]["number"], 1)
         self.assertEqual(payload["rounds"][0]["games"][0]["black_player_name"], "Jules")
+        self.assertEqual(
+            payload["rounds"][0]["games"][0]["white_player_avatar"],
+            "data:image/png;base64,AAAA",
+        )
         self.assertEqual(payload["rounds"][0]["records"][0]["participation_type"], "bye")
 
     def test_operation_returns_404_for_missing_section(self) -> None:

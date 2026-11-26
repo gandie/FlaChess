@@ -73,6 +73,9 @@ unsupported tie-break codes visible. Active and finished rosters are read-only.
 - Tournament setup preserves scroll position, open disclosures, unrelated form
   values, and keyboard focus during repeated roster actions.
 - Draft section rosters collapse behind an assigned-player count.
+- Player records can include a PNG, JPEG, or WebP avatar up to 5 MB. The
+  server center-crops it to 200×200, converts it to PNG, and stores the
+  resulting Base64 data URI with the player.
 - Active operation places the current round, incomplete results, and standings
   ahead of less common controls.
 - Pairing preview shows named players, colors, byes, awarded scores, warnings,
@@ -92,6 +95,8 @@ Open a tournament display at:
 It shows the current phase, the latest round's pairings and results, round
 participation notes, and standings by default. Earlier rounds remain available.
 Finished tournaments use a victory-ceremony view backed by final snapshots.
+Player names are paired with avatars in rosters, games, standings, podiums, and
+the final ceremony; initials are used when no avatar has been uploaded.
 
 ## API routes
 

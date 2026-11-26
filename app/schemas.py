@@ -10,14 +10,7 @@ from app.models import (
     TournamentLifecycle,
     TournamentPhaseFormat,
 )
-
-
-class PlayerCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=255)
-
-
-class PlayerUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=255)
+from app.player_schemas import PlayerCreate, PlayerUpdate
 
 
 class TournamentDateMixin(BaseModel):

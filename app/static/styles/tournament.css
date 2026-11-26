@@ -282,18 +282,91 @@ a.tournament-desk-link:focus-visible,
   gap: 0.7rem;
 }
 
-.player-monogram {
+.player-monogram,
+.player-avatar {
   display: grid;
   flex: 0 0 auto;
   width: 2.15rem;
   height: 2.15rem;
   place-items: center;
   color: var(--color-white);
-  background: var(--ink-deep);
   border-radius: 0.1rem;
   box-shadow: 0.18rem 0.18rem 0 var(--gold);
+}
+
+.player-monogram {
+  background: var(--ink-deep);
   font-size: 0.75rem;
   font-weight: 800;
+}
+
+.player-avatar {
+  object-fit: cover;
+  background: var(--paper);
+}
+
+.avatar-editor {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 0.1rem;
+}
+
+.avatar-editor .field input[type="file"] {
+  min-height: 3rem;
+  padding: 0.4rem;
+  overflow: hidden;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.avatar-editor .field input[type="file"]::file-selector-button {
+  min-height: 2.1rem;
+  margin-right: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  color: var(--color-white);
+  background: var(--ink-deep);
+  border: 0;
+  border-radius: 0.08rem;
+  box-shadow: 0.15rem 0.15rem 0 var(--gold);
+  cursor: pointer;
+  font-family: var(--font-utility);
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.avatar-editor .field-help {
+  max-width: 42ch;
+  margin-bottom: 0;
+  line-height: 1.45;
+}
+
+.avatar-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.85rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.avatar-preview .muted {
+  min-width: 0;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.avatar-preview .player-avatar,
+.avatar-preview .player-monogram {
+  width: 4.5rem;
+  height: 4.5rem;
+  font-size: 1.1rem;
+}
+
+.avatar-editor > .button {
+  justify-self: start;
 }
 
 .roster-action {
@@ -509,6 +582,13 @@ a.tournament-desk-link:focus-visible,
   font-size: 1.2rem;
 }
 
+.game-players {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
 .result-queue {
   position: relative;
   display: grid;
@@ -541,6 +621,7 @@ a.tournament-desk-link:focus-visible,
 }
 
 .result-jump {
+  display: flex;
   min-height: 2.5rem;
   padding: 0.55rem 0.7rem;
   overflow: hidden;
@@ -551,9 +632,23 @@ a.tournament-desk-link:focus-visible,
   box-shadow: inset 0.18rem 0 0 transparent;
   cursor: pointer;
   font-weight: 650;
+  align-items: center;
+  gap: 0.45rem;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.result-jump .player-identity {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-jump .player-avatar,
+.result-jump .player-monogram {
+  width: 1.7rem;
+  height: 1.7rem;
+  box-shadow: none;
 }
 
 .result-jump.incomplete {
@@ -665,6 +760,10 @@ a.tournament-desk-link:focus-visible,
   .operation-form.game-form,
   .result-jump-list {
     grid-template-columns: 1fr;
+  }
+
+  .avatar-editor > .button {
+    width: 100%;
   }
 
   .pairing-automation-card {

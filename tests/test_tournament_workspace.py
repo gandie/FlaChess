@@ -74,6 +74,7 @@ def workspace_member() -> SimpleNamespace:
         registration_id=10,
         player_id=4,
         player_name="Nora",
+        player_avatar="data:image/png;base64,AAAA",
         rating=1800,
         rating_source="fide",
         source_section_id=1,
@@ -113,6 +114,7 @@ class TournamentWorkspaceRouteTests(unittest.TestCase):
             registration_id=10,
             player_id=4,
             player_name="Nora",
+            player_avatar="data:image/png;base64,AAAA",
         )
         rule = SectionTiebreak(
             id=30,
@@ -134,8 +136,10 @@ class TournamentWorkspaceRouteTests(unittest.TestCase):
         payload = response.json()
         self.assertEqual(payload["name"], "Club Open")
         self.assertEqual(payload["participants"][0]["player_name"], "Nora")
+        self.assertEqual(payload["participants"][0]["player_avatar"], "data:image/png;base64,AAAA")
         open_section = payload["phases"][0]["sections"][0]
         self.assertEqual(open_section["participants"][0]["rating"], 1800)
+        self.assertEqual(open_section["participants"][0]["player_avatar"], "data:image/png;base64,AAAA")
         self.assertEqual(
             open_section["participants"][0]["source_section_name"],
             "Preliminary",

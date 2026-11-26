@@ -6,6 +6,7 @@ import {
   errorSummary,
   page,
   pendingAction,
+  playerIdentity,
   status,
   table,
 } from "./render.js";
@@ -55,13 +56,23 @@ function gameTable(games, caption) {
   return table({
     caption,
     columns: [
-      { key: "white_player_name", label: "White" },
+      {
+        key: "white_player_name",
+        label: "White",
+        render: (name, game) =>
+          playerIdentity({ name, avatar: game.white_player_avatar }),
+      },
       {
         key: "result",
         label: "Result",
         render: (result, game) => element("strong", { text: resultLabel(game) }),
       },
-      { key: "black_player_name", label: "Black" },
+      {
+        key: "black_player_name",
+        label: "Black",
+        render: (name, game) =>
+          playerIdentity({ name, avatar: game.black_player_avatar }),
+      },
     ],
     rows: games,
     emptyMessage: "No games in this group.",
@@ -72,18 +83,25 @@ function participationSummary(round) {
   if (!round?.records.length) {
     return null;
   }
-  const summary = element("p", { className: "display-participation muted" });
-  summary.textContent = round.records
-    .map((record) => {
-      const score =
-        record.score_awarded === null
-          ? ""
-          : `, ${Number(record.score_awarded)} point${
-              Number(record.score_awarded) === 1 ? "" : "s"
-            }`;
-      return `${record.player_name}: ${labelFor(record.participation_type)}${score}`;
-    })
-    .join(" · ");
+  const summary = element("div", { className: "display-participation muted" });
+  for (const record of round.records) {
+    const score =
+      record.score_awarded === null
+        ? ""
+        : ` · ${Number(record.score_awarded)} point${
+            Number(record.score_awarded) === 1 ? "" : "s"
+          }`;
+    const item = playerIdentity({
+      name: record.player_name,
+      avatar: record.player_avatar,
+    });
+    item.append(
+      element("span", {
+        text: `${labelFor(record.participation_type)}${score}`,
+      }),
+    );
+    summary.append(item);
+  }
   return summary;
 }
 
@@ -120,22 +138,25 @@ function podium(operation, standings, round) {
   if (!standings.length) {
     return null;
   }
-  const names = new Map(
+  const players = new Map(
     operation.participants.map((participant) => [
       String(participant.id),
-      participant.player_name,
+      participant,
     ]),
   );
   const medalLabels = ["Champion", "Runner-up", "Third place"];
   const medals = standings.slice(0, 3).map((standing, index) => {
+    const player = players.get(String(standing.participant_id));
     const medal = element("li", {
       className: `podium-place podium-place-${index + 1}`,
     });
     medal.append(
       element("span", { className: "podium-rank", text: String(standing.rank) }),
       element("span", { className: "podium-medal-label", text: medalLabels[index] }),
-      element("strong", {
-        text: names.get(String(standing.participant_id)) ?? "Unknown player",
+      playerIdentity({
+        name: player?.player_name ?? "Unknown player",
+        avatar: player?.player_avatar ?? null,
+        strong: true,
       }),
       element("span", {
         className: "podium-points",
@@ -288,6 +309,7 @@ function victoryCeremony(workspace, operations, snapshots) {
           {
             section: operation.name,
             name: participant.player_name,
+            avatar: participant.player_avatar,
             points: Number(champion.points),
           },
         ]
@@ -316,7 +338,11 @@ function victoryCeremony(workspace, operations, snapshots) {
         className: "victory-section",
         text: champion.section,
       }),
-      element("strong", { text: champion.name }),
+      playerIdentity({
+        name: champion.name,
+        avatar: champion.avatar,
+        strong: true,
+      }),
       element("span", {
         className: "victory-score",
         text: `${champion.points} point${champion.points === 1 ? "" : "s"}`,
