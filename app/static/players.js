@@ -243,19 +243,48 @@ export function playerDirectoryView() {
   };
 }
 
-function registrationRoster(players, participants, onRegister, onUnregister, signal) {
+function registrationRoster(
+  players,
+  participants,
+  onRegister,
+  onRegisterAll,
+  onUnregister,
+  signal,
+) {
   const roster = element("div", { className: "player-action-list" });
   const registered = new Map(
     participants.map((participant) => [participant.player_id, participant]),
   );
+  const unregistered = players.filter((player) => !registered.has(player.id));
   const heading = element("div", { className: "list-heading" });
-  heading.append(
+  const headingCopy = element("div");
+  headingCopy.append(
     element("h3", { text: "Tournament roster" }),
     element("span", {
       className: "count-label",
       text: `${participants.length} of ${players.length} registered`,
     }),
   );
+  heading.append(headingCopy);
+  if (unregistered.length) {
+    const addAll = element("button", {
+      className: "button button-secondary button-small",
+      text: `Add all ${unregistered.length}`,
+      attributes: {
+        type: "button",
+        "aria-label": `Add all ${unregistered.length} available players to the tournament`,
+      },
+    });
+    addAll.addEventListener(
+      "click",
+      () =>
+        void pendingAction(addAll, () =>
+          onRegisterAll(unregistered.map((player) => player.id)),
+        ),
+      { signal },
+    );
+    heading.append(addAll);
+  }
   roster.append(heading);
 
   for (const player of players) {
@@ -334,6 +363,7 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
               players,
               participants,
               registerPlayer,
+              registerAllPlayers,
               unregisterPlayer,
               signal,
             ),
@@ -391,6 +421,29 @@ export function tournamentRegistrationCard(tournament, signal, onChange = null) 
     } catch (error) {
       if (!signal.aborted && error?.name !== "AbortError") {
         result.replaceChildren(status(errorSummary(error), "error"));
+      }
+    }
+  }
+
+  async function registerAllPlayers(playerIds) {
+    try {
+      for (const playerId of playerIds) {
+        await api.post(
+          `/api/tournaments/${tournament.id}/participants`,
+          { player_id: playerId },
+          { signal },
+        );
+      }
+      await onChange?.();
+    } catch (error) {
+      if (!signal.aborted && error?.name !== "AbortError") {
+        await loadRegistration();
+        result.replaceChildren(
+          status(
+            `${errorSummary(error)} Some earlier players may already be registered.`,
+            "error",
+          ),
+        );
       }
     }
   }

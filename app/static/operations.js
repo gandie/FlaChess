@@ -993,7 +993,11 @@ export function sectionOperationView({
       element("a", {
         className: "tournament-desk-link",
         text: "Player display",
-        attributes: { href: `#/display/tournaments/${tournamentId}` },
+        attributes: {
+          href: `#/display/tournaments/${tournamentId}`,
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
       }),
     );
     const action = sectionAction(context);

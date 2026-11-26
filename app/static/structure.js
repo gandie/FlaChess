@@ -590,15 +590,75 @@ function membershipPanel(context, section) {
   const nextSeed = nextSeedPosition(section.participants);
   const assignment = element("div", { className: "player-action-list" });
   const heading = element("div", { className: "list-heading" });
-  heading.append(
+  const headingCopy = element("div");
+  headingCopy.append(
     element("h5", { text: "Available registered players" }),
     element("span", {
       className: "count-label",
       text: `Next seed ${nextSeed}`,
     }),
   );
+  const assignmentResult = element("div", { className: "result-slot compact" });
+  const addAll = element("button", {
+    className: "button button-secondary button-small",
+    text: `Add all ${available.length}`,
+    attributes: {
+      type: "button",
+      "aria-label": `Add all ${available.length} available players to ${section.name}`,
+    },
+  });
+  addAll.addEventListener("click", () => {
+    void pendingAction(addAll, async () => {
+      assignmentResult.replaceChildren(status("Adding all available players\u2026"));
+      try {
+        for (const [index, participant] of available.entries()) {
+          await api.post(
+            "/api/section-participants",
+            {
+              participant_id: participant.registration_id,
+              section_id: section.id,
+              rating: null,
+              rating_source: null,
+              seed_position: nextSeed + index,
+              source_section_id: null,
+              source_rank: null,
+            },
+            { signal: context.signal },
+          );
+        }
+        await context.refresh();
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          const refreshRoster = element("button", {
+            className: "button button-secondary button-small",
+            text: "Refresh roster",
+            attributes: { type: "button" },
+          });
+          refreshRoster.addEventListener(
+            "click",
+            () => void context.refresh(),
+            { signal: context.signal },
+          );
+          addAll.hidden = true;
+          assignmentResult.replaceChildren(
+            status(
+              `${errorSummary(error)} Some earlier players may already be assigned.`,
+              "error",
+            ),
+            refreshRoster,
+          );
+        }
+      }
+    });
+  });
+  heading.append(headingCopy, addAll);
   assignment.append(
     heading,
+    element("p", {
+      className: "helper-copy",
+      text: "Add all uses sequential seeds and initial assignments.",
+    }),
+    assignmentResult,
     ...available.map((participant) =>
       membershipAssignmentRow(context, section, participant, nextSeed),
     ),

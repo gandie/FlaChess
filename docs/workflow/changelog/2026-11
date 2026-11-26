@@ -874,3 +874,30 @@
     viewport; full unittest discovery passed (188 tests).
   - Residual risk: existing deployments must run the additive Alembic
     migration and rebuild the application image before avatars can be served.
+
+- [T59](../done/T59_operator_quality_of_life_shortcuts.md): Added operator
+  shortcuts to register all available players, assign all available tournament
+  players to a section with sequential seeds, and optionally create phase 1
+  with a selected format. Player displays now open in new tabs and refresh
+  every 30 seconds while retaining manual refresh.
+  - Files: `app/static/players.js`, `app/static/structure.js`,
+    `app/static/tournaments.js`, `app/static/app.js`,
+    `app/static/operations.js`, `app/static/display.js`,
+    `tests/test_tournament_usability.py`, `README.md`, and workflow records.
+  - Validation: focused usability tests passed (14 tests), Markdown and
+    done-task boundaries passed, JavaScript syntax and `git diff --check`
+    passed, and full unittest discovery passed (191 tests).
+  - Residual risk: bulk writes use the existing validated APIs sequentially,
+    so a failure can leave an explicitly reported partial update rather than a
+    transactional all-or-nothing batch.
+
+- T59 follow-up: Made player-display auto-refresh pausable and resumable while
+  keeping manual refresh available. Replaced the redundant full participation
+  strip with a compact bye-only row inside the Results card.
+  - Files: `app/static/display.js`, `app/static/styles/display.css`,
+    `tests/test_tournament_usability.py`, `README.md`, and T59 workflow records.
+  - Validation: focused display usability tests passed (15 tests), Markdown
+    and done-task boundaries passed, and full unittest discovery passed (192
+    tests).
+  - Residual risk: pausing affects future interval ticks; a refresh already in
+    progress is allowed to finish before the display remains stable.

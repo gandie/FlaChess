@@ -79,27 +79,35 @@ function gameTable(games, caption) {
   });
 }
 
-function participationSummary(round) {
-  if (!round?.records.length) {
+function byeSummary(round) {
+  const byes = round?.records.filter(
+    (record) => record.participation_type === "bye",
+  ) ?? [];
+  if (!byes.length) {
     return null;
   }
-  const summary = element("div", { className: "display-participation muted" });
-  for (const record of round.records) {
+  const summary = element("div", {
+    className: "display-byes",
+    attributes: { "aria-label": "Round byes" },
+  });
+  summary.append(
+    element("strong", { className: "display-byes-label", text: "Byes" }),
+  );
+  for (const record of byes) {
     const score =
       record.score_awarded === null
         ? ""
         : ` · ${Number(record.score_awarded)} point${
             Number(record.score_awarded) === 1 ? "" : "s"
           }`;
-    const item = playerIdentity({
+    const item = element("span", { className: "display-bye" });
+    item.append(playerIdentity({
       name: record.player_name,
       avatar: record.player_avatar,
-    });
-    item.append(
-      element("span", {
-        text: `${labelFor(record.participation_type)}${score}`,
-      }),
-    );
+    }));
+    if (score) {
+      item.append(element("span", { className: "muted", text: score.trim() }));
+    }
     summary.append(item);
   }
   return summary;
@@ -266,12 +274,12 @@ function sectionDisplay({
     element("h4", { text: `Results (${completed.length})` }),
     gameTable(completed, `${operation.name} completed results`),
   );
+  const byes = byeSummary(round);
+  if (byes) {
+    resultsCard.append(byes);
+  }
   games.append(upcomingCard, resultsCard);
   section.append(games);
-  const participation = participationSummary(round);
-  if (participation) {
-    section.append(participation);
-  }
 
   const standingsHeading = element("h3", {
     className: "display-standings-heading",
@@ -388,6 +396,17 @@ function phaseSummary(workspace, phase) {
 
 export function tournamentDisplayView({ tournamentId }) {
   let activeSignal;
+  let refreshInFlight = false;
+  let refreshTimer = null;
+  let autoRefreshEnabled = true;
+  const autoRefresh = element("button", {
+    className: "button button-secondary",
+    text: "Auto-refresh on",
+    attributes: {
+      type: "button",
+      "aria-pressed": "true",
+    },
+  });
   const refresh = element("button", {
     className: "button button-secondary",
     text: "Refresh display",
@@ -398,7 +417,7 @@ export function tournamentDisplayView({ tournamentId }) {
     title: "Tournament",
     description:
       "Current phase, upcoming games, recorded results, and the latest standings.",
-    actions: [refresh],
+    actions: [autoRefresh, refresh],
   });
   root.classList.add("display-page");
   const result = element("div", { className: "result-slot tournament-display" });
@@ -502,6 +521,40 @@ export function tournamentDisplayView({ tournamentId }) {
     }
   }
 
+  async function refreshDisplay(signal) {
+    if (refreshInFlight) {
+      return;
+    }
+    refreshInFlight = true;
+    try {
+      await load(signal);
+    } finally {
+      refreshInFlight = false;
+    }
+  }
+
+  function stopAutoRefresh() {
+    if (refreshTimer !== null) {
+      window.clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+  }
+
+  function renderAutoRefreshState() {
+    autoRefresh.textContent = autoRefreshEnabled
+      ? "Auto-refresh on"
+      : "Auto-refresh off";
+    autoRefresh.setAttribute("aria-pressed", String(autoRefreshEnabled));
+  }
+
+  function startAutoRefresh(signal) {
+    stopAutoRefresh();
+    refreshTimer = window.setInterval(
+      () => void refreshDisplay(signal),
+      30_000,
+    );
+  }
+
   return {
     title: "Player tournament display",
     element: root,
@@ -509,10 +562,25 @@ export function tournamentDisplayView({ tournamentId }) {
       activeSignal = signal;
       refresh.addEventListener(
         "click",
-        () => void pendingAction(refresh, () => load(signal)),
+        () => void pendingAction(refresh, () => refreshDisplay(signal)),
         { signal },
       );
-      void load(signal);
+      autoRefresh.addEventListener(
+        "click",
+        () => {
+          autoRefreshEnabled = !autoRefreshEnabled;
+          renderAutoRefreshState();
+          if (autoRefreshEnabled) {
+            startAutoRefresh(signal);
+          } else {
+            stopAutoRefresh();
+          }
+        },
+        { signal },
+      );
+      void refreshDisplay(signal);
+      startAutoRefresh(signal);
+      signal.addEventListener("abort", stopAutoRefresh, { once: true });
     },
   };
 }

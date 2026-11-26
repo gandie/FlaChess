@@ -252,6 +252,61 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
         self.assertIn("grid-template-columns: repeat(2, minmax(0, 1fr));", styles)
         self.assertIn("min-width: 0;", styles)
 
+    def test_tournament_setup_offers_bulk_roster_shortcuts(self) -> None:
+        players = self.static_asset("players.js")
+        structure = self.static_asset("structure.js")
+
+        self.assertIn("registerAllPlayers", players)
+        self.assertIn("Add all ${unregistered.length}", players)
+        self.assertIn("Some earlier players may already be registered", players)
+        self.assertIn("Add all ${available.length}", structure)
+        self.assertIn("nextSeed + index", structure)
+        self.assertIn("sequential seeds and initial assignments", structure)
+        self.assertIn("Some earlier players may already be assigned", structure)
+
+    def test_tournament_creation_can_add_an_opening_phase(self) -> None:
+        tournaments = self.static_asset("tournaments.js")
+
+        self.assertIn("opening_phase_format", tournaments)
+        self.assertIn("Create Swiss phase 1", tournaments)
+        self.assertIn("Create round-robin phase 1", tournaments)
+        self.assertIn("Create knockout phase 1", tournaments)
+        self.assertIn("sequence: 1", tournaments)
+        self.assertIn("format: phaseFormat", tournaments)
+        self.assertIn("The tournament was created, but phase 1 was not added", tournaments)
+
+    def test_player_display_opens_separately_and_refreshes_periodically(self) -> None:
+        assets = (
+            self.static_asset("app.js"),
+            self.static_asset("tournaments.js"),
+            self.static_asset("operations.js"),
+        )
+        display = self.static_asset("display.js")
+
+        for asset in assets:
+            self.assertIn('target: "_blank"', asset)
+            self.assertIn('rel: "noopener noreferrer"', asset)
+        self.assertIn("window.setInterval", display)
+        self.assertIn("30_000", display)
+        self.assertIn("Auto-refresh on", display)
+        self.assertIn("autoRefreshEnabled = !autoRefreshEnabled", display)
+        self.assertIn("startAutoRefresh(signal)", display)
+        self.assertIn("stopAutoRefresh()", display)
+        self.assertIn('aria-pressed": "true"', display)
+        self.assertIn("if (refreshInFlight)", display)
+
+    def test_player_display_only_summarizes_byes_separately(self) -> None:
+        display = self.static_asset("display.js")
+        styles = self.static_styles()
+
+        self.assertIn("function byeSummary(round)", display)
+        self.assertIn('record.participation_type === "bye"', display)
+        self.assertNotIn("participationSummary", display)
+        self.assertIn('attributes: { "aria-label": "Round byes" }', display)
+        self.assertIn("resultsCard.append(byes)", display)
+        self.assertIn(".display-byes", styles)
+        self.assertNotIn(".display-participation", styles)
+
 
 if __name__ == "__main__":
     unittest.main()

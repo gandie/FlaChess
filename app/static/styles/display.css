@@ -109,11 +109,31 @@
   box-shadow: 0.25rem 0.25rem 0 var(--color-shadow-silver);
 }
 
-.display-participation {
+.display-byes {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 0.7rem 1rem;
-  margin: 1rem 0 0;
+  gap: 0.55rem 0.9rem;
+  margin: 0.65rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-left: 0.18rem solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.9rem;
+}
+
+.display-byes-label {
+  font-family: var(--font-utility);
+  letter-spacing: 0.035em;
+}
+
+.display-bye,
+.display-bye .player-identity {
+  display: inline-flex;
+  align-items: center;
+}
+
+.display-bye {
+  gap: 0.2rem;
 }
 
 .display-standings-heading {

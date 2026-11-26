@@ -145,7 +145,11 @@ function overviewView() {
           element("a", {
             className: "button button-light",
             text: "Open player display",
-            attributes: { href: `#/display/tournaments/${current.id}` },
+            attributes: {
+              href: `#/display/tournaments/${current.id}`,
+              target: "_blank",
+              rel: "noopener noreferrer",
+            },
           }),
         );
       }

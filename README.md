@@ -52,7 +52,9 @@ while the clock is running.
 ### 01 — Open the catalog
 
 Create a draft, see what is active, and return to completed events without
-hiding structure behind a wall of forms.
+hiding structure behind a wall of forms. The creation form can optionally add
+phase 1 with a selected format, so a common tournament setup starts one step
+ahead.
 
 <p align="center">
   <img src="app/static/sc_tournament_list.png" alt="Tournament catalog and draft creation form" width="100%">
@@ -62,7 +64,9 @@ hiding structure behind a wall of forms.
 
 Draft workspaces connect player registration, phases, sections, seeds,
 planned rounds, and ordered tie-break rules. Fla Chess keeps activation
-blocked until the tournament is ready.
+blocked until the tournament is ready. Available players can be registered to
+the tournament or assigned to a section in one action while individual Add and
+Remove controls remain available.
 
 ### 03 — Play the round
 
@@ -74,7 +78,9 @@ round.
 ### 04 — Close with a ceremony
 
 Finished sections retain their final standings. The read-only player display
-turns those preserved results into champions, podiums, and browsable history.
+opens in its own tab, refreshes every 30 seconds, and turns those preserved
+results into champions, podiums, and browsable history. Manual refresh remains
+available, and automatic refresh can be paused while viewers study the tables.
 
 <p align="center">
   <img src="app/static/sc_tournament_ending.png" alt="Fla Chess finished tournament ceremony" width="100%">

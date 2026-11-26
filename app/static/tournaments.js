@@ -219,7 +219,11 @@ function tournamentDesk(tournament, workspace, progression = null) {
     element("a", {
       className: "tournament-desk-link",
       text: "Player display",
-      attributes: { href: `#/display/tournaments/${tournament.id}` },
+      attributes: {
+        href: `#/display/tournaments/${tournament.id}`,
+        target: "_blank",
+        rel: "noopener noreferrer",
+      },
     }),
   );
   if (progression) {
@@ -229,7 +233,36 @@ function tournamentDesk(tournament, workspace, progression = null) {
   return navigation;
 }
 
-function metadataForm(tournament = {}) {
+function openingPhaseField() {
+  const wrapper = element("div", { className: "field" });
+  wrapper.append(
+    element("label", {
+      text: "Opening phase",
+      attributes: { for: "opening_phase_format" },
+    }),
+  );
+  const control = element("select", {
+    attributes: { id: "opening_phase_format", name: "opening_phase_format" },
+  });
+  for (const [value, label] of [
+    ["", "Add phase later"],
+    ["swiss", "Create Swiss phase 1"],
+    ["round_robin", "Create round-robin phase 1"],
+    ["knockout", "Create knockout phase 1"],
+  ]) {
+    control.append(element("option", { text: label, attributes: { value } }));
+  }
+  wrapper.append(
+    control,
+    element("p", {
+      className: "field-help",
+      text: "Optional shortcut; sections can be added after creation.",
+    }),
+  );
+  return wrapper;
+}
+
+function metadataForm(tournament = {}, { includeOpeningPhase = false } = {}) {
   const form = element("form", { className: "form-stack" });
   const name = field({
     id: "tournament_name",
@@ -270,7 +303,17 @@ function metadataForm(tournament = {}) {
     timeControl.wrapper,
     dates,
   );
-  return { form, values: () => formValues(form) };
+  if (includeOpeningPhase) {
+    form.append(openingPhaseField());
+  }
+  return {
+    form,
+    values: () => formValues(form),
+    openingPhaseFormat: () =>
+      includeOpeningPhase
+        ? form.elements.opening_phase_format.value || null
+        : null,
+  };
 }
 
 export function tournamentCatalogView(navigate) {
@@ -293,10 +336,13 @@ export function tournamentCatalogView(navigate) {
     element("h2", { text: "New tournament" }),
     element("p", {
       className: "muted",
-      text: "Only tournament metadata is collected at this step.",
+      text: "Create the draft metadata and optionally add the opening phase.",
     }),
   );
-  const { form, values } = metadataForm();
+  const { form, values, openingPhaseFormat } = metadataForm(
+    {},
+    { includeOpeningPhase: true },
+  );
   const submit = element("button", {
     className: "button",
     text: "Create draft",
@@ -363,7 +409,11 @@ export function tournamentCatalogView(navigate) {
                 element("a", {
                   className: "record-link",
                   text: "Open display",
-                  attributes: { href: `#/display/tournaments/${id}` },
+                  attributes: {
+                    href: `#/display/tournaments/${id}`,
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                  },
                 }),
             },
           ],
@@ -394,6 +444,35 @@ export function tournamentCatalogView(navigate) {
                 values(),
                 { signal },
               );
+              const phaseFormat = openingPhaseFormat();
+              if (phaseFormat) {
+                try {
+                  await api.post(
+                    "/api/tournament-phases",
+                    {
+                      tournament_id: tournament.id,
+                      sequence: 1,
+                      format: phaseFormat,
+                    },
+                    { signal },
+                  );
+                } catch (error) {
+                  if (signal.aborted || error?.name === "AbortError") {
+                    return;
+                  }
+                  const link = element("a", {
+                    text: "Open the created draft",
+                    attributes: { href: `#/tournaments/${tournament.id}` },
+                  });
+                  const message = status(
+                    `${errorSummary(error)} The tournament was created, but phase 1 was not added.`,
+                    "error",
+                  );
+                  message.append(element("br"), link);
+                  createResult.replaceChildren(message);
+                  return;
+                }
+              }
               navigate(`/tournaments/${tournament.id}`);
             } catch (error) {
               if (signal.aborted || error?.name === "AbortError") {
