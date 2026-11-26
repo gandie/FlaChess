@@ -14,6 +14,7 @@ import {
   tournamentOverviewView,
 } from "./tournaments.js";
 import { playerDirectoryView } from "./players.js";
+import { manualView } from "./manual.js";
 import { sectionOperationView } from "./operations.js";
 import { tournamentDisplayView } from "./display.js";
 
@@ -330,6 +331,7 @@ const router = createRouter({
         }),
     ],
     ["/players", playerDirectoryView],
+    ["/manual", manualView],
     ["/system", systemView],
   ]),
   notFound: notFoundView,

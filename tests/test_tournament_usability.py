@@ -26,6 +26,7 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
             "overview",
             "tournament",
             "display",
+            "manual",
         )
         modules = []
         for module_name in module_names:
@@ -35,6 +36,43 @@ class TournamentUsabilityFrontendTests(unittest.TestCase):
             )
             modules.append(self.static_asset(f"styles/{module_name}.css"))
         return "\n".join((entrypoint, *modules))
+
+    def test_manual_explains_every_supported_tiebreak_with_examples(self) -> None:
+        index = self.static_asset("index.html")
+        app_module = self.static_asset("app.js")
+        manual = self.static_asset("manual.js")
+        styles = self.static_styles()
+
+        supported_codes = (
+            "direct_encounter",
+            "number_of_wins",
+            "progressive_score",
+            "buchholz",
+            "buchholz_cut_1",
+            "buchholz_cut_2",
+            "buchholz_median_1",
+            "buchholz_median_2",
+            "sonneborn_berger",
+            "sonneborn_berger_cut_1",
+        )
+
+        self.assertIn('href="#/manual"', index)
+        self.assertIn('data-route-link="/manual"', index)
+        self.assertIn('["/manual", manualView]', app_module)
+        for code in supported_codes:
+            self.assertIn(f'code: "{code}"', manual)
+        self.assertEqual(manual.count("Worked example"), 1)
+        self.assertIn("example.facts", manual)
+        self.assertIn("example.calculation", manual)
+        self.assertIn("example.result", manual)
+        self.assertIn("Higher tie-break values rank ahead", manual)
+        self.assertIn("Awarded non-paired", manual)
+        self.assertIn('data-manual-target', manual)
+        self.assertIn("scrollIntoView", manual)
+        self.assertNotIn("#/manual?", manual)
+        self.assertIn(".manual-rule", styles)
+        self.assertIn(".manual-example", styles)
+        self.assertIn("@media (max-width: 42rem)", styles)
 
     def test_player_display_uses_only_existing_read_contracts(self) -> None:
         display = self.static_asset("display.js")

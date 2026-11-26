@@ -1,0 +1,234 @@
+.manual-page {
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.manual-orientation {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.55fr);
+  background: var(--ink-deep);
+  border-top: 0.45rem solid var(--clock);
+  color: var(--panel);
+}
+
+.manual-orientation-copy {
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.manual-orientation-copy h2 {
+  max-width: 15ch;
+  color: var(--panel);
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  line-height: 0.98;
+}
+
+.manual-orientation-copy p:last-child {
+  max-width: 45rem;
+  margin-bottom: 0;
+  color: var(--color-nav-muted);
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+.manual-kicker,
+.manual-rule-family,
+.manual-example-label {
+  font-family: var(--font-utility);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.manual-kicker {
+  margin-bottom: 0.8rem;
+  color: var(--clock);
+}
+
+.manual-contents {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: var(--color-ceremony-mid);
+  border-left: 1px solid var(--color-paper-border);
+}
+
+.manual-contents strong {
+  margin-bottom: 0.8rem;
+  color: var(--clock);
+  font-family: var(--font-utility);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.manual-contents a {
+  padding: 0.45rem 0;
+  color: var(--panel);
+  border-bottom: 1px solid var(--color-paper-border-faint);
+  font-size: 0.82rem;
+  text-decoration: none;
+}
+
+.manual-contents a:hover,
+.manual-contents a:focus-visible {
+  color: var(--clock);
+}
+
+.manual-score-note {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.25fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--accent-soft);
+  border-left: 0.35rem solid var(--clock);
+}
+
+.manual-score-note strong {
+  font-family: var(--font-utility);
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.manual-score-note p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.manual-chapter {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.manual-chapter-heading {
+  max-width: 52rem;
+  padding: 0.5rem 0 0.75rem;
+}
+
+.manual-chapter-heading h2 {
+  margin-bottom: 0.45rem;
+}
+
+.manual-chapter-heading p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.manual-rule {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.6fr) minmax(18rem, 1fr) minmax(18rem, 0.95fr);
+  gap: clamp(1rem, 2.5vw, 2.25rem);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0.3rem 0.3rem 0 var(--color-shadow-ink-card);
+  scroll-margin-top: 1rem;
+}
+
+.manual-rule-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+.manual-rule-number {
+  color: var(--line);
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.manual-rule-family {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--clock);
+}
+
+.manual-rule h3 {
+  margin-bottom: 0.45rem;
+  font-size: clamp(1.3rem, 2vw, 1.65rem);
+}
+
+.manual-rule-code {
+  color: var(--muted);
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+}
+
+.manual-rule-copy p {
+  margin-bottom: 0.8rem;
+  line-height: 1.55;
+}
+
+.manual-rule-copy p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.manual-rule-summary {
+  font-weight: 700;
+}
+
+.manual-example {
+  align-self: stretch;
+  padding: 1rem;
+  background: var(--paper);
+  border-left: 0.25rem solid var(--clock);
+}
+
+.manual-example-label {
+  display: block;
+  margin-bottom: 0.65rem;
+  color: var(--muted);
+}
+
+.manual-example p {
+  margin-bottom: 0.75rem;
+  line-height: 1.45;
+}
+
+.manual-calculation {
+  color: var(--ink-deep);
+  font-family: var(--font-utility);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.manual-example strong {
+  display: block;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 64rem) {
+  .manual-rule {
+    grid-template-columns: minmax(15rem, 0.7fr) minmax(18rem, 1fr);
+  }
+
+  .manual-example {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 42rem) {
+  .manual-orientation {
+    grid-template-columns: 1fr;
+  }
+
+  .manual-contents {
+    border-top: 1px solid var(--color-paper-border);
+    border-left: 0;
+  }
+
+  .manual-score-note,
+  .manual-rule {
+    grid-template-columns: 1fr;
+  }
+
+  .manual-example {
+    grid-column: auto;
+  }
+}

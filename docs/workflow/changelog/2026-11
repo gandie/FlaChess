@@ -901,3 +901,18 @@
     tests).
   - Residual risk: pausing affects future interval ticks; a refresh already in
     progress is allowed to finish before the display remains stable.
+
+- [T60](../done/T60_add_tiebreak_manual.md): Added a Manual navigation page
+  that explains configured tie-break ordering and every standings rule
+  currently supported by Fla Chess. Each rule includes its inputs, formula,
+  and a worked example, with responsive chapter navigation for operators and
+  players.
+  - Files: `app/static/index.html`, `app/static/app.js`,
+    `app/static/manual.js`, `app/static/styles.css`,
+    `app/static/styles/manual.css`, `tests/test_tournament_usability.py`, and
+    workflow records.
+  - Validation: focused usability tests passed (16 tests), Markdown boundaries
+    passed, JavaScript syntax and `git diff --check` passed, and full unittest
+    discovery passed (193 tests).
+  - Residual risk: chapter content must be updated alongside any future
+    tie-break implementation or behavior change.
